@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NAdmin
 
-## Getting Started
+一个基于 Next.js 15 构建的现代化后台管理系统模板。
 
-First, run the development server:
+## 特性
+
+- 🚀 基于 Next.js 15 App Router
+- 💅 使用 Tailwind CSS 构建的现代化 UI
+- 🔒 完整的身份认证系统
+- 📱 响应式设计，支持多端适配
+- 🌙 内置暗色模式支持
+- 🔍 TypeScript 类型安全
+- 🎯 使用 Drizzle ORM 进行数据库操作
+
+## 快速开始
+
+### 环境要求
+
+- Node.js 18.0 或更高版本
+- pnpm 9.0 或更高版本
+- MySQL 8.0 或更高版本
+
+### 安装
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# 安装依赖
+pnpm install
+
+# 配置环境变量
+cp .env.example .env.local
+
+# 初始化数据库
+pnpm db:migrate
+
+# 启动开发服务器
 pnpm dev
-# or
-bun dev
+```
+访问 http://localhost:3000 查看应用。
+
+## 项目结构
+```plaintext
+n-admin/
+├── src/
+│   ├── app/           # 页面和 API 路由
+│   ├── components/    # 可复用组件
+│   ├── lib/          # 工具函数和配置
+│   └── styles/       # 全局样式
+├── public/           # 静态资源
+└── drizzle/ 
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 开发命令
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm dev          # 启动开发服务器
+pnpm build        # 构建生产版本
+pnpm start        # 启动生产服务器
+pnpm lint         # 运行代码检查
+pnpm db:migrate   # 执行数据库迁移
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 部署
+本项目可以轻松部署到 Vercel 平台：
 
-## Learn More
+## 技术栈
+- Next.js 15
+- React 19
+- Tailwind CSS
+- TypeScript
+- Drizzle ORM
+- MySQL
+## 贡献指南
+欢迎提交 Issue 和 Pull Request。在提交 PR 之前，请确保：
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. 代码通过 ESLint 检查
+2. 所有测试通过
+3. 提交信息符合规范
+## 许可证
+MIT License
