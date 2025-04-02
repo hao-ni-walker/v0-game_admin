@@ -27,15 +27,24 @@
 pnpm install
 
 # 配置环境变量
-cp .env.example .env.local
+cp .env.example .env
 
 # 初始化数据库
-pnpm db:migrate
+pnpm db:generate
+pnpm db:push
+
+# 创建管理员账号
+pnpm init:admin
 
 # 启动开发服务器
 pnpm dev
 ```
 访问 http://localhost:3000 查看应用。
+
+默认管理员账号：
+
+- 邮箱： admin@example.com
+- 密码：Admin@123456（可在 .env 中修改）
 
 ## 项目结构
 ```plaintext
@@ -56,7 +65,10 @@ pnpm dev          # 启动开发服务器
 pnpm build        # 构建生产版本
 pnpm start        # 启动生产服务器
 pnpm lint         # 运行代码检查
-pnpm db:migrate   # 执行数据库迁移
+pnpm db:generate  # 生成数据库迁移
+pnpm db:push      # 执行数据库迁移
+pnpm db:studio    # 启动数据库管理界面
+pnpm init:admin   # 初始化管理员账号
 ```
 
 ## 部署
