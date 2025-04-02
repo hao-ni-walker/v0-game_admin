@@ -67,7 +67,7 @@ pnpm db:migrate   # 执行数据库迁移
 - React 19
 - Tailwind CSS
 - TypeScript
-- Drizzle ORM
+- Drizzle ORM: https://orm.drizzle.team/
 - MySQL
 ## 贡献指南
 欢迎提交 Issue 和 Pull Request。在提交 PR 之前，请确保：
