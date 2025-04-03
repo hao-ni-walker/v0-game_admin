@@ -8,24 +8,24 @@ dotenv.config();
 
 async function main() {
   try {
-    // 生成强密码
     const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123456';
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(adminPassword, saltRounds);
 
-    // 检查管理员是否已存在
     const adminExists = await db.select().from(users).where(eq(users.email, 'admin@example.com'));
 
     if (adminExists.length === 0) {
-      // 创建管理员账号
       await db.insert(users).values({
         email: 'admin@example.com',
+        username: 'Administrator',
         password: hashedPassword,
+        avatar: '/avatars/admin.jpg',
         role: 'admin'
       });
 
       console.log('管理员账号创建成功！');
       console.log('邮箱: admin@example.com');
+      console.log('用户名: Administrator');
       console.log('请使用环境变量中配置的密码登录');
     } else {
       console.log('管理员账号已存在');

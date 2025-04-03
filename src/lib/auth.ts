@@ -4,6 +4,9 @@ import { verify } from "jsonwebtoken";
 export interface User {
   id: number;
   email: string;
+  username: string;
+  avatar: string;
+  role: string;
 }
 
 export interface Session {
@@ -23,7 +26,10 @@ export async function auth(): Promise<Session | null> {
     return {
       user: {
         id: verified.id,
-        email: verified.email
+        email: verified.email,
+        username: verified.username,
+        avatar: verified.avatar,
+        role: verified.role,
       }
     };
   } catch {

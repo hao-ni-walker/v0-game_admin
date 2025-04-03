@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     }
 
     const token = sign(
-      { id: user[0].id, email: user[0].email },
+      { id: user[0].id, email: user[0].email, username: user[0].username, role: user[0].role, avatar: user[0].avatar },
       process.env.JWT_SECRET || "secret",
       { expiresIn: "1d" }
     );
