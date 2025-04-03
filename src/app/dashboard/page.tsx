@@ -4,8 +4,6 @@ import { redirect } from 'next/navigation';
 export default async function Dashboard() {
   const session = await auth();
 
-  console.log(session)
-
   if (!session?.user) {
     // 未登录，重定向到登录页
     return redirect('/login');
