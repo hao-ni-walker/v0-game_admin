@@ -150,16 +150,14 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { session, loading } = useAuth();
+  const { session } = useAuth();
 
-  const user = session?.user || {
+  const user = {
     username: '游客',
     email: '未登录',
     avatar: '/avatars/default.jpg',
     ...session?.user
   };
-
-  console.log('user', user);
 
   return (
     <Sidebar variant='inset' {...props}>
