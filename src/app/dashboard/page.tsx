@@ -5,14 +5,8 @@ export default async function Dashboard() {
   const session = await auth();
 
   if (!session?.user) {
-    // 未登录，重定向到登录页
-    return redirect('/login');
+    return redirect('/');
+  } else {
+    redirect('/dashboard/overview');
   }
-
-  return (
-    <div>
-      <h1>欢迎, {session.user.email}</h1>
-      {/* 其他仪表盘内容 */}
-    </div>
-  );
 }
