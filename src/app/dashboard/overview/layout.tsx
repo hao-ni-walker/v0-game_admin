@@ -1,5 +1,8 @@
+"use client"
+
 import PageContainer from '@/components/layout/page-container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/hooks/use-auth';
 import React from 'react';
 
 export default function OverViewLayout({
@@ -13,12 +16,22 @@ export default function OverViewLayout({
   bar_stats: React.ReactNode;
   area_stats: React.ReactNode;
 }) {
+
+  const { session } = useAuth();
+
+  const user = {
+    username: '游客',
+    email: '未登录',
+    avatar: '/avatars/default.jpg',
+    ...session?.user
+  };
+
   return (
     <PageContainer>
       <div className='flex flex-1 flex-col space-y-2'>
         <div className='flex items-center justify-between space-y-2'>
           <h2 className='text-2xl font-bold tracking-tight'>
-            Hi, Welcome back 👋
+            Hi, {user.username}, Welcome back 👋
           </h2>
         </div>
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>

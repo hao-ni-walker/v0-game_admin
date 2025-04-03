@@ -1,12 +1,12 @@
-"use client"
+'use client';
 
-import { ChevronRight, type LucideIcon } from "lucide-react"
+import { ChevronRight, type LucideIcon } from 'lucide-react';
 
 import {
   Collapsible,
   CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+  CollapsibleTrigger
+} from '@/components/ui/collapsible';
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -16,26 +16,16 @@ import {
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubButton,
-  SidebarMenuSubItem,
-} from "@/components/ui/sidebar"
+  SidebarMenuSubItem
+} from '@/components/ui/sidebar';
+import { navList } from '@/constants/router';
 
-export function NavMain({
-  items,
-}: {
-  items: {
-    title: string
-    url: string
-    icon: LucideIcon
-    isActive?: boolean
-    items?: {
-      title: string
-      url: string
-    }[]
-  }[]
-}) {
+export function NavMain() {
+  const items = navList;
+
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>平台</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
@@ -49,9 +39,9 @@ export function NavMain({
               {item.items?.length ? (
                 <>
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuAction className="data-[state=open]:rotate-90">
+                    <SidebarMenuAction className='data-[state=open]:rotate-90'>
                       <ChevronRight />
-                      <span className="sr-only">Toggle</span>
+                      <span className='sr-only'>Toggle</span>
                     </SidebarMenuAction>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
@@ -74,5 +64,5 @@ export function NavMain({
         ))}
       </SidebarMenu>
     </SidebarGroup>
-  )
+  );
 }
