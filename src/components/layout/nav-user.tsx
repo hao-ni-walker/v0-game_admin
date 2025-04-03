@@ -30,6 +30,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { getInitials } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 export function NavUser({
   user,
@@ -41,6 +42,22 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+      })
+
+      if (response.ok) {
+        router.push("/login")
+        router.refresh()
+      }
+    } catch (error) {
+      console.error("退出登录失败:", error)
+    }
+  }
 
   return (
     <SidebarMenu>
@@ -92,7 +109,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
               退出登录
             </DropdownMenuItem>
