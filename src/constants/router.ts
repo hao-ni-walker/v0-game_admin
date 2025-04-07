@@ -29,6 +29,11 @@ export const navList: NavItem[] = [
         title: '角色管理',
         shortcut: ['l', 'l'],
         url: '/dashboard/account/role',
+      },
+      {
+        title: '权限管理',
+        shortcut: ['l', 'l'],
+        url: '/dashboard/account/permission',
       }
     ]
   }

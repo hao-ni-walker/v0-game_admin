@@ -21,22 +21,26 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-export type Role = {
+export type Permission = {
   id: number
   name: string
+  code: string
   description: string
   createdAt: string
-  updatedAt: string
 }
 
-export const columns: ColumnDef<Role>[] = [
+export const columns: ColumnDef<Permission>[] = [
   {
     accessorKey: "id",
     header: "ID"
   },
   {
     accessorKey: "name",
-    header: "角色名称"
+    header: "权限名称"
+  },
+  {
+    accessorKey: "code",
+    header: "权限标识"
   },
   {
     accessorKey: "description",
@@ -53,13 +57,9 @@ export const columns: ColumnDef<Role>[] = [
     id: "actions",
     header: "操作",
     cell: ({ row, table }) => {
-      const role = row.original
-      const meta = table.options.meta as { 
-        onEdit?: (role: Role) => void
-        onDelete?: (role: Role) => void
-        onAssignPermissions?: (role: Role) => void
-      }
-      const { onEdit, onDelete, onAssignPermissions } = meta || {}
+      const permission = row.original
+      const meta = table.options.meta as { onEdit?: (permission: Permission) => void; onDelete?: (permission: Permission) => void }
+      const { onEdit, onDelete } = meta || {}
 
       return (
         <DropdownMenu>
@@ -69,11 +69,8 @@ export const columns: ColumnDef<Role>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={() => onEdit?.(role)}>
+            <DropdownMenuItem onSelect={() => onEdit?.(permission)}>
               编辑
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => onAssignPermissions?.(role)}>
-              分配权限
             </DropdownMenuItem>
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -85,12 +82,12 @@ export const columns: ColumnDef<Role>[] = [
                 <AlertDialogHeader>
                   <AlertDialogTitle>确认删除</AlertDialogTitle>
                   <AlertDialogDescription>
-                    确定要删除角色 "{role.name}" 吗？此操作不可撤销。
+                    确定要删除权限 "{permission.name}" 吗？此操作不可撤销。
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>取消</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => onDelete?.(role)}>
+                  <AlertDialogAction onClick={() => onDelete?.(permission)}>
                     确认删除
                   </AlertDialogAction>
                 </AlertDialogFooter>
