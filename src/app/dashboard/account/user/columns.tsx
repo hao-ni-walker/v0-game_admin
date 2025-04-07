@@ -45,7 +45,7 @@ export const columns: ColumnDef<User>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
       const user = row.original
 
       return (
@@ -56,7 +56,12 @@ export const columns: ColumnDef<User>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>编辑</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              // @ts-ignore
+              table.options.meta?.onEdit?.(user)
+            }}>
+              编辑
+            </DropdownMenuItem>
             <DropdownMenuItem className="text-red-600">删除</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

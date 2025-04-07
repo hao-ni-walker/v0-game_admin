@@ -1,12 +1,12 @@
 'use client';
 
-import { DataTable } from '@/components/ui/data-table';
+import { DataTable } from '@/components/common/data-table';
 import { columns } from './columns';
 import { useEffect, useState } from 'react';
 import PageContainer from '@/components/layout/page-container';
-import Link from 'next/link';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Plus } from 'lucide-react';
-import { buttonVariants } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Heading } from '@/components/common/heading';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,8 @@ import { Suspense } from 'react';
 import { SearchParams } from 'nuqs/server';
 import { searchParamsCache, serialize } from '@/lib/searchparams';
 import { DataTableSkeleton } from '@/components/common/data-table-skeleton';
+import { toast } from "sonner"
+import { UserForm } from "./components/user-form"
 
 type pageProps = {
   searchParams: Promise<SearchParams>;
@@ -23,11 +25,39 @@ export default function UserManagementPage(props: pageProps) {
   const [users, setUsers] = useState([]);
   const [key, setKey] = useState('');
   const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false)
+  const [editingUser, setEditingUser] = useState<any>(null)
 
   useEffect(() => {
     fetchUsers();
     initKey();
   }, []);
+
+  const handleCreateOrUpdateUser = async (values: any) => {
+    try {
+      const url = editingUser ? `/api/users/${editingUser.id}` : '/api/users'
+      const method = editingUser ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      })
+
+      if (response.ok) {
+        toast.success(editingUser ? '用户更新成功' : '用户创建成功')
+        setOpen(false)
+        fetchUsers()
+        setEditingUser(null)
+      } else {
+        toast.error(editingUser? '更新用户失败' : '创建用户失败')
+      }
+    } catch (error) {
+      toast.error(editingUser ? '更新用户失败' : '创建用户失败')
+    }
+  }
 
   const fetchUsers = async () => {
     try {
@@ -51,6 +81,11 @@ export default function UserManagementPage(props: pageProps) {
     setKey(curKey);
   };
 
+  const handleEdit = (user: any) => {
+    setEditingUser(user)
+    setOpen(true)
+  }
+
   return (
     <PageContainer scrollable={false}>
       <div className='flex flex-1 flex-col space-y-4'>
@@ -59,12 +94,15 @@ export default function UserManagementPage(props: pageProps) {
             title='用户管理'
             description='管理所有用户'
           />
-          <Link
-            href='/dashboard/product/new'
+          <Button
+            onClick={() => {
+              setEditingUser(null)
+              setOpen(true)
+            }}
             className={cn(buttonVariants(), 'text-xs md:text-sm')}
           >
             <Plus className='mr-2 h-4 w-4' />新增用户
-          </Link>
+          </Button>
         </div>
         <Separator />
         {/* <ProductTableAction /> */}
@@ -72,9 +110,23 @@ export default function UserManagementPage(props: pageProps) {
           key={key}
           fallback={<DataTableSkeleton columnCount={5} rowCount={10} />}
         >
-          <DataTable columns={columns} data={users} loading={loading} />
+          <DataTable columns={columns} data={users} totalItems={users.length} meta={{
+              onEdit: handleEdit
+            }} />
         </Suspense>
       </div>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingUser ? '编辑用户' : '新增用户'}</DialogTitle>
+          </DialogHeader>
+          <UserForm 
+            initialData={editingUser}
+            onSubmit={handleCreateOrUpdateUser}
+            onCancel={() => setOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </PageContainer>
   );
 }

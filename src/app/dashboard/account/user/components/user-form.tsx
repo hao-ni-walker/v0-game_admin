@@ -13,16 +13,17 @@ import {
 import { useState } from "react"
 
 interface UserFormProps {
+  initialData?: any
   onSubmit: (values: any) => void
   onCancel?: () => void
 }
 
-export function UserForm({ onSubmit, onCancel }: UserFormProps) {
+export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
   const [formData, setFormData] = useState({
-    username: "",
-    email: "",
+    username: initialData?.username || "",
+    email: initialData?.email || "",
     password: "",
-    role: "user"
+    role: initialData?.role || "user"
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

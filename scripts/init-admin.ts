@@ -9,7 +9,7 @@ dotenv.config();
 async function main() {
   try {
     const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123456';
-    const saltRounds = process.env.SALT_ROUNDS || 12;
+    const saltRounds = Number(process.env.SALT_ROUNDS || 12);
     const hashedPassword = await bcrypt.hash(adminPassword, saltRounds);
 
     const adminExists = await db.select().from(users).where(eq(users.email, 'admin@example.com'));
