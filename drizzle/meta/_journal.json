@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1743586485334,
-      "tag": "0000_lame_gorilla_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1743664516737,
-      "tag": "0001_chilly_thunderball",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1744036268690,
-      "tag": "0002_romantic_hellcat",
+      "when": 1744037704608,
+      "tag": "0000_common_reptil",
       "breakpoints": true
     }
   ]
