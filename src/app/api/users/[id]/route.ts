@@ -9,6 +9,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { username, email, password, role } = body;
 
@@ -27,10 +28,27 @@ export async function PUT(
     await db
       .update(users)
       .set(updateData)
-      .where(eq(users.id, parseInt(params.id)));
+      .where(eq(users.id, parseInt(id)));
 
     return NextResponse.json({ message: '用户更新成功' });
   } catch (error) {
     return NextResponse.json({ error: '更新用户失败' }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = await params;
+    console.log(id);
+    await db
+      .delete(users)
+      .where(eq(users.id, parseInt(id)));
+
+    return NextResponse.json({ message: '用户删除成功' });
+  } catch (error) {
+    return NextResponse.json({ error: '删除用户失败' }, { status: 500 });
   }
 }

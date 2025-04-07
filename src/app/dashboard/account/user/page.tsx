@@ -86,6 +86,23 @@ export default function UserManagementPage(props: pageProps) {
     setOpen(true)
   }
 
+  const handleDelete = async (user: any) => {
+    try {
+      const response = await fetch(`/api/users/${user.id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        toast.success('用户删除成功');
+        fetchUsers();
+      } else {
+        toast.error('删除用户失败');
+      }
+    } catch (error) {
+      toast.error('删除用户失败');
+    }
+  };
+
   return (
     <PageContainer scrollable={false}>
       <div className='flex flex-1 flex-col space-y-4'>
@@ -110,9 +127,15 @@ export default function UserManagementPage(props: pageProps) {
           key={key}
           fallback={<DataTableSkeleton columnCount={5} rowCount={10} />}
         >
-          <DataTable columns={columns} data={users} totalItems={users.length} meta={{
-              onEdit: handleEdit
-            }} />
+          <DataTable 
+            columns={columns}
+            data={users} 
+            totalItems={users.length}
+            meta={{
+              onEdit: handleEdit,
+              onDelete: handleDelete
+            }} 
+          />
         </Suspense>
       </div>
       <Dialog open={open} onOpenChange={setOpen}>

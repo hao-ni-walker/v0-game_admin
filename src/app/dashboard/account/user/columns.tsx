@@ -10,6 +10,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export type User = {
   id: number
@@ -20,6 +31,10 @@ export type User = {
 }
 
 export const columns: ColumnDef<User>[] = [
+  {
+    accessorKey: "id",
+    header: "ID"
+  },
   {
     accessorKey: "username",
     header: "用户名"
@@ -47,6 +62,8 @@ export const columns: ColumnDef<User>[] = [
     id: "actions",
     cell: ({ row, table }) => {
       const user = row.original
+      const meta = table.options.meta as { onEdit?: (user: User) => void; onDelete?: (user: User) => void }
+      const { onEdit, onDelete } = meta || {}
 
       return (
         <DropdownMenu>
@@ -56,13 +73,30 @@ export const columns: ColumnDef<User>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => {
-              // @ts-ignore
-              table.options.meta?.onEdit?.(user)
-            }}>
+            <DropdownMenuItem onSelect={() => onEdit?.(user)}>
               编辑
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600">删除</DropdownMenuItem>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
+                  删除
+                </DropdownMenuItem>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>确认删除</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    确定要删除用户 "{user.username}" 吗？此操作不可撤销。
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>取消</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => onDelete?.(user)}>
+                    确认删除
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </DropdownMenuContent>
         </DropdownMenu>
       )
