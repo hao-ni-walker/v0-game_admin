@@ -60,6 +60,7 @@ export const columns: ColumnDef<User>[] = [
   },
   {
     id: "actions",
+    header: "操作",
     cell: ({ row, table }) => {
       const user = row.original
       const meta = table.options.meta as { onEdit?: (user: User) => void; onDelete?: (user: User) => void }

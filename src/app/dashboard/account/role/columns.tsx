@@ -9,16 +9,31 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export type Role = {
   id: number
   name: string
   description: string
-  permissions: string[]
   createdAt: string
+  updatedAt: string
 }
 
 export const columns: ColumnDef<Role>[] = [
+  {
+    accessorKey: "id",
+    header: "ID"
+  },
   {
     accessorKey: "name",
     header: "角色名称"
@@ -26,14 +41,6 @@ export const columns: ColumnDef<Role>[] = [
   {
     accessorKey: "description",
     header: "描述"
-  },
-  {
-    accessorKey: "permissions",
-    header: "权限",
-    cell: ({ row }) => {
-      const permissions = row.getValue("permissions") as string[]
-      return permissions.join(", ")
-    }
   },
   {
     accessorKey: "createdAt",
@@ -44,8 +51,11 @@ export const columns: ColumnDef<Role>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => {
+    header: "操作",
+    cell: ({ row, table }) => {
       const role = row.original
+      const meta = table.options.meta as { onEdit?: (role: Role) => void; onDelete?: (role: Role) => void }
+      const { onEdit, onDelete } = meta || {}
 
       return (
         <DropdownMenu>
@@ -55,8 +65,30 @@ export const columns: ColumnDef<Role>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>编辑</DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600">删除</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onEdit?.(role)}>
+              编辑
+            </DropdownMenuItem>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
+                  删除
+                </DropdownMenuItem>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>确认删除</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    确定要删除角色 "{role.name}" 吗？此操作不可撤销。
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>取消</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => onDelete?.(role)}>
+                    确认删除
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </DropdownMenuContent>
         </DropdownMenu>
       )

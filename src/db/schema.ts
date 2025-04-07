@@ -1,4 +1,5 @@
-import { mysqlTable, varchar, int, timestamp } from 'drizzle-orm/mysql-core';
+import { mysqlTable, varchar, int, timestamp, primaryKey } from 'drizzle-orm/mysql-core';
+import { relations } from 'drizzle-orm';
 
 export const users = mysqlTable('users', {
   id: int('id').primaryKey().autoincrement(),
@@ -10,3 +11,40 @@ export const users = mysqlTable('users', {
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow(),
 });
+
+export const roles = mysqlTable('roles', {
+  id: int('id').primaryKey().autoincrement(),
+  name: varchar('name', { length: 50 }).notNull(),
+  description: varchar('description', { length: 255 }),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow().onUpdateNow(),
+});
+
+// 权限表
+export const permissions = mysqlTable('permissions', {
+  id: int('id').primaryKey().autoincrement(),
+  name: varchar('name', { length: 50 }).notNull(),
+  code: varchar('code', { length: 100 }).notNull().unique(),
+  description: varchar('description', { length: 255 }),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow().onUpdateNow(),
+});
+
+// 角色-权限关联表
+export const rolePermissions = mysqlTable('role_permissions', {
+  id: int('id').primaryKey().autoincrement(),
+  roleId: int('role_id').notNull(),
+  permissionId: int('permission_id').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+}, (t) => ({
+  unq: primaryKey(t.roleId, t.permissionId),
+}));
+
+// 定义表关系
+export const rolesRelations = relations(roles, ({ many }) => ({
+  rolePermissions: many(rolePermissions)
+}));
+
+export const permissionsRelations = relations(permissions, ({ many }) => ({
+  rolePermissions: many(rolePermissions)
+}));
