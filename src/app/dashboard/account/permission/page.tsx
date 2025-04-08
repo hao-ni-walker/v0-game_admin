@@ -1,6 +1,6 @@
 'use client';
 
-import { DataTable } from '@/components/common/data-table';
+import { DataTable } from '@/components/table/data-table';
 import { columns } from './columns';
 import { Suspense, useEffect, useState } from 'react';
 import PageContainer from '@/components/layout/page-container';
@@ -9,12 +9,18 @@ import { Button } from '@/components/ui/button';
 import { Heading } from '@/components/common/heading';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { DataTableSkeleton } from '@/components/common/data-table-skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DataTableSkeleton } from '@/components/table/data-table-skeleton';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
 import { PermissionForm } from './components/permission-form';
 
 export default function PermissionManagementPage() {
   const [permissions, setPermissions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editingPermission, setEditingPermission] = useState<any>(null);
 
@@ -24,17 +30,22 @@ export default function PermissionManagementPage() {
 
   const fetchPermissions = async () => {
     try {
+      setLoading(true);
       const response = await fetch('/api/permissions');
       const data = await response.json();
       setPermissions(data);
     } catch (error) {
       toast.error('获取权限列表失败');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleCreateOrUpdatePermission = async (values: any) => {
     try {
-      const url = editingPermission ? `/api/permissions/${editingPermission.id}` : '/api/permissions';
+      const url = editingPermission
+        ? `/api/permissions/${editingPermission.id}`
+        : '/api/permissions';
       const method = editingPermission ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -85,7 +96,9 @@ export default function PermissionManagementPage() {
           </Button>
         </div>
         <Separator />
-        <Suspense fallback={<DataTableSkeleton columnCount={5} rowCount={10} />}>
+        {loading ? (
+          <DataTableSkeleton columnCount={5} rowCount={8} filterCount={2} />
+        ) : (
           <DataTable
             columns={columns}
             data={permissions}
@@ -98,13 +111,15 @@ export default function PermissionManagementPage() {
               onDelete: handleDelete
             }}
           />
-        </Suspense>
+        )}
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingPermission ? '编辑权限' : '新增权限'}</DialogTitle>
+            <DialogTitle>
+              {editingPermission ? '编辑权限' : '新增权限'}
+            </DialogTitle>
           </DialogHeader>
           <PermissionForm
             initialData={editingPermission}

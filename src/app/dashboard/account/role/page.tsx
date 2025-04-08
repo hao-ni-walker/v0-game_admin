@@ -1,6 +1,6 @@
 'use client';
 
-import { DataTable } from '@/components/common/data-table';
+import { DataTable } from '@/components/table/data-table';
 import { columns } from './columns';
 import { Suspense, useEffect, useState } from 'react';
 import PageContainer from '@/components/layout/page-container';
@@ -16,7 +16,7 @@ import { Heading } from '@/components/common/heading';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { RoleForm } from './components/role-form';
-import { DataTableSkeleton } from '@/components/common/data-table-skeleton';
+import { DataTableSkeleton } from '@/components/table/data-table-skeleton';
 import { SearchParams } from 'nuqs/server';
 import { searchParamsCache, serialize } from '@/lib/searchparams';
 import { RolePermissions } from './components/role-permissions';
@@ -27,7 +27,7 @@ type pageProps = {
 
 export default function RoleManagementPage(props: pageProps) {
   const [roles, setRoles] = useState([]);
-  const [key, setKey] = useState('');
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<any>(null);
   const [permissionOpen, setPermissionOpen] = useState(false);
@@ -35,26 +35,18 @@ export default function RoleManagementPage(props: pageProps) {
 
   useEffect(() => {
     fetchRoles();
-    initKey();
   }, []);
-
-  const initKey = async () => {
-    const searchParams = await props.searchParams;
-    // Allow nested RSCs to access the search params (in a type-safe way)
-    searchParamsCache.parse(searchParams);
-
-    // This key is used for invoke suspense if any of the search params changed (used for filters).
-    const curKey = serialize({ ...searchParams });
-    setKey(curKey);
-  };
 
   const fetchRoles = async () => {
     try {
+      setLoading(true);
       const response = await fetch('/api/roles');
       const data = await response.json();
       setRoles(data);
     } catch (error) {
       toast.error('获取角色列表失败');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -75,7 +67,7 @@ export default function RoleManagementPage(props: pageProps) {
         fetchRoles();
         setEditingRole(null);
       } else {
-        toast.error(editingRole? '更新角色失败' : '创建角色失败');
+        toast.error(editingRole ? '更新角色失败' : '创建角色失败');
       }
     } catch (error) {
       toast.error(editingRole ? '更新角色失败' : '创建角色失败');
@@ -115,10 +107,9 @@ export default function RoleManagementPage(props: pageProps) {
           </Button>
         </div>
         <Separator />
-        <Suspense
-          key={key}
-          fallback={<DataTableSkeleton columnCount={5} rowCount={10} />}
-        >
+        {loading ? (
+          <DataTableSkeleton columnCount={5} rowCount={8} filterCount={2} />
+        ) : (
           <DataTable
             columns={columns}
             data={roles}
@@ -135,7 +126,7 @@ export default function RoleManagementPage(props: pageProps) {
               }
             }}
           />
-        </Suspense>
+        )}
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
