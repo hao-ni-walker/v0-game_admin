@@ -1,6 +1,14 @@
-# NAdmin
-
-一个基于 Next.js 15 构建的现代化后台管理系统模板。
+<div align="center">
+  <img src="public/logo.png" alt="NAdmin Logo" width="80" height="80">
+  <h1>N Admin</h1>
+  <p>一个基于 Next.js 15 构建的现代化后台管理系统模板</p>
+  <p>
+    <img src="https://img.shields.io/badge/Next.js-15-black" alt="Next.js">
+    <img src="https://img.shields.io/badge/React-19-blue" alt="React">
+    <img src="https://img.shields.io/badge/TypeScript-5-blue" alt="TypeScript">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License">
+  </p>
+</div>
 
 ## 特性
 
