@@ -61,11 +61,15 @@ export default function UserManagementPage(props: pageProps) {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/users');
+      const response = await fetch('/api/users?include=roles');  // 修改 API 请求，包含角色信息
       const data = await response.json();
-      setUsers(data);
+      setUsers(data.map((user: any) => ({
+        ...user,
+        roleName: user.role?.name || '未分配'  // 添加角色名称显示
+      })));
     } catch (error) {
       console.error('获取用户列表失败:', error);
+      toast.error('获取用户列表失败');
     } finally {
       setLoading(false);
     }

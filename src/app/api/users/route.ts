@@ -1,7 +1,8 @@
 import { db } from '@/db';
-import { users } from '@/db/schema';
+import { roles, users } from '@/db/schema';
 import bcrypt from 'bcryptjs';
 import { NextResponse } from 'next/server';
+import { eq } from 'drizzle-orm';
 
 export async function GET() {
   try {
@@ -12,9 +13,14 @@ export async function GET() {
         username: users.username,
         roleId: users.roleId,
         avatar: users.avatar,
-        createdAt: users.createdAt
+        createdAt: users.createdAt,
+        role: {
+          id: roles.id,
+          name: roles.name
+        }
       })
-      .from(users);
+      .from(users)
+      .leftJoin(roles, eq(users.roleId, roles.id));
 
     return NextResponse.json(userList);
   } catch (error) {
@@ -26,6 +32,30 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { username, email, password, roleId } = body;
+
+    // 验证必填字段
+    if (!username || !email || !password) {
+      return NextResponse.json(
+        { message: '请填写所有必填字段' },
+        { status: 400 }
+      );
+    }
+
+    // 检查用户名或邮箱是否已存在
+    const existingUser = await db
+      .select()
+      .from(users)
+      .where(
+        eq(users.username, username)
+      )
+      .limit(1);
+
+    if (existingUser.length > 0) {
+      return NextResponse.json(
+        { message: '用户名已存在' },
+        { status: 400 }
+      );
+    }
 
     // 加密密码
     const saltRounds = Number(process.env.SALT_ROUNDS || 12);

@@ -26,14 +26,17 @@ export type User = {
   id: number
   email: string
   username: string
-  role: string
+  roleName: string
   createdAt: string
 }
 
-export const columns: ColumnDef<User>[] = [
+export const columns: ColumnDef<any>[] = [
   {
     accessorKey: "id",
-    header: "ID"
+    header: () => <div className="text-center">ID</div>,
+    cell: ({ row }) => {
+      return <div className="text-center">{row.getValue("id")}</div>
+    }
   },
   {
     accessorKey: "username",
@@ -44,11 +47,10 @@ export const columns: ColumnDef<User>[] = [
     header: "邮箱"
   },
   {
-    accessorKey: "role",
+    accessorKey: "roleName",
     header: "角色",
     cell: ({ row }) => {
-      const role = row.getValue("role") as string
-      return <Badge>{role}</Badge>
+      return <Badge>{row.getValue("roleName")}</Badge>
     }
   },
   {

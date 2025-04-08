@@ -10,7 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
 
 interface UserFormProps {
   initialData?: any
@@ -19,12 +20,27 @@ interface UserFormProps {
 }
 
 export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
+  const [roles, setRoles] = useState([]);
   const [formData, setFormData] = useState({
     username: initialData?.username || "",
     email: initialData?.email || "",
     password: "",
-    role: initialData?.role || "user"
+    roleId: initialData?.roleId || 0
   })
+
+  useEffect(() => {
+    // 获取角色列表
+    const fetchRoles = async () => {
+      try {
+        const response = await fetch('/api/roles');
+        const data = await response.json();
+        setRoles(data);
+      } catch (error) {
+        toast.error('获取角色列表失败');
+      }
+    };
+    fetchRoles();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -36,7 +52,7 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
   const handleRoleChange = (value: string) => {
     setFormData({
       ...formData,
-      role: value
+      roleId: value
     })
   }
 
@@ -84,13 +100,16 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
       </div>
       <div className="grid gap-2">
         <Label>角色</Label>
-        <Select onValueChange={handleRoleChange} defaultValue={formData.role}>
+        <Select onValueChange={handleRoleChange} defaultValue={formData.roleId}>
           <SelectTrigger>
             <SelectValue placeholder="选择角色" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="admin">管理员</SelectItem>
-            <SelectItem value="user">普通用户</SelectItem>
+          {roles.map((role: any) => (
+                  <SelectItem key={role.id} value={role.id}>
+                    {role.name}
+                  </SelectItem>
+                ))}
           </SelectContent>
         </Select>
       </div>

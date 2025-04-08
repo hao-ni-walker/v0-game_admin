@@ -32,7 +32,10 @@ export type Role = {
 export const columns: ColumnDef<Role>[] = [
   {
     accessorKey: "id",
-    header: "ID"
+    header: () => <div className="text-center">ID</div>,
+    cell: ({ row }) => {
+      return <div className="text-center">{row.getValue("id")}</div>
+    }
   },
   {
     accessorKey: "name",

@@ -32,7 +32,10 @@ export type Permission = {
 export const columns: ColumnDef<Permission>[] = [
   {
     accessorKey: "id",
-    header: "ID"
+    header: () => <div className="text-center">ID</div>,
+    cell: ({ row }) => {
+      return <div className="text-center">{row.getValue("id")}</div>
+    }
   },
   {
     accessorKey: "name",
