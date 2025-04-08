@@ -52,7 +52,6 @@ export default function RoleManagementPage(props: pageProps) {
     try {
       const response = await fetch('/api/roles');
       const data = await response.json();
-      console.log(data, 'data');
       setRoles(data);
     } catch (error) {
       toast.error('获取角色列表失败');
@@ -75,6 +74,8 @@ export default function RoleManagementPage(props: pageProps) {
         setOpen(false);
         fetchRoles();
         setEditingRole(null);
+      } else {
+        toast.error(editingRole? '更新角色失败' : '创建角色失败');
       }
     } catch (error) {
       toast.error(editingRole ? '更新角色失败' : '创建角色失败');
@@ -90,6 +91,8 @@ export default function RoleManagementPage(props: pageProps) {
       if (response.ok) {
         toast.success('角色删除成功');
         fetchRoles();
+      } else {
+        toast.error('删除角色失败');
       }
     } catch (error) {
       toast.error('删除角色失败');

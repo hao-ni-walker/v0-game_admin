@@ -10,7 +10,7 @@ export async function PUT(
   { params }: { params: { id: number } }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     await preventSuperAdminModification(id);
     const body = await request.json();
     const { username, email, password, roleId } = body;
@@ -43,7 +43,7 @@ export async function DELETE(
   { params }: { params: { id: number } }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     await preventSuperAdminModification(id);
     await db
       .delete(users)
