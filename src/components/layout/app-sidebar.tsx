@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import * as React from 'react';
 import {
   BookOpen,
@@ -63,7 +64,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size='lg' asChild>
               <a href='#'>
                 <div className='bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg'>
-                  <Command className='size-4' />
+                  <Image
+                    src='/logo_bg.png'
+                    alt={siteConfig.name}
+                    width={16}
+                    height={16}
+                    className='size-6'
+                  />
                 </div>
                 <div className='grid flex-1 text-left text-sm leading-tight'>
                   <span className='truncate font-semibold'>

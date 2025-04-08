@@ -13,13 +13,13 @@ export default async function Home() {
       <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Image
-            src="/next.svg"
+            src="/logo.png"
             alt="N-Admin Logo"
             width={32}
             height={32}
             className="dark:invert"
           />
-          <span className="text-lg font-bold">N-Admin</span>
+          <span className="text-lg font-bold">N Admin</span>
         </div>
         <div className="flex items-center gap-4">
           <a
