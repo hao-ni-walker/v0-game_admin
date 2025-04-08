@@ -24,7 +24,12 @@ import {
   PaginationState,
   useReactTable
 } from '@tanstack/react-table';
-import { ChevronLeftIcon, ChevronRightIcon, ChevronsRight, ChevronsLeft } from 'lucide-react';
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronsRight,
+  ChevronsLeft
+} from 'lucide-react';
 import { parseAsInteger, useQueryState } from 'nuqs';
 
 interface DataTableProps<TData, TValue> {
@@ -92,14 +97,14 @@ export function DataTable<TData, TValue>({
   return (
     <div className='flex flex-1 flex-col space-y-4'>
       <div className='relative flex flex-1'>
-        <div className='absolute bottom-0 left-0 right-0 top-0 flex overflow-scroll rounded-md border md:overflow-auto'>
+        <div className='absolute top-0 right-0 bottom-0 left-0 flex overflow-scroll rounded-md border md:overflow-auto'>
           <ScrollArea className='flex-1'>
             <Table className='relative'>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id}>
+                      <TableHead key={header.id} className='bg-muted'>
                         {header.isPlaceholder
                           ? null
                           : flexRender(
@@ -147,54 +152,18 @@ export function DataTable<TData, TValue>({
 
       <div className='flex flex-col items-center justify-end gap-2 space-x-2 py-2 sm:flex-row'>
         <div className='flex w-full items-center justify-between'>
-          <div className='flex-1 text-sm text-muted-foreground'>
-            {totalItems > 0 ? (
-              <>
-                Showing{' '}
-                {paginationState.pageIndex * paginationState.pageSize + 1} to{' '}
-                {Math.min(
-                  (paginationState.pageIndex + 1) * paginationState.pageSize,
-                  totalItems
-                )}{' '}
-                of {totalItems} entries
-              </>
-            ) : (
-              'No entries found'
-            )}
-          </div>
-          <div className='flex flex-col items-center gap-4 sm:flex-row sm:gap-6 lg:gap-8'>
-            <div className='flex items-center space-x-2'>
-              <p className='whitespace-nowrap text-sm font-medium'>
-                Rows per page
-              </p>
-              <Select
-                value={`${paginationState.pageSize}`}
-                onValueChange={(value) => {
-                  table.setPageSize(Number(value));
-                }}
-              >
-                <SelectTrigger className='h-8 w-[70px]'>
-                  <SelectValue placeholder={paginationState.pageSize} />
-                </SelectTrigger>
-                <SelectContent side='top'>
-                  {pageSizeOptions.map((pageSize) => (
-                    <SelectItem key={pageSize} value={`${pageSize}`}>
-                      {pageSize}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className='flex-1 text-sm'>
+            {totalItems > 0 ? <>共 {totalItems} 条数据</> : '暂无数据'}
           </div>
         </div>
         <div className='flex w-full items-center justify-between gap-2 sm:justify-end'>
-          <div className='flex w-[150px] items-center justify-center text-sm font-medium'>
+          <div className='flex w-[100px] items-center justify-center text-sm'>
             {totalItems > 0 ? (
               <>
-                Page {paginationState.pageIndex + 1} of {table.getPageCount()}
+                第 {paginationState.pageIndex + 1}/{table.getPageCount()} 页
               </>
             ) : (
-              'No pages'
+              '暂无页码'
             )}
           </div>
           <div className='flex items-center space-x-2'>
@@ -234,6 +203,25 @@ export function DataTable<TData, TValue>({
             >
               <ChevronsRight className='h-4 w-4' aria-hidden='true' />
             </Button>
+          </div>
+          <div className='flex items-center space-x-2'>
+            <Select
+              value={`${paginationState.pageSize}`}
+              onValueChange={(value) => {
+                table.setPageSize(Number(value));
+              }}
+            >
+              <SelectTrigger className='h-8 w-[100px]'>
+                <SelectValue placeholder={paginationState.pageSize} />
+              </SelectTrigger>
+              <SelectContent side='top'>
+                {pageSizeOptions.map((pageSize) => (
+                  <SelectItem key={pageSize} value={`${pageSize}`}>
+                    {pageSize}条/页
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
