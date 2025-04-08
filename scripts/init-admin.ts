@@ -14,7 +14,8 @@ async function initSuperAdminRole() {
   if (roleExists.length === 0) {
     const [superAdminRole] = await db.insert(roles).values({
       name: '超级管理员',
-      description: '系统超级管理员，拥有所有权限'
+      description: '系统超级管理员，拥有所有权限',
+      isSuper: true
     }).$returningId();
 
     // 初始化基础权限
@@ -69,7 +70,8 @@ async function initSuperAdminUser(roleId: number) {
       username: 'Administrator',
       password: hashedPassword,
       avatar: '/avatars/admin.jpg',
-      role: roleId.toString()
+      roleId: roleId,
+      isSuperAdmin: true,
     });
 
     console.log('超级管理员账号创建成功！');

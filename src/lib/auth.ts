@@ -6,7 +6,7 @@ export interface User {
   email: string;
   username: string;
   avatar: string;
-  role: string;
+  roleId: string;
 }
 
 export interface Session {
@@ -29,7 +29,7 @@ export async function auth(): Promise<Session | null> {
         email: verified.email,
         username: verified.username,
         avatar: verified.avatar,
-        role: verified.role,
+        roleId: verified.roleId,
       }
     };
   } catch {

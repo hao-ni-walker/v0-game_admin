@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     }
 
     const token = sign(
-      { id: user[0].id, email: user[0].email, username: user[0].username, role: user[0].role, avatar: user[0].avatar },
+      { id: user[0].id, email: user[0].email, username: user[0].username, roleId: user[0].roleId, avatar: user[0].avatar, isSurperAdmin: user[0].isSuperAdmin },
       process.env.JWT_SECRET || "secret",
       { expiresIn: "1d" }
     );
@@ -40,7 +40,6 @@ export async function POST(request: Request) {
 
     return response;
   } catch (error) {
-    console.error("登录错误:", error);
     return NextResponse.json({ message: "服务器错误" }, { status: 500 });
   }
 }

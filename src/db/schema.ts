@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, int, timestamp, primaryKey } from 'drizzle-orm/mysql-core';
+import { mysqlTable, varchar, int, timestamp, primaryKey, boolean } from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
 
 export const users = mysqlTable('users', {
@@ -7,7 +7,8 @@ export const users = mysqlTable('users', {
   username: varchar('username', { length: 50 }).notNull(),
   password: varchar('password', { length: 255 }).notNull(),
   avatar: varchar('avatar', { length: 255 }).default('/avatars/default.jpg'),
-  role: varchar('role', { length: 50 }).notNull().default('user'),
+  roleId: int('role_id').notNull(),
+  isSuperAdmin: boolean('is_super_admin').default(false),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow(),
 });
@@ -15,6 +16,7 @@ export const users = mysqlTable('users', {
 export const roles = mysqlTable('roles', {
   id: int('id').primaryKey().autoincrement(),
   name: varchar('name', { length: 50 }).notNull(),
+  isSuper: boolean('is_super').default(false),
   description: varchar('description', { length: 255 }),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow(),

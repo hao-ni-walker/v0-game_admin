@@ -20,6 +20,7 @@ CREATE TABLE `role_permissions` (
 CREATE TABLE `roles` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`name` varchar(50) NOT NULL,
+	`is_super` boolean DEFAULT false,
 	`description` varchar(255),
 	`created_at` timestamp DEFAULT (now()),
 	`updated_at` timestamp DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
@@ -32,7 +33,8 @@ CREATE TABLE `users` (
 	`username` varchar(50) NOT NULL,
 	`password` varchar(255) NOT NULL,
 	`avatar` varchar(255) DEFAULT '/avatars/default.jpg',
-	`role` varchar(50) NOT NULL DEFAULT 'user',
+	`role_id` int NOT NULL,
+	`is_super_admin` boolean DEFAULT false,
 	`created_at` timestamp DEFAULT (now()),
 	`updated_at` timestamp DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `users_id` PRIMARY KEY(`id`),

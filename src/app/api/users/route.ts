@@ -10,7 +10,7 @@ export async function GET() {
         id: users.id,
         email: users.email,
         username: users.username,
-        role: users.role,
+        roleId: users.roleId,
         avatar: users.avatar,
         createdAt: users.createdAt
       })
@@ -18,7 +18,6 @@ export async function GET() {
 
     return NextResponse.json(userList);
   } catch (error) {
-    console.error('获取用户列表失败:', error);
     return NextResponse.json({ error: '获取用户列表失败' }, { status: 500 });
   }
 }
@@ -26,7 +25,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { username, email, password, role } = body;
+    const { username, email, password, roleId } = body;
 
     // 加密密码
     const saltRounds = Number(process.env.SALT_ROUNDS || 12);
@@ -37,7 +36,7 @@ export async function POST(request: Request) {
       username,
       email,
       password: hashedPassword,
-      role,
+      roleId,
       avatar: `/avatars/default.jpg`
     });
 
