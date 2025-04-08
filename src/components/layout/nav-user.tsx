@@ -31,18 +31,20 @@ import {
 } from "@/components/ui/sidebar"
 import { getInitials } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/use-auth"
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    username: string
-    email: string
-    avatar: string
-  }
-}) {
+export function NavUser() {
   const { isMobile } = useSidebar()
   const router = useRouter()
+
+  const { session } = useAuth();
+
+  const user = {
+    username: '游客',
+    email: '未登录',
+    avatar: '/avatars/default.jpg',
+    ...session?.user
+  };
 
   const handleLogout = async () => {
     try {
@@ -102,10 +104,6 @@ export function NavUser({
               <DropdownMenuItem>
                 <BadgeCheck />
                 账号
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                通知
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

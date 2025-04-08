@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 
 import { NavMain } from '@/components/layout/nav-main';
-import { NavProjects } from '@/components/layout/nav-projects';
 import { NavSecondary } from '@/components/layout/nav-secondary';
 import { NavUser } from '@/components/layout/nav-user';
 import {
@@ -29,7 +28,6 @@ import {
   SidebarMenuItem
 } from '@/components/ui/sidebar';
 import { siteConfig } from '@/config/site';
-import { useAuth } from '@/hooks/use-auth';
 
 const data = {
   navSecondary: [
@@ -47,14 +45,6 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { session } = useAuth();
-
-  const user = {
-    username: '游客',
-    email: '未登录',
-    avatar: '/avatars/default.jpg',
-    ...session?.user
-  };
 
   return (
     <Sidebar variant='inset' {...props}>
@@ -90,7 +80,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className='mt-auto' />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );
