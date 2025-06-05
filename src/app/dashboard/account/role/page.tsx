@@ -18,8 +18,8 @@ import { toast } from 'sonner';
 import { RoleForm } from './components/role-form';
 import { DataTableSkeleton } from '@/components/table/data-table-skeleton';
 import { SearchParams } from 'nuqs/server';
-import { searchParamsCache, serialize } from '@/lib/searchparams';
 import { RolePermissions } from './components/role-permissions';
+import { DataTableToolbar } from '@/components/table/data-table-toolbar';
 
 type pageProps = {
   searchParams: Promise<SearchParams>;
@@ -110,6 +110,8 @@ export default function RoleManagementPage(props: pageProps) {
         {loading ? (
           <DataTableSkeleton columnCount={5} rowCount={8} filterCount={2} />
         ) : (
+          <>
+          <DataTableToolbar />
           <DataTable
             columns={columns}
             data={roles}
@@ -126,6 +128,7 @@ export default function RoleManagementPage(props: pageProps) {
               }
             }}
           />
+        </>
         )}
       </div>
 
