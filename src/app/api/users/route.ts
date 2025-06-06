@@ -45,16 +45,11 @@ export async function POST(request: Request) {
     const existingUser = await db
       .select()
       .from(users)
-      .where(
-        eq(users.username, username)
-      )
+      .where(eq(users.username, username))
       .limit(1);
 
     if (existingUser.length > 0) {
-      return NextResponse.json(
-        { message: '用户名已存在' },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: '用户名已存在' }, { status: 400 });
     }
 
     // 加密密码

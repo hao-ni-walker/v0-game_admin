@@ -1,9 +1,5 @@
 import { NavItem } from '@/types/nav';
-import {
-    CircleUserRound,
-  SquareTerminal,
-  Users
-} from 'lucide-react';
+import { CircleUserRound, SquareTerminal, Users } from 'lucide-react';
 
 export const navList: NavItem[] = [
   {
@@ -12,11 +8,11 @@ export const navList: NavItem[] = [
     icon: SquareTerminal,
     isActive: false,
     shortcut: ['d', 'd'],
-    items: [] 
+    items: []
   },
   {
     title: '账号管理',
-    url: '#', 
+    url: '#',
     icon: CircleUserRound,
     isActive: false,
     items: [
@@ -28,12 +24,12 @@ export const navList: NavItem[] = [
       {
         title: '角色管理',
         shortcut: ['l', 'l'],
-        url: '/dashboard/account/role',
+        url: '/dashboard/account/role'
       },
       {
         title: '权限管理',
         shortcut: ['l', 'l'],
-        url: '/dashboard/account/permission',
+        url: '/dashboard/account/permission'
       }
     ]
   }

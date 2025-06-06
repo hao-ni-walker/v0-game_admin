@@ -27,14 +27,14 @@ export async function PUT(
       updateData.password = await bcrypt.hash(password, saltRounds);
     }
 
-    await db
-      .update(users)
-      .set(updateData)
-      .where(eq(users.id, id));
+    await db.update(users).set(updateData).where(eq(users.id, id));
 
     return NextResponse.json({ message: '用户更新成功' });
   } catch (error) {
-    return NextResponse.json({ error: (error as Error)?.message || '更新用户失败' }, { status: 500 });
+    return NextResponse.json(
+      { error: (error as Error)?.message || '更新用户失败' },
+      { status: 500 }
+    );
   }
 }
 
@@ -45,12 +45,13 @@ export async function DELETE(
   try {
     const { id } = await params;
     await preventSuperAdminModification(id);
-    await db
-      .delete(users)
-      .where(eq(users.id, id));
+    await db.delete(users).where(eq(users.id, id));
 
     return NextResponse.json({ message: '用户删除成功' });
   } catch (error) {
-    return NextResponse.json({ error: (error as Error)?.message || '删除用户失败' }, { status: 500 });
+    return NextResponse.json(
+      { error: (error as Error)?.message || '删除用户失败' },
+      { status: 500 }
+    );
   }
 }

@@ -68,7 +68,8 @@ export function DataTableViewOptions<TData>({
                   }
                 >
                   <span className='truncate'>
-                    {(column.columnDef.meta as { label?: string })?.label ?? column.id}
+                    {(column.columnDef.meta as { label?: string })?.label ??
+                      column.id}
                   </span>
                   <Check
                     className={cn(

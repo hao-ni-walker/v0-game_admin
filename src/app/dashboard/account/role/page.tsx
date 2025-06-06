@@ -111,24 +111,24 @@ export default function RoleManagementPage(props: pageProps) {
           <DataTableSkeleton columnCount={5} rowCount={8} filterCount={2} />
         ) : (
           <>
-          <DataTableToolbar />
-          <DataTable
-            columns={columns}
-            data={roles}
-            totalItems={roles.length}
-            meta={{
-              onEdit: (role: any) => {
-                setEditingRole(role);
-                setOpen(true);
-              },
-              onDelete: handleDelete,
-              onAssignPermissions: (role: any) => {
-                setSelectedRole(role);
-                setPermissionOpen(true);
-              }
-            }}
-          />
-        </>
+            <DataTableToolbar />
+            <DataTable
+              columns={columns}
+              data={roles}
+              totalItems={roles.length}
+              meta={{
+                onEdit: (role: any) => {
+                  setEditingRole(role);
+                  setOpen(true);
+                },
+                onDelete: handleDelete,
+                onAssignPermissions: (role: any) => {
+                  setSelectedRole(role);
+                  setPermissionOpen(true);
+                }
+              }}
+            />
+          </>
         )}
       </div>
 

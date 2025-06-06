@@ -15,7 +15,7 @@ import Link from 'next/link';
 
 export function Breadcrumbs() {
   const items = useBreadcrumbs();
-  
+
   if (!items?.length) return null;
 
   return (
@@ -36,7 +36,7 @@ export function Breadcrumbs() {
             )}
             {index < items.length - 1 && (
               <BreadcrumbSeparator>
-                <Slash className="h-4 w-4" />
+                <Slash className='h-4 w-4' />
               </BreadcrumbSeparator>
             )}
           </Fragment>

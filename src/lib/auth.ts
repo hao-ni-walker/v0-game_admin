@@ -1,5 +1,5 @@
-import { cookies } from "next/headers";
-import { verify } from "jsonwebtoken";
+import { cookies } from 'next/headers';
+import { verify } from 'jsonwebtoken';
 
 export interface User {
   id: number;
@@ -15,21 +15,24 @@ export interface Session {
 
 export async function auth(): Promise<Session | null> {
   const cookieStore = cookies();
-  const token = (await cookieStore).get("token");
+  const token = (await cookieStore).get('token');
 
   if (!token) {
     return null;
   }
 
   try {
-    const verified = verify(token.value, process.env.JWT_SECRET || "secret") as User;
+    const verified = verify(
+      token.value,
+      process.env.JWT_SECRET || 'secret'
+    ) as User;
     return {
       user: {
         id: verified.id,
         email: verified.email,
         username: verified.username,
         avatar: verified.avatar,
-        roleId: verified.roleId,
+        roleId: verified.roleId
       }
     };
   } catch {

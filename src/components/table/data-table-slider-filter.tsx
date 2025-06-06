@@ -47,7 +47,8 @@ export function DataTableSliderFilter<TData>({
     ? (column.getFilterValue() as RangeValue)
     : undefined;
 
-  const defaultRange = (column.columnDef.meta as { range?: [number, number] })?.range;
+  const defaultRange = (column.columnDef.meta as { range?: [number, number] })
+    ?.range;
   const unit = (column.columnDef.meta as { unit?: string })?.unit;
 
   const { min, max, step } = React.useMemo<Range & { step: number }>(() => {

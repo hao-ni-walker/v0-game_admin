@@ -1,32 +1,32 @@
-"use client"
+'use client';
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { useEffect, useState } from "react"
-import { toast } from "sonner"
+  SelectValue
+} from '@/components/ui/select';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 interface UserFormProps {
-  initialData?: any
-  onSubmit: (values: any) => void
-  onCancel?: () => void
+  initialData?: any;
+  onSubmit: (values: any) => void;
+  onCancel?: () => void;
 }
 
 export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
   const [roles, setRoles] = useState([]);
   const [formData, setFormData] = useState({
-    username: initialData?.username || "",
-    email: initialData?.email || "",
-    password: "",
+    username: initialData?.username || '',
+    email: initialData?.email || '',
+    password: '',
     roleId: initialData?.roleId || 0
-  })
+  });
 
   useEffect(() => {
     // 获取角色列表
@@ -46,81 +46,81 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
-    })
-  }
+    });
+  };
 
   const handleRoleChange = (value: string) => {
     setFormData({
       ...formData,
       roleId: value
-    })
-  }
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    onSubmit(formData)
-  }
+    e.preventDefault();
+    onSubmit(formData);
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid gap-2">
-        <Label htmlFor="username">用户名</Label>
+    <form onSubmit={handleSubmit} className='space-y-4'>
+      <div className='grid gap-2'>
+        <Label htmlFor='username'>用户名</Label>
         <Input
-          id="username"
-          name="username"
+          id='username'
+          name='username'
           value={formData.username}
           onChange={handleChange}
-          placeholder="请输入用户名"
+          placeholder='请输入用户名'
           required
         />
       </div>
-      <div className="grid gap-2">
-        <Label htmlFor="email">邮箱</Label>
+      <div className='grid gap-2'>
+        <Label htmlFor='email'>邮箱</Label>
         <Input
-          id="email"
-          name="email"
-          type="email"
+          id='email'
+          name='email'
+          type='email'
           value={formData.email}
           onChange={handleChange}
-          placeholder="请输入邮箱"
+          placeholder='请输入邮箱'
           required
         />
       </div>
-      <div className="grid gap-2">
-        <Label htmlFor="password">密码</Label>
+      <div className='grid gap-2'>
+        <Label htmlFor='password'>密码</Label>
         <Input
-          id="password"
-          name="password"
-          type="password"
+          id='password'
+          name='password'
+          type='password'
           value={formData.password}
           onChange={handleChange}
-          placeholder="请输入密码"
+          placeholder='请输入密码'
           required
         />
       </div>
-      <div className="grid gap-2">
+      <div className='grid gap-2'>
         <Label>角色</Label>
         <Select onValueChange={handleRoleChange} defaultValue={formData.roleId}>
           <SelectTrigger>
-            <SelectValue placeholder="选择角色" />
+            <SelectValue placeholder='选择角色' />
           </SelectTrigger>
           <SelectContent>
-          {roles.map((role: any) => (
-                  <SelectItem key={role.id} value={role.id}>
-                    {role.name}
-                  </SelectItem>
-                ))}
+            {roles.map((role: any) => (
+              <SelectItem key={role.id} value={role.id}>
+                {role.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
-      <div className="flex gap-2 justify-end">
+      <div className='flex justify-end gap-2'>
         {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button type='button' variant='outline' onClick={onCancel}>
             取消
           </Button>
         )}
-        <Button type="submit">提交</Button>
+        <Button type='submit'>提交</Button>
       </div>
     </form>
-  )
+  );
 }

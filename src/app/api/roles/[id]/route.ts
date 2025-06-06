@@ -14,14 +14,14 @@ export async function PUT(
     const body = await request.json();
     const { name, description } = body;
 
-    await db
-      .update(roles)
-      .set({ name, description })
-      .where(eq(roles.id, id));
+    await db.update(roles).set({ name, description }).where(eq(roles.id, id));
 
     return NextResponse.json({ message: '角色更新成功' });
   } catch (error) {
-    return NextResponse.json({ error: (error as Error)?.message || '更新角色失败' }, { status: 500 });
+    return NextResponse.json(
+      { error: (error as Error)?.message || '更新角色失败' },
+      { status: 500 }
+    );
   }
 }
 
@@ -33,12 +33,13 @@ export async function DELETE(
     const { id } = await params;
     await preventSuperRoleModification(id);
 
-    await db
-      .delete(roles)
-      .where(eq(roles.id, id));
+    await db.delete(roles).where(eq(roles.id, id));
 
     return NextResponse.json({ message: '角色删除成功' });
   } catch (error) {
-    return NextResponse.json({ error: (error as Error)?.message || '删除角色失败' }, { status: 500 });
+    return NextResponse.json(
+      { error: (error as Error)?.message || '删除角色失败' },
+      { status: 500 }
+    );
   }
 }

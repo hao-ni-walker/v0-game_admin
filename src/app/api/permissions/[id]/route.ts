@@ -30,9 +30,7 @@ export async function DELETE(
   try {
     const { id } = params;
 
-    await db
-      .delete(permissions)
-      .where(eq(permissions.id, parseInt(id)));
+    await db.delete(permissions).where(eq(permissions.id, parseInt(id)));
 
     return NextResponse.json({ message: '权限删除成功' });
   } catch (error) {

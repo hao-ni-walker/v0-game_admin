@@ -4,16 +4,16 @@ export async function getGithubStats() {
       'https://api.github.com/repos/guizimo/n-admin',
       {
         headers: {
-          'Accept': 'application/vnd.github.v3+json',
+          Accept: 'application/vnd.github.v3+json'
         },
         next: { revalidate: 3600 } // 每小时重新获取一次
       }
     );
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch');
     }
-    
+
     const data = await response.json();
     return {
       stars: data.stargazers_count,

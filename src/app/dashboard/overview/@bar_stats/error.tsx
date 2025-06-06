@@ -36,7 +36,7 @@ export default function StatsError({ error, reset }: StatsErrorProps) {
       </CardHeader>
       <CardContent className='flex h-[316px] items-center justify-center p-6'>
         <div className='text-center'>
-          <p className='mb-4 text-sm text-muted-foreground'>
+          <p className='text-muted-foreground mb-4 text-sm'>
             Unable to display statistics at this time
           </p>
           <Button

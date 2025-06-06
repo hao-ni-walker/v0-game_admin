@@ -1,22 +1,22 @@
-"use client"
+'use client';
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { useState } from "react"
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useState } from 'react';
 
 interface RoleFormProps {
-  initialData?: any
-  onSubmit: (values: any) => void
-  onCancel?: () => void
+  initialData?: any;
+  onSubmit: (values: any) => void;
+  onCancel?: () => void;
 }
 
 export function RoleForm({ initialData, onSubmit, onCancel }: RoleFormProps) {
   const [formData, setFormData] = useState({
-    name: initialData?.name || "",
-    description: initialData?.description || ""
-  })
+    name: initialData?.name || '',
+    description: initialData?.description || ''
+  });
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -24,45 +24,45 @@ export function RoleForm({ initialData, onSubmit, onCancel }: RoleFormProps) {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
-    })
-  }
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    onSubmit(formData)
-  }
+    e.preventDefault();
+    onSubmit(formData);
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid gap-2">
-        <Label htmlFor="name">角色名称</Label>
+    <form onSubmit={handleSubmit} className='space-y-4'>
+      <div className='grid gap-2'>
+        <Label htmlFor='name'>角色名称</Label>
         <Input
-          id="name"
-          name="name"
+          id='name'
+          name='name'
           value={formData.name}
           onChange={handleChange}
-          placeholder="请输入角色名称"
+          placeholder='请输入角色名称'
           required
         />
       </div>
-      <div className="grid gap-2">
-        <Label htmlFor="description">描述</Label>
+      <div className='grid gap-2'>
+        <Label htmlFor='description'>描述</Label>
         <Textarea
-          id="description"
-          name="description"
+          id='description'
+          name='description'
           value={formData.description}
           onChange={handleChange}
-          placeholder="请输入角色描述"
+          placeholder='请输入角色描述'
         />
       </div>
-      <div className="flex gap-2 justify-end">
+      <div className='flex justify-end gap-2'>
         {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button type='button' variant='outline' onClick={onCancel}>
             取消
           </Button>
         )}
-        <Button type="submit">提交</Button>
+        <Button type='submit'>提交</Button>
       </div>
     </form>
-  )
+  );
 }
