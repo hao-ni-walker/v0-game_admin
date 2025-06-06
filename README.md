@@ -50,17 +50,20 @@ pnpm init:admin
 # 启动开发服务器
 pnpm dev
 ```
+
 访问 http://localhost:3000 查看应用。
 
 ### 登录系统
 
 默认管理员账号：
+
 - **邮箱：** admin@example.com
 - **密码：** Admin@123456（可在 .env 中修改）
 
 访问 http://localhost:3000/login 进行登录，登录后会自动跳转到管理后台 http://localhost:3000/dashboard
 
 ## 项目结构
+
 ```plaintext
 n-admin/
 ├── src/
@@ -88,14 +91,25 @@ n-admin/
 ## 开发命令
 
 ```bash
+# 开发相关
 pnpm dev          # 启动开发服务器
 pnpm build        # 构建生产版本
 pnpm start        # 启动生产服务器
 pnpm lint         # 运行代码检查
+pnpm format       # 代码格式化
+
+# 数据库相关
 pnpm db:generate  # 生成数据库迁移
 pnpm db:push      # 执行数据库迁移
 pnpm db:studio    # 启动数据库管理界面
 pnpm init:admin   # 初始化管理员账号
+
+# 提交和版本管理
+pnpm commit       # 交互式提交（推荐）
+pnpm release      # 自动发布版本
+pnpm release:patch # 发布补丁版本
+pnpm release:minor # 发布次要版本
+pnpm release:major # 发布主要版本
 ```
 
 ## 环境变量配置
@@ -123,11 +137,13 @@ SALT_ROUNDS=12
 本项目可以轻松部署到各种平台：
 
 ### Vercel 部署
+
 1. 连接你的 GitHub 仓库到 Vercel
 2. 配置环境变量
 3. 部署
 
 ### Docker 部署
+
 ```bash
 # 构建镜像
 docker build -t n-admin .
@@ -139,6 +155,7 @@ docker run -p 3000:3000 n-admin
 ## 技术栈
 
 ### 前端
+
 - **Next.js 15** - React 全栈框架
 - **React 19** - 用户界面库
 - **TypeScript 5** - 类型安全的 JavaScript
@@ -147,30 +164,41 @@ docker run -p 3000:3000 n-admin
 - **Radix UI** - 无样式、可访问的 UI 组件
 
 ### 后端
+
 - **Drizzle ORM** - 类型安全的 ORM
 - **MySQL** - 关系型数据库
 - **NextAuth.js** - 身份认证
 - **bcryptjs** - 密码加密
 
 ### 开发工具
+
 - **ESLint** - 代码检查
 - **Prettier** - 代码格式化
 - **pnpm** - 包管理器
+- **Commitlint** - 提交信息规范化
+- **Husky** - Git hooks 管理
+- **Standard Version** - 自动化版本管理
+
 ## 常见问题
 
 ### 1. 访问 /dashboard 时跳转到首页？
+
 这是正常的行为，因为你还没有登录。请先：
+
 1. 运行 `pnpm init:admin` 初始化管理员账号
 2. 访问 `/login` 页面进行登录
 3. 使用默认账号：admin@example.com / Admin@123456
 
 ### 2. 数据库连接失败？
+
 检查 `.env` 文件中的数据库配置是否正确，确保：
+
 - MySQL 服务已启动
 - 数据库连接信息正确
 - 数据库已创建
 
 ### 3. 如何自定义主题？
+
 项目使用 Tailwind CSS 和 CSS 变量来管理主题，你可以在 `src/app/globals.css` 中修改 CSS 变量来自定义主题颜色。
 
 ## 贡献指南
@@ -179,8 +207,29 @@ docker run -p 3000:3000 n-admin
 
 1. 代码通过 ESLint 检查：`pnpm lint`
 2. 代码格式正确：`pnpm format`
-3. 提交信息符合规范
-4. 详细描述你的更改
+3. 提交信息符合 [Conventional Commits](https://www.conventionalcommits.org/) 规范
+4. 使用 `pnpm commit` 进行交互式提交
+5. 详细描述你的更改
+
+### 提交规范
+
+我们使用 commitlint 来确保提交信息的一致性。提交格式：
+
+```
+<type>(<scope>): <subject>
+```
+
+常用类型：
+
+- `feat`: 新功能
+- `fix`: Bug 修复
+- `docs`: 文档更新
+- `style`: 代码格式
+- `refactor`: 重构
+- `test`: 测试
+- `chore`: 其他修改
+
+详细规范请查看 [提交指南](./docs/commit-guide.md)。
 
 ## 许可证
 
