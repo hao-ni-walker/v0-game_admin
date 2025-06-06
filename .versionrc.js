@@ -23,13 +23,6 @@ module.exports = {
   compareUrlFormat: 'https://github.com/guizimo/n-admin/compare/{{previousTag}}...{{currentTag}}',
   issueUrlFormat: 'https://github.com/guizimo/n-admin/issues/{{id}}',
   
-  scripts: {
-    prebump: 'echo "准备发布新版本..."',
-    postbump: 'echo "版本号已更新到 $(cat package.json | grep version | cut -d \\\" -f4)"',
-    precommit: 'echo "提交版本更新..."',
-    posttag: 'echo "标签已创建，准备推送到远程仓库"'
-  },
-  
   releaseCommitMessageFormat: 'chore(release): {{currentTag}}',
   
   bumpFiles: [
