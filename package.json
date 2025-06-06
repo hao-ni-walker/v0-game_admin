@@ -23,6 +23,8 @@
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
     "postrelease": "git push --follow-tags origin main && echo '🎉 Release complete!'"
   },
+  "author": "Guizimo",
+  "license": "MIT",
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.6",
     "@radix-ui/react-avatar": "^1.1.3",
