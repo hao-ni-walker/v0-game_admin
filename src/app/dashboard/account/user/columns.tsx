@@ -40,17 +40,30 @@ export const columns: ColumnDef<any>[] = [
   },
   {
     accessorKey: 'username',
-    header: '用户名'
+    header: '用户名',
+    meta: {
+      variant: 'text',
+      placeholder: '搜索用户名...'
+    }
   },
   {
     accessorKey: 'email',
-    header: '邮箱'
+    header: '邮箱',
+    meta: {
+      variant: 'text',
+      placeholder: '搜索邮箱...'
+    }
   },
   {
     accessorKey: 'roleName',
     header: '角色',
     cell: ({ row }) => {
       return <Badge>{row.getValue('roleName')}</Badge>;
+    },
+    meta: {
+      variant: 'select',
+      placeholder: '选择角色...',
+      options: [] // 这个会在组件中动态设置
     }
   },
   {
@@ -58,6 +71,10 @@ export const columns: ColumnDef<any>[] = [
     header: '创建时间',
     cell: ({ row }) => {
       return new Date(row.getValue('createdAt')).toLocaleString();
+    },
+    meta: {
+      variant: 'dateRange',
+      placeholder: '选择日期范围...'
     }
   },
   {

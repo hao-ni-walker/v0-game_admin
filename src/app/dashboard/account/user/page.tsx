@@ -1,8 +1,8 @@
 'use client';
 
 import { DataTable } from '@/components/table/data-table';
-import { columns } from './columns';
-import { useEffect, useState } from 'react';
+import { columns as baseColumns } from './columns';
+import React, { useEffect, useState } from 'react';
 import PageContainer from '@/components/layout/page-container';
 import {
   Dialog,
@@ -21,6 +21,14 @@ import { searchParamsCache, serialize } from '@/lib/searchparams';
 import { DataTableSkeleton } from '@/components/table/data-table-skeleton';
 import { toast } from 'sonner';
 import { UserForm } from './components/user-form';
+import { DataTableToolbar } from '@/components/table/data-table-toolbar';
+import {
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  useReactTable,
+  ColumnFiltersState
+} from '@tanstack/react-table';
 
 type pageProps = {
   searchParams: Promise<SearchParams>;
@@ -31,10 +39,43 @@ export default function UserManagementPage(props: pageProps) {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
+  const [roles, setRoles] = useState([]);
+
+  // 创建动态列定义
+  const columns = React.useMemo(() => {
+    const roleOptions = roles.map((role: any) => ({
+      label: role.name,
+      value: role.name
+    }));
+
+    return baseColumns.map((column: any) => {
+      if (column.accessorKey === 'roleName' && column.meta) {
+        return {
+          ...column,
+          meta: {
+            ...column.meta,
+            options: roleOptions
+          }
+        };
+      }
+      return column;
+    });
+  }, [roles]);
 
   useEffect(() => {
     fetchUsers();
+    fetchRoles();
   }, []);
+
+  const fetchRoles = async () => {
+    try {
+      const response = await fetch('/api/roles');
+      const data = await response.json();
+      setRoles(data);
+    } catch (error) {
+      console.error('获取角色列表失败:', error);
+    }
+  };
 
   const handleCreateOrUpdateUser = async (values: any) => {
     try {
@@ -122,7 +163,7 @@ export default function UserManagementPage(props: pageProps) {
         {loading ? (
           <DataTableSkeleton columnCount={5} rowCount={8} filterCount={2} />
         ) : (
-          <DataTable
+          <UserDataTable
             columns={columns}
             data={users}
             totalItems={users.length}
@@ -146,5 +187,38 @@ export default function UserManagementPage(props: pageProps) {
         </DialogContent>
       </Dialog>
     </PageContainer>
+  );
+}
+
+// 用户数据表格组件（集成了工具栏和筛选功能）
+function UserDataTable({ columns, data, totalItems, meta }: any) {
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      columnFilters
+    },
+    onColumnFiltersChange: setColumnFilters,
+    meta
+  });
+
+  return (
+    <div className='flex flex-1 flex-col space-y-4'>
+      <DataTableToolbar table={table} />
+      <div className='flex flex-1 flex-col'>
+        <DataTable
+          columns={columns}
+          data={data}
+          totalItems={totalItems}
+          meta={meta}
+        />
+      </div>
+    </div>
   );
 }

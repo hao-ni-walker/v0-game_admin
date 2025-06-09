@@ -10,7 +10,7 @@ import { DataTableViewOptions } from './data-table-view-options';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { Cross } from 'lucide-react';
+import { Cross2Icon } from '@radix-ui/react-icons';
 
 interface DataTableToolbarProps<TData> extends React.ComponentProps<'div'> {
   table: Table<TData>;
@@ -55,7 +55,7 @@ export function DataTableToolbar<TData>({
             className='border-dashed'
             onClick={onReset}
           >
-            <Cross />
+            <Cross2Icon />
             Reset
           </Button>
         )}
@@ -75,7 +75,7 @@ function DataTableToolbarFilter<TData>({
   column
 }: DataTableToolbarFilterProps<TData>) {
   {
-    const columnMeta = column.columnDef.meta;
+    const columnMeta: any = column.columnDef.meta;
 
     const onFilterRender = React.useCallback(() => {
       if (!columnMeta?.variant) return null;
