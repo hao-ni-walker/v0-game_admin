@@ -103,7 +103,7 @@
 
 ```bash
 # 1️⃣ 克隆项目
-git clone https://github.com/username/n-admin.git
+git clone https://github.com/guizimo/n-admin.git
 cd n-admin
 
 # 2️⃣ 安装依赖

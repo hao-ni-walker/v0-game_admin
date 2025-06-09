@@ -25,7 +25,7 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
     username: initialData?.username || '',
     email: initialData?.email || '',
     password: '',
-    roleId: initialData?.roleId || 0
+    roleId: initialData?.roleId ? String(initialData.roleId) : ''
   });
 
   useEffect(() => {
@@ -95,18 +95,22 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
           value={formData.password}
           onChange={handleChange}
           placeholder='请输入密码'
-          required
+          required={!initialData}
         />
       </div>
       <div className='grid gap-2'>
         <Label>角色</Label>
-        <Select onValueChange={handleRoleChange} defaultValue={formData.roleId}>
-          <SelectTrigger>
-            <SelectValue placeholder='选择角色' />
+        <Select
+          onValueChange={handleRoleChange}
+          value={formData.roleId}
+          required
+        >
+          <SelectTrigger className='w-full'>
+            <SelectValue placeholder='请选择角色' />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className='w-full'>
             {roles.map((role: any) => (
-              <SelectItem key={role.id} value={role.id}>
+              <SelectItem key={role.id} value={String(role.id)}>
                 {role.name}
               </SelectItem>
             ))}

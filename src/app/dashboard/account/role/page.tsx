@@ -111,7 +111,7 @@ export default function RoleManagementPage(props: pageProps) {
           <DataTableSkeleton columnCount={5} rowCount={8} filterCount={2} />
         ) : (
           <>
-            <DataTableToolbar />
+            {/* <DataTableToolbar table={} /> */}
             <DataTable
               columns={columns}
               data={roles}
