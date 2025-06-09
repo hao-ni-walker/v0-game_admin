@@ -4,6 +4,19 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/)。
 
+### [0.0.3](https://github.com/guizimo/n-admin/compare/v0.0.2...v0.0.3) (2025-06-09)
+
+
+### 🐛 Bug 修复
+
+* **用户表单:** 修复角色ID处理和选择框的必填项 ([1e4096f](https://github.com/guizimo/n-admin/commit/1e4096f52458ec5a41936829ac24b8c2cddbf815))
+
+
+### ✨ 新增功能
+
+* **权限与角色管理:** 增强API和前端筛选功能 ([d11f03a](https://github.com/guizimo/n-admin/commit/d11f03ae527f415c70ff60def373f8108f08a945))
+* **用户管理:** 更新用户管理页面，添加角色选择功能和数据表工具栏 ([008b666](https://github.com/guizimo/n-admin/commit/008b66620c538668dd45e51c7eefc87a9469ec93))
+
 ### [0.0.2](https://github.com/guizimo/n-admin/compare/v0.0.1...v0.0.2) (2025-06-09)
 
 
