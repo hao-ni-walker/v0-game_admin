@@ -2,14 +2,14 @@ import { db } from '@/db';
 import { roles, users } from '@/db/schema';
 import bcrypt from 'bcryptjs';
 import { NextResponse } from 'next/server';
-import { eq, like, and, gte, lte, or, sql } from 'drizzle-orm';
+import { eq, like, and, gte, lte, sql } from 'drizzle-orm';
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const username = searchParams.get('username');
     const email = searchParams.get('email');
-    const roleName = searchParams.get('roleName');
+    const roleId = searchParams.get('roleId');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
     const page = parseInt(searchParams.get('page') || '1');
@@ -26,8 +26,8 @@ export async function GET(request: Request) {
       conditions.push(like(users.email, `%${email}%`));
     }
 
-    if (roleName) {
-      conditions.push(like(roles.name, `%${roleName}%`));
+    if (roleId) {
+      conditions.push(eq(users.roleId, parseInt(roleId)));
     }
 
     if (startDate) {
@@ -74,10 +74,12 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       data: userList,
-      total: Number(total),
-      page,
-      limit,
-      totalPages: Math.ceil(Number(total) / limit)
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(Number(total) / limit)
+      }
     });
   } catch (error) {
     console.error('获取用户列表失败:', error);

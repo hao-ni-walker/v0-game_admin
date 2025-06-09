@@ -36,7 +36,7 @@ interface User {
   id: number;
   username: string;
   email: string;
-  roleName: string;
+  roleId: string;
   createdAt: string;
   role?: {
     id: number;
@@ -47,7 +47,7 @@ interface User {
 interface FilterParams {
   username?: string;
   email?: string;
-  roleName?: string;
+  roleId?: string;
   dateRange?: { from: Date; to: Date } | undefined;
   page?: number;
   limit?: number;
@@ -79,7 +79,7 @@ export default function UserManagementPage() {
   const [filters, setFilters] = useState<FilterParams>({
     username: '',
     email: '',
-    roleName: '',
+    roleId: '',
     dateRange: undefined,
     page: 1,
     limit: 10
@@ -95,7 +95,7 @@ export default function UserManagementPage() {
     const urlFilters: FilterParams = {
       username: searchParams.get('username') || '',
       email: searchParams.get('email') || '',
-      roleName: searchParams.get('roleName') || '',
+      roleId: searchParams.get('roleId') || '',
       dateRange: undefined, // 日期范围暂不从URL同步
       page: parseInt(searchParams.get('page') || '1'),
       limit: parseInt(searchParams.get('limit') || '10')
@@ -106,9 +106,9 @@ export default function UserManagementPage() {
   // 获取角色列表
   const fetchRoles = useCallback(async () => {
     try {
-      const response = await fetch('/api/roles');
-      const data = await response.json();
-      setRoles(data);
+      const response = await fetch('/api/roles/label');
+      const res = await response.json();
+      setRoles(res.data);
     } catch (error) {
       console.error('获取角色列表失败:', error);
     }
@@ -119,37 +119,31 @@ export default function UserManagementPage() {
     try {
       setLoading(true);
 
-      console.log('fetchUsers currentFilters:', currentFilters);
-
       const params = new URLSearchParams();
       Object.entries(currentFilters).forEach(([key, value]) => {
         if (key === 'dateRange' && value) {
           // 处理日期范围
           const dateRange = value as { from: Date; to: Date };
-          console.log('Date range:', dateRange);
           if (dateRange.from && dateRange.to) {
             const startDateStr = dateRange.from.toISOString().split('T')[0];
             const endDateStr = dateRange.to.toISOString().split('T')[0];
             params.append('startDate', startDateStr);
             params.append('endDate', endDateStr);
-            console.log('Added date params:', { startDateStr, endDateStr });
           }
         } else if (value !== undefined && value !== null && value !== '') {
           params.append(key, String(value));
         }
       });
 
-      console.log('Final API URL:', `/api/users?${params.toString()}`);
-
       const response = await fetch(`/api/users?${params.toString()}`);
       const result = await response.json();
 
       setUsers(result.data || []);
       setPagination({
-        page: result.page || 1,
-        limit: result.limit || 10,
-        total: result.total || 0,
-        totalPages: result.totalPages || 0
+        page: result.pagination?.page || 1,
+        limit: result.pagination?.limit || 10,
+        total: result.pagination?.total || 0,
+        totalPages: result.pagination?.totalPages || 0
       });
     } catch (error) {
       toast.error('获取用户列表失败');
@@ -266,7 +260,7 @@ export default function UserManagementPage() {
     updateFilters({
       username: '',
       email: '',
-      roleName: '',
+      roleId: '',
       dateRange: undefined,
       page: 1
     });
@@ -284,13 +278,13 @@ export default function UserManagementPage() {
       width: 'w-80'
     },
     {
-      key: 'roleName',
+      key: 'roleId',
       type: 'select',
       label: '角色',
       placeholder: '全部角色',
       options: roles.map((role) => ({
         label: role.name,
-        value: role.name
+        value: String(role.id)
       })),
       width: 'w-40'
     },

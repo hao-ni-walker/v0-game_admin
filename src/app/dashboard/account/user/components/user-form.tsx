@@ -32,9 +32,9 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
     // 获取角色列表
     const fetchRoles = async () => {
       try {
-        const response = await fetch('/api/roles');
-        const data = await response.json();
-        setRoles(data);
+        const response = await fetch('/api/roles/label');
+        const res = await response.json();
+        setRoles(res.data);
       } catch (error) {
         toast.error('获取角色列表失败');
       }

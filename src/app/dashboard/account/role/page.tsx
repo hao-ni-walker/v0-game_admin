@@ -101,12 +101,12 @@ export default function RoleManagementPage() {
       const result = await response.json();
 
       setRoles(result.data || result || []);
-      if (result.total !== undefined) {
+      if (result.pagination) {
         setPagination({
-          page: result.page || 1,
-          limit: result.limit || 10,
-          total: result.total || 0,
-          totalPages: result.totalPages || 0
+          page: result.pagination.page || 1,
+          limit: result.pagination.limit || 10,
+          total: result.pagination.total || 0,
+          totalPages: result.pagination.totalPages || 0
         });
       } else {
         // 如果API没有返回分页信息，手动计算
