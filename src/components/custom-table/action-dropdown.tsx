@@ -62,7 +62,6 @@ export function ActionDropdown({
             className={action.className}
             disabled={action.disabled}
           >
-            {action.icon}
             {action.label}
           </DropdownMenuItem>
         ))}

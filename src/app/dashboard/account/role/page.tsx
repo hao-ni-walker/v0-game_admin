@@ -211,7 +211,7 @@ export default function RoleManagementPage() {
     {
       key: 'id',
       title: 'ID',
-      className: 'w-[80px] font-mono text-sm text-muted-foreground'
+      className: 'text-center w-[60px] font-mono text-sm text-muted-foreground'
     },
     {
       key: 'name',
@@ -242,7 +242,7 @@ export default function RoleManagementPage() {
     {
       key: 'actions',
       title: '操作',
-      className: 'text-right w-[100px]',
+      className: 'text-center w-[100px]',
       render: (value: any, record: Role) => {
         const actions: ActionItem[] = [
           {

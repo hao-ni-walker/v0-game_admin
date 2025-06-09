@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback, useTransition } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Plus, Edit } from 'lucide-react';
@@ -308,7 +308,7 @@ export default function UserManagementPage() {
     {
       key: 'id',
       title: 'ID',
-      className: 'w-[80px] font-mono text-sm text-muted-foreground'
+      className: 'text-center w-[60px] font-mono text-sm text-muted-foreground'
     },
     {
       key: 'username',
@@ -339,7 +339,7 @@ export default function UserManagementPage() {
     {
       key: 'actions',
       title: '操作',
-      className: 'text-right w-[100px]',
+      className: 'text-center w-[100px]',
       render: (value: any, record: User) => {
         const actions: ActionItem[] = [
           {

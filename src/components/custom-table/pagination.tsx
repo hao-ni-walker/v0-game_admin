@@ -35,8 +35,8 @@ export function Pagination({
   const { page, limit, total, totalPages } = pagination;
 
   return (
-    <div className='mt-4 flex items-center justify-between border-t pt-4'>
-      <div className='text-muted-foreground text-sm'>{total} 条记录总计</div>
+    <div className='mt-4 flex items-center justify-between'>
+      <div className='text-muted-foreground text-sm'>总计 {total} 条记录</div>
       <div className='flex items-center gap-6'>
         {showPageSizeSelector && (
           <div className='flex items-center gap-2'>
@@ -45,7 +45,7 @@ export function Pagination({
               value={String(limit)}
               onValueChange={(value) => onPageSizeChange(parseInt(value))}
             >
-              <SelectTrigger className='h-8 w-16'>
+              <SelectTrigger className='h-8 w-[80px]'>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
