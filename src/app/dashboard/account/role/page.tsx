@@ -1,80 +1,166 @@
 'use client';
 
-import { DataTable } from '@/components/table/data-table';
-import { columns } from './columns';
-import { Suspense, useEffect, useState } from 'react';
-import PageContainer from '@/components/layout/page-container';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle
-} from '@/components/ui/dialog';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Heading } from '@/components/common/heading';
-import { Separator } from '@/components/ui/separator';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { RoleForm } from './components/role-form';
-import { DataTableSkeleton } from '@/components/table/data-table-skeleton';
-import { SearchParams } from 'nuqs/server';
-import { RolePermissions } from './components/role-permissions';
-import { DataTableToolbar } from '@/components/table/data-table-toolbar';
+import { Plus, Edit, Users } from 'lucide-react';
 
-type pageProps = {
-  searchParams: Promise<SearchParams>;
-};
+// 表格相关组件
+import {
+  SearchFilter,
+  DataTable,
+  Pagination,
+  ActionDropdown,
+  PageHeader,
+  formatDateTime,
+  hasActiveFilters as checkActiveFilters,
+  type ActionItem,
+  type DeleteAction,
+  type FilterField
+} from '@/components/custom-table';
+import { Badge } from '@/components/ui/badge';
 
-export default function RoleManagementPage(props: pageProps) {
-  const [roles, setRoles] = useState([]);
+import PageContainer from '@/components/layout/page-container';
+
+interface Role {
+  id: number;
+  name: string;
+  description: string;
+  createdAt: string;
+  userCount?: number;
+}
+
+interface FilterParams {
+  name?: string;
+  dateRange?: { from: Date; to: Date } | undefined;
+  page?: number;
+  limit?: number;
+}
+
+interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export default function RoleManagementPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState(false);
-  const [editingRole, setEditingRole] = useState<any>(null);
-  const [permissionOpen, setPermissionOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<any>(null);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0
+  });
 
+  const [filters, setFilters] = useState<FilterParams>({
+    name: '',
+    dateRange: undefined,
+    page: 1,
+    limit: 10
+  });
+
+  // 从URL初始化筛选条件
   useEffect(() => {
-    fetchRoles();
-  }, []);
+    const urlFilters: FilterParams = {
+      name: searchParams.get('name') || '',
+      dateRange: undefined, // 日期范围暂不从URL同步
+      page: parseInt(searchParams.get('page') || '1'),
+      limit: parseInt(searchParams.get('limit') || '10')
+    };
+    setFilters(urlFilters);
+  }, [searchParams]);
 
-  const fetchRoles = async () => {
+  // 获取角色列表
+  const fetchRoles = useCallback(async (currentFilters: FilterParams) => {
     try {
       setLoading(true);
-      const response = await fetch('/api/roles');
-      const data = await response.json();
-      setRoles(data);
+
+      const params = new URLSearchParams();
+      Object.entries(currentFilters).forEach(([key, value]) => {
+        if (key === 'dateRange' && value) {
+          // 处理日期范围
+          const dateRange = value as { from: Date; to: Date };
+          if (dateRange.from && dateRange.to) {
+            params.append(
+              'startDate',
+              dateRange.from.toISOString().split('T')[0]
+            );
+            params.append('endDate', dateRange.to.toISOString().split('T')[0]);
+          }
+        } else if (value !== undefined && value !== null && value !== '') {
+          params.append(key, String(value));
+        }
+      });
+
+      const response = await fetch(`/api/roles?${params.toString()}`);
+      const result = await response.json();
+
+      setRoles(result.data || result || []);
+      if (result.total !== undefined) {
+        setPagination({
+          page: result.page || 1,
+          limit: result.limit || 10,
+          total: result.total || 0,
+          totalPages: result.totalPages || 0
+        });
+      } else {
+        // 如果API没有返回分页信息，手动计算
+        const total = result.length || 0;
+        setPagination({
+          page: 1,
+          limit: total,
+          total,
+          totalPages: 1
+        });
+      }
     } catch (error) {
       toast.error('获取角色列表失败');
+      setRoles([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleCreateOrUpdateRole = async (values: any) => {
-    try {
-      const url = editingRole ? `/api/roles/${editingRole.id}` : '/api/roles';
-      const method = editingRole ? 'PUT' : 'POST';
+  // 更新筛选条件
+  const updateFilters = useCallback(
+    (newFilters: Partial<FilterParams>) => {
+      const updatedFilters = { ...filters, ...newFilters };
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values)
+      if (
+        Object.keys(newFilters).some((key) => !['page', 'limit'].includes(key))
+      ) {
+        updatedFilters.page = 1;
+      }
+
+      setFilters(updatedFilters);
+
+      const params = new URLSearchParams();
+      Object.entries(updatedFilters).forEach(([key, value]) => {
+        if (key === 'dateRange') {
+          // 日期范围不同步到URL，避免复杂性
+          return;
+        }
+        if (value !== undefined && value !== null && value !== '') {
+          params.set(key, String(value));
+        }
       });
 
-      if (response.ok) {
-        toast.success(editingRole ? '角色更新成功' : '角色创建成功');
-        setOpen(false);
-        fetchRoles();
-        setEditingRole(null);
-      } else {
-        toast.error(editingRole ? '更新角色失败' : '创建角色失败');
-      }
-    } catch (error) {
-      toast.error(editingRole ? '更新角色失败' : '创建角色失败');
-    }
-  };
+      router.push(`?${params.toString()}`);
+      fetchRoles(updatedFilters);
+    },
+    [filters, router, fetchRoles]
+  );
 
-  const handleDelete = async (role: any) => {
+  useEffect(() => {
+    fetchRoles(filters);
+  }, [fetchRoles]);
+
+  const handleDeleteRole = async (role: Role) => {
     try {
       const response = await fetch(`/api/roles/${role.id}`, {
         method: 'DELETE'
@@ -82,82 +168,145 @@ export default function RoleManagementPage(props: pageProps) {
 
       if (response.ok) {
         toast.success('角色删除成功');
-        fetchRoles();
+        fetchRoles(filters);
       } else {
-        toast.error('删除角色失败');
+        const error = await response.json();
+        toast.error(error.message || '删除角色失败');
       }
     } catch (error) {
       toast.error('删除角色失败');
     }
   };
 
+  const clearFilters = () => {
+    updateFilters({
+      name: '',
+      dateRange: undefined,
+      page: 1
+    });
+  };
+
+  const hasActiveFilters = checkActiveFilters(filters);
+
+  // 定义筛选字段
+  const filterFields: FilterField[] = [
+    {
+      key: 'name',
+      type: 'text',
+      label: '角色名称',
+      placeholder: '搜索角色名称...',
+      width: 'w-80'
+    },
+    {
+      key: 'dateRange',
+      type: 'dateRange',
+      label: '创建时间',
+      placeholder: '选择时间范围',
+      width: 'w-60'
+    }
+  ];
+
+  // 定义表格列
+  const columns = [
+    {
+      key: 'id',
+      title: 'ID',
+      className: 'w-[80px] font-mono text-sm text-muted-foreground'
+    },
+    {
+      key: 'name',
+      title: '角色名称',
+      className: 'font-medium'
+    },
+    {
+      key: 'description',
+      title: '描述',
+      className: 'text-muted-foreground'
+    },
+    {
+      key: 'userCount',
+      title: '用户数量',
+      render: (value: number) => (
+        <Badge variant='outline' className='flex w-fit items-center gap-1'>
+          <Users className='h-3 w-3' />
+          {value || 0}
+        </Badge>
+      )
+    },
+    {
+      key: 'createdAt',
+      title: '创建时间',
+      className: 'text-muted-foreground',
+      render: (value: string) => formatDateTime(value)
+    },
+    {
+      key: 'actions',
+      title: '操作',
+      className: 'text-right w-[100px]',
+      render: (value: any, record: Role) => {
+        const actions: ActionItem[] = [
+          {
+            key: 'edit',
+            label: '编辑',
+            icon: <Edit className='mr-2 h-4 w-4' />,
+            onClick: () => {
+              // TODO: 实现编辑功能
+              toast.info('编辑功能待实现');
+            }
+          }
+        ];
+
+        const deleteAction: DeleteAction = {
+          description: `确定要删除角色 "${record.name}" 吗？此操作不可撤销。`,
+          onConfirm: () => handleDeleteRole(record)
+        };
+
+        return <ActionDropdown actions={actions} deleteAction={deleteAction} />;
+      }
+    }
+  ];
+
   return (
     <PageContainer scrollable={false}>
-      <div className='flex flex-1 flex-col space-y-4'>
-        <div className='flex items-start justify-between'>
-          <Heading title='角色管理' description='管理系统角色' />
-          <Button
-            onClick={() => {
-              setEditingRole(null);
-              setOpen(true);
-            }}
-          >
-            <Plus className='mr-2 h-4 w-4' />
-            新增角色
-          </Button>
-        </div>
-        <Separator />
-        {loading ? (
-          <DataTableSkeleton columnCount={5} rowCount={8} filterCount={2} />
-        ) : (
-          <>
-            {/* <DataTableToolbar table={} /> */}
-            <DataTable
-              columns={columns}
-              data={roles}
-              totalItems={roles.length}
-              meta={{
-                onEdit: (role: any) => {
-                  setEditingRole(role);
-                  setOpen(true);
-                },
-                onDelete: handleDelete,
-                onAssignPermissions: (role: any) => {
-                  setSelectedRole(role);
-                  setPermissionOpen(true);
-                }
-              }}
-            />
-          </>
-        )}
-      </div>
+      <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-6'>
+        {/* 页面头部 */}
+        <PageHeader
+          title='角色管理'
+          description='管理系统角色和权限'
+          action={{
+            label: '新增角色',
+            onClick: () => toast.info('新增角色功能待实现'),
+            icon: <Plus className='mr-2 h-4 w-4' />
+          }}
+        />
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editingRole ? '编辑角色' : '新增角色'}</DialogTitle>
-          </DialogHeader>
-          <RoleForm
-            initialData={editingRole}
-            onSubmit={handleCreateOrUpdateRole}
-            onCancel={() => setOpen(false)}
+        {/* 搜索和筛选 */}
+        <SearchFilter
+          fields={filterFields}
+          values={filters}
+          onValuesChange={updateFilters}
+          debounceDelay={500}
+        />
+
+        {/* 数据表格 */}
+        <div className='flex min-h-0 flex-1 flex-col'>
+          <DataTable
+            columns={columns}
+            data={roles}
+            loading={loading}
+            emptyText='暂无角色数据'
+            rowKey='id'
           />
-        </DialogContent>
-      </Dialog>
 
-      <Dialog open={permissionOpen} onOpenChange={setPermissionOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>分配权限 - {selectedRole?.name}</DialogTitle>
-          </DialogHeader>
-          {selectedRole && (
-            <RolePermissions
-              roleId={selectedRole.id}
-              onClose={() => setPermissionOpen(false)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+          {/* 分页控件 */}
+          <Pagination
+            pagination={pagination}
+            onPageChange={(page) => updateFilters({ page })}
+            onPageSizeChange={(limit) => updateFilters({ limit, page: 1 })}
+            pageSizeOptions={[10, 20, 30, 50]}
+          />
+        </div>
+      </div>
     </PageContainer>
   );
 }

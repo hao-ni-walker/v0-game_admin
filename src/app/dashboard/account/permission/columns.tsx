@@ -39,21 +39,37 @@ export const columns: ColumnDef<Permission>[] = [
   },
   {
     accessorKey: 'name',
-    header: '权限名称'
+    header: '权限名称',
+    meta: {
+      variant: 'text',
+      placeholder: '搜索权限名称...'
+    }
   },
   {
     accessorKey: 'code',
-    header: '权限标识'
+    header: '权限标识',
+    meta: {
+      variant: 'text',
+      placeholder: '搜索权限标识...'
+    }
   },
   {
     accessorKey: 'description',
-    header: '描述'
+    header: '描述',
+    meta: {
+      variant: 'text',
+      placeholder: '搜索描述...'
+    }
   },
   {
     accessorKey: 'createdAt',
     header: '创建时间',
     cell: ({ row }) => {
       return new Date(row.getValue('createdAt')).toLocaleString();
+    },
+    meta: {
+      variant: 'dateRange',
+      placeholder: '选择日期范围...'
     }
   },
   {

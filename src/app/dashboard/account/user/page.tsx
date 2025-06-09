@@ -1,73 +1,110 @@
 'use client';
 
-import { DataTable } from '@/components/table/data-table';
-import { columns as baseColumns } from './columns';
-import React, { useEffect, useState } from 'react';
-import PageContainer from '@/components/layout/page-container';
+import React, { useEffect, useState, useCallback, useTransition } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { Plus, Edit } from 'lucide-react';
+
+// shadcn/ui components
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog';
-import { Plus } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { Heading } from '@/components/common/heading';
-import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
-import { Suspense } from 'react';
-import { SearchParams } from 'nuqs/server';
-import { searchParamsCache, serialize } from '@/lib/searchparams';
-import { DataTableSkeleton } from '@/components/table/data-table-skeleton';
-import { toast } from 'sonner';
-import { UserForm } from './components/user-form';
-import { DataTableToolbar } from '@/components/table/data-table-toolbar';
+import { Badge } from '@/components/ui/badge';
+
+// 表格相关组件
 import {
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  useReactTable,
-  ColumnFiltersState
-} from '@tanstack/react-table';
+  SearchFilter,
+  DataTable,
+  Pagination,
+  ActionDropdown,
+  PageHeader,
+  formatDateTime,
+  hasActiveFilters as checkActiveFilters,
+  type ActionItem,
+  type DeleteAction,
+  type FilterField
+} from '@/components/custom-table';
 
-type pageProps = {
-  searchParams: Promise<SearchParams>;
-};
+import { UserForm } from './components/user-form';
+import PageContainer from '@/components/layout/page-container';
 
-export default function UserManagementPage(props: pageProps) {
-  const [users, setUsers] = useState([]);
+// 类型定义
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  roleName: string;
+  createdAt: string;
+  role?: {
+    id: number;
+    name: string;
+  };
+}
+
+interface FilterParams {
+  username?: string;
+  email?: string;
+  roleName?: string;
+  dateRange?: { from: Date; to: Date } | undefined;
+  page?: number;
+  limit?: number;
+}
+
+interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export default function UserManagementPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // 状态管理
+  const [users, setUsers] = useState<User[]>([]);
+  const [roles, setRoles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<any>(null);
-  const [roles, setRoles] = useState([]);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0
+  });
 
-  // 创建动态列定义
-  const columns = React.useMemo(() => {
-    const roleOptions = roles.map((role: any) => ({
-      label: role.name,
-      value: role.name
-    }));
+  // 筛选状态
+  const [filters, setFilters] = useState<FilterParams>({
+    username: '',
+    email: '',
+    roleName: '',
+    dateRange: undefined,
+    page: 1,
+    limit: 10
+  });
 
-    return baseColumns.map((column: any) => {
-      if (column.accessorKey === 'roleName' && column.meta) {
-        return {
-          ...column,
-          meta: {
-            ...column.meta,
-            options: roleOptions
-          }
-        };
-      }
-      return column;
-    });
-  }, [roles]);
+  // 弹窗状态
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
 
+  // 从URL初始化筛选条件
   useEffect(() => {
-    fetchUsers();
-    fetchRoles();
-  }, []);
+    const urlFilters: FilterParams = {
+      username: searchParams.get('username') || '',
+      email: searchParams.get('email') || '',
+      roleName: searchParams.get('roleName') || '',
+      dateRange: undefined, // 日期范围暂不从URL同步
+      page: parseInt(searchParams.get('page') || '1'),
+      limit: parseInt(searchParams.get('limit') || '10')
+    };
+    setFilters(urlFilters);
+  }, [searchParams]);
 
-  const fetchRoles = async () => {
+  // 获取角色列表
+  const fetchRoles = useCallback(async () => {
     try {
       const response = await fetch('/api/roles');
       const data = await response.json();
@@ -75,58 +112,139 @@ export default function UserManagementPage(props: pageProps) {
     } catch (error) {
       console.error('获取角色列表失败:', error);
     }
-  };
+  }, []);
 
-  const handleCreateOrUpdateUser = async (values: any) => {
+  // 获取用户列表
+  const fetchUsers = useCallback(async (currentFilters: FilterParams) => {
     try {
-      const url = editingUser ? `/api/users/${editingUser.id}` : '/api/users';
-      const method = editingUser ? 'PUT' : 'POST';
+      setLoading(true);
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json'
-        },
+      console.log('fetchUsers currentFilters:', currentFilters);
+
+      const params = new URLSearchParams();
+      Object.entries(currentFilters).forEach(([key, value]) => {
+        if (key === 'dateRange' && value) {
+          // 处理日期范围
+          const dateRange = value as { from: Date; to: Date };
+          console.log('Date range:', dateRange);
+          if (dateRange.from && dateRange.to) {
+            const startDateStr = dateRange.from.toISOString().split('T')[0];
+            const endDateStr = dateRange.to.toISOString().split('T')[0];
+            params.append('startDate', startDateStr);
+            params.append('endDate', endDateStr);
+            console.log('Added date params:', { startDateStr, endDateStr });
+          }
+        } else if (value !== undefined && value !== null && value !== '') {
+          params.append(key, String(value));
+        }
+      });
+
+      console.log('Final API URL:', `/api/users?${params.toString()}`);
+
+      const response = await fetch(`/api/users?${params.toString()}`);
+      const result = await response.json();
+
+      setUsers(result.data || []);
+      setPagination({
+        page: result.page || 1,
+        limit: result.limit || 10,
+        total: result.total || 0,
+        totalPages: result.totalPages || 0
+      });
+    } catch (error) {
+      toast.error('获取用户列表失败');
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // 更新URL和获取数据
+  const updateFilters = useCallback(
+    (newFilters: Partial<FilterParams>) => {
+      const updatedFilters = { ...filters, ...newFilters };
+
+      // 如果是筛选条件变化，重置到第一页
+      if (
+        Object.keys(newFilters).some((key) => !['page', 'limit'].includes(key))
+      ) {
+        updatedFilters.page = 1;
+      }
+
+      setFilters(updatedFilters);
+
+      // 更新URL
+      const params = new URLSearchParams();
+      Object.entries(updatedFilters).forEach(([key, value]) => {
+        if (key === 'dateRange') {
+          // 日期范围不同步到URL，避免复杂性
+          return;
+        }
+        if (value !== undefined && value !== null && value !== '') {
+          params.set(key, String(value));
+        }
+      });
+
+      router.push(`?${params.toString()}`);
+
+      // 获取数据
+      fetchUsers(updatedFilters);
+    },
+    [filters, router, fetchUsers]
+  );
+
+  // 初始化
+  useEffect(() => {
+    fetchRoles();
+    fetchUsers(filters);
+  }, [fetchRoles, fetchUsers]);
+
+  const handleCreateUser = async (values: any) => {
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values)
       });
 
       if (response.ok) {
-        toast.success(editingUser ? '用户更新成功' : '用户创建成功');
-        setOpen(false);
-        fetchUsers();
-        setEditingUser(null);
+        toast.success('用户创建成功');
+        setCreateDialogOpen(false);
+        fetchUsers(filters);
       } else {
-        toast.error(editingUser ? '更新用户失败' : '创建用户失败');
+        const error = await response.json();
+        toast.error(error.message || '创建用户失败');
       }
     } catch (error) {
-      toast.error(editingUser ? '更新用户失败' : '创建用户失败');
+      toast.error('创建用户失败');
     }
   };
 
-  const fetchUsers = async () => {
+  const handleUpdateUser = async (values: any) => {
+    if (!editingUser) return;
+
     try {
-      setLoading(true);
-      const response = await fetch('/api/users'); // 修改 API 请求，包含角色信息
-      const data = await response.json();
-      setUsers(
-        data.map((user: any) => ({
-          ...user,
-          roleName: user.role?.name || '未分配' // 添加角色名称显示
-        }))
-      );
+      const response = await fetch(`/api/users/${editingUser.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values)
+      });
+
+      if (response.ok) {
+        toast.success('用户更新成功');
+        setEditDialogOpen(false);
+        setEditingUser(null);
+        fetchUsers(filters);
+      } else {
+        const error = await response.json();
+        toast.error(error.message || '更新用户失败');
+      }
     } catch (error) {
-      toast.error('获取用户列表失败');
-    } finally {
-      setLoading(false);
+      toast.error('更新用户失败');
     }
   };
 
-  const handleEdit = (user: any) => {
-    setEditingUser(user);
-    setOpen(true);
-  };
-
-  const handleDelete = async (user: any) => {
+  const handleDeleteUser = async (user: User) => {
     try {
       const response = await fetch(`/api/users/${user.id}`, {
         method: 'DELETE'
@@ -134,91 +252,190 @@ export default function UserManagementPage(props: pageProps) {
 
       if (response.ok) {
         toast.success('用户删除成功');
-        fetchUsers();
+        fetchUsers(filters);
       } else {
-        toast.error('删除用户失败');
+        const error = await response.json();
+        toast.error(error.message || '删除用户失败');
       }
     } catch (error) {
       toast.error('删除用户失败');
     }
   };
 
+  const clearFilters = () => {
+    updateFilters({
+      username: '',
+      email: '',
+      roleName: '',
+      dateRange: undefined,
+      page: 1
+    });
+  };
+
+  const hasActiveFilters = checkActiveFilters(filters);
+
+  // 定义筛选字段
+  const filterFields: FilterField[] = [
+    {
+      key: 'username',
+      type: 'text',
+      label: '用户名',
+      placeholder: '搜索用户名...',
+      width: 'w-80'
+    },
+    {
+      key: 'roleName',
+      type: 'select',
+      label: '角色',
+      placeholder: '全部角色',
+      options: roles.map((role) => ({
+        label: role.name,
+        value: role.name
+      })),
+      width: 'w-40'
+    },
+    {
+      key: 'dateRange',
+      type: 'dateRange',
+      label: '创建时间',
+      placeholder: '选择时间范围',
+      width: 'w-60'
+    }
+  ];
+
+  // 定义表格列
+  const columns = [
+    {
+      key: 'id',
+      title: 'ID',
+      className: 'w-[80px] font-mono text-sm text-muted-foreground'
+    },
+    {
+      key: 'username',
+      title: '用户名',
+      className: 'font-medium'
+    },
+    {
+      key: 'email',
+      title: '邮箱',
+      className: 'text-muted-foreground'
+    },
+    {
+      key: 'role',
+      title: '角色',
+      render: (value: any, record: User) =>
+        record.role?.name ? (
+          <Badge variant='secondary'>{record.role.name}</Badge>
+        ) : (
+          <span className='text-muted-foreground'>未分配</span>
+        )
+    },
+    {
+      key: 'createdAt',
+      title: '创建时间',
+      className: 'text-muted-foreground',
+      render: (value: string) => formatDateTime(value)
+    },
+    {
+      key: 'actions',
+      title: '操作',
+      className: 'text-right w-[100px]',
+      render: (value: any, record: User) => {
+        const actions: ActionItem[] = [
+          {
+            key: 'edit',
+            label: '编辑',
+            icon: <Edit className='mr-2 h-4 w-4' />,
+            onClick: () => {
+              setEditingUser(record);
+              setEditDialogOpen(true);
+            }
+          }
+        ];
+
+        const deleteAction: DeleteAction = {
+          description: `确定要删除用户 "${record.username}" 吗？此操作不可撤销。`,
+          onConfirm: () => handleDeleteUser(record)
+        };
+
+        return <ActionDropdown actions={actions} deleteAction={deleteAction} />;
+      }
+    }
+  ];
+
   return (
     <PageContainer scrollable={false}>
-      <div className='flex flex-1 flex-col space-y-4'>
-        <div className='flex items-start justify-between'>
-          <Heading title='用户管理' description='管理所有用户' />
-          <Button
-            onClick={() => {
-              setEditingUser(null);
-              setOpen(true);
-            }}
-            className={cn(buttonVariants(), 'text-xs md:text-sm')}
-          >
-            <Plus className='mr-2 h-4 w-4' />
-            新增用户
-          </Button>
-        </div>
-        <Separator />
-        {loading ? (
-          <DataTableSkeleton columnCount={5} rowCount={8} filterCount={2} />
-        ) : (
-          <UserDataTable
+      <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-6'>
+        {/* 页面头部 */}
+        <PageHeader
+          title='用户管理'
+          description='管理系统用户账户和权限'
+          action={{
+            label: '新增用户',
+            onClick: () => setCreateDialogOpen(true),
+            icon: <Plus className='mr-2 h-4 w-4' />
+          }}
+        />
+
+        {/* 搜索和筛选 */}
+        <SearchFilter
+          fields={filterFields}
+          values={filters}
+          onValuesChange={updateFilters}
+          debounceDelay={500}
+        />
+
+        {/* 数据表格 */}
+        <div className='flex min-h-0 flex-1 flex-col'>
+          <DataTable
             columns={columns}
             data={users}
-            totalItems={users.length}
-            meta={{
-              onEdit: handleEdit,
-              onDelete: handleDelete
-            }}
+            loading={loading}
+            emptyText='暂无用户数据'
+            rowKey='id'
           />
-        )}
+
+          {/* 分页控件 */}
+          <Pagination
+            pagination={pagination}
+            onPageChange={(page) => updateFilters({ page })}
+            onPageSizeChange={(limit) => updateFilters({ limit, page: 1 })}
+            pageSizeOptions={[10, 20, 30, 50, 100]}
+          />
+        </div>
+
+        {/* 新增用户弹窗 */}
+        <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>新增用户</DialogTitle>
+            </DialogHeader>
+            <UserForm
+              onSubmit={handleCreateUser}
+              onCancel={() => setCreateDialogOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
+
+        {/* 编辑用户弹窗 */}
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>编辑用户</DialogTitle>
+            </DialogHeader>
+            {editingUser && (
+              <UserForm
+                initialData={editingUser}
+                onSubmit={handleUpdateUser}
+                onCancel={() => {
+                  setEditDialogOpen(false);
+                  setEditingUser(null);
+                }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editingUser ? '编辑用户' : '新增用户'}</DialogTitle>
-          </DialogHeader>
-          <UserForm
-            initialData={editingUser}
-            onSubmit={handleCreateOrUpdateUser}
-            onCancel={() => setOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
     </PageContainer>
-  );
-}
-
-// 用户数据表格组件（集成了工具栏和筛选功能）
-function UserDataTable({ columns, data, totalItems, meta }: any) {
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      columnFilters
-    },
-    onColumnFiltersChange: setColumnFilters,
-    meta
-  });
-
-  return (
-    <div className='flex flex-1 flex-col space-y-4'>
-      <DataTableToolbar table={table} />
-      <div className='flex flex-1 flex-col'>
-        <DataTable
-          columns={columns}
-          data={data}
-          totalItems={totalItems}
-          meta={meta}
-        />
-      </div>
-    </div>
   );
 }

@@ -39,17 +39,29 @@ export const columns: ColumnDef<Role>[] = [
   },
   {
     accessorKey: 'name',
-    header: '角色名称'
+    header: '角色名称',
+    meta: {
+      variant: 'text',
+      placeholder: '搜索角色名称...'
+    }
   },
   {
     accessorKey: 'description',
-    header: '描述'
+    header: '描述',
+    meta: {
+      variant: 'text',
+      placeholder: '搜索描述...'
+    }
   },
   {
     accessorKey: 'createdAt',
     header: '创建时间',
     cell: ({ row }) => {
       return new Date(row.getValue('createdAt')).toLocaleString();
+    },
+    meta: {
+      variant: 'dateRange',
+      placeholder: '选择日期范围...'
     }
   },
   {
