@@ -4,6 +4,16 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/)。
 
+### [0.0.4](https://github.com/guizimo/n-admin/compare/v0.0.3...v0.0.4) (2025-06-10)
+
+
+### ✨ 新增功能
+
+* **代码优化:** 更新 ESLint 配置和多个页面的依赖项 ([9a54fed](https://github.com/guizimo/n-admin/commit/9a54fed3dce291036b74bca7ee36fff1f38e8c3a))
+* **权限与角色管理:** 更新权限结构和角色管理功能 ([26d8a22](https://github.com/guizimo/n-admin/commit/26d8a2270ba3eb87d689886ece5dc3920ec085df))
+* **权限与角色管理:** 增强API的分页和筛选功能 ([ebcc9fb](https://github.com/guizimo/n-admin/commit/ebcc9fbfb4d7304894080c41ce945502ff744ffd))
+* **权限与角色:** 删除角色和用户管理页面的列定义文件，更新相关页面的样式和布局，优化操作按钮的对齐方式。 ([8bc1d93](https://github.com/guizimo/n-admin/commit/8bc1d937ab2f9b29bb0748177c78d84d334dff85))
+
 ### [0.0.3](https://github.com/guizimo/n-admin/compare/v0.0.2...v0.0.3) (2025-06-09)
 
 
