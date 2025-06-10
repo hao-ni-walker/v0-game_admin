@@ -35,6 +35,8 @@ export const permissions = mysqlTable('permissions', {
   name: varchar('name', { length: 50 }).notNull(),
   code: varchar('code', { length: 100 }).notNull().unique(),
   description: varchar('description', { length: 255 }),
+  parentId: int('parent_id'), // 父权限ID，null表示顶级权限
+  sortOrder: int('sort_order').default(0), // 排序字段
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow()
 });
@@ -58,6 +60,11 @@ export const rolesRelations = relations(roles, ({ many }) => ({
   rolePermissions: many(rolePermissions)
 }));
 
-export const permissionsRelations = relations(permissions, ({ many }) => ({
-  rolePermissions: many(rolePermissions)
+export const permissionsRelations = relations(permissions, ({ many, one }) => ({
+  rolePermissions: many(rolePermissions),
+  parent: one(permissions, {
+    fields: [permissions.parentId],
+    references: [permissions.id]
+  }),
+  children: many(permissions, { relationName: 'parent_child' })
 }));

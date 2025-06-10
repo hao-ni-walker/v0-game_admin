@@ -1,7 +1,7 @@
 import { db } from '@/db';
-import { roles } from '@/db/schema';
+import { roles, users } from '@/db/schema';
 import { NextResponse } from 'next/server';
-import { like, and, gte, lte, count } from 'drizzle-orm';
+import { like, and, gte, lte, count, eq, sql } from 'drizzle-orm';
 
 export async function GET(request: Request) {
   try {
@@ -43,16 +43,25 @@ export async function GET(request: Request) {
 
     const total = totalResult.count;
 
-    // 获取分页数据
+    // 获取分页数据（包含用户数量）
     const baseQuery = db
       .select({
         id: roles.id,
         name: roles.name,
         description: roles.description,
         createdAt: roles.createdAt,
-        updatedAt: roles.updatedAt
+        updatedAt: roles.updatedAt,
+        userCount: sql<number>`count(${users.id})`.as('userCount')
       })
-      .from(roles);
+      .from(roles)
+      .leftJoin(users, eq(roles.id, users.roleId))
+      .groupBy(
+        roles.id,
+        roles.name,
+        roles.description,
+        roles.createdAt,
+        roles.updatedAt
+      );
 
     const query = whereClause ? baseQuery.where(whereClause) : baseQuery;
 

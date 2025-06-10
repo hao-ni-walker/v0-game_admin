@@ -3,7 +3,18 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Plus, Edit, Users } from 'lucide-react';
+import { Plus, Edit, Users, Settings } from 'lucide-react';
+
+// 组件导入
+import {
+  RoleFormDialog,
+  PermissionAssignDialog,
+  useRoleManagement,
+  type Role,
+  type Permission,
+  type FilterParams,
+  type PaginationInfo
+} from './components';
 
 // 表格相关组件
 import {
@@ -21,28 +32,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 
 import PageContainer from '@/components/layout/page-container';
-
-interface Role {
-  id: number;
-  name: string;
-  description: string;
-  createdAt: string;
-  userCount?: number;
-}
-
-interface FilterParams {
-  name?: string;
-  dateRange?: { from: Date; to: Date } | undefined;
-  page?: number;
-  limit?: number;
-}
-
-interface PaginationInfo {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-}
 
 export default function RoleManagementPage() {
   const searchParams = useSearchParams();
@@ -63,6 +52,9 @@ export default function RoleManagementPage() {
     page: 1,
     limit: 10
   });
+
+  // 使用自定义 Hook 管理角色相关状态
+  const roleManagement = useRoleManagement();
 
   // 从URL初始化筛选条件
   useEffect(() => {
@@ -160,24 +152,6 @@ export default function RoleManagementPage() {
     fetchRoles(filters);
   }, [fetchRoles]);
 
-  const handleDeleteRole = async (role: Role) => {
-    try {
-      const response = await fetch(`/api/roles/${role.id}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        toast.success('角色删除成功');
-        fetchRoles(filters);
-      } else {
-        const error = await response.json();
-        toast.error(error.message || '删除角色失败');
-      }
-    } catch (error) {
-      toast.error('删除角色失败');
-    }
-  };
-
   const clearFilters = () => {
     updateFilters({
       name: '',
@@ -249,16 +223,20 @@ export default function RoleManagementPage() {
             key: 'edit',
             label: '编辑',
             icon: <Edit className='mr-2 h-4 w-4' />,
-            onClick: () => {
-              // TODO: 实现编辑功能
-              toast.info('编辑功能待实现');
-            }
+            onClick: () => roleManagement.openEditDialog(record)
+          },
+          {
+            key: 'permissions',
+            label: '权限分配',
+            icon: <Settings className='mr-2 h-4 w-4' />,
+            onClick: () => roleManagement.openPermissionDialog(record)
           }
         ];
 
         const deleteAction: DeleteAction = {
           description: `确定要删除角色 "${record.name}" 吗？此操作不可撤销。`,
-          onConfirm: () => handleDeleteRole(record)
+          onConfirm: () =>
+            roleManagement.handleDeleteRole(record, () => fetchRoles(filters))
         };
 
         return <ActionDropdown actions={actions} deleteAction={deleteAction} />;
@@ -275,7 +253,7 @@ export default function RoleManagementPage() {
           description='管理系统角色和权限'
           action={{
             label: '新增角色',
-            onClick: () => toast.info('新增角色功能待实现'),
+            onClick: roleManagement.openCreateDialog,
             icon: <Plus className='mr-2 h-4 w-4' />
           }}
         />
@@ -306,6 +284,46 @@ export default function RoleManagementPage() {
             pageSizeOptions={[10, 20, 30, 50]}
           />
         </div>
+
+        {/* 新增/编辑角色弹窗 */}
+        <RoleFormDialog
+          open={roleManagement.createDialogOpen}
+          onOpenChange={roleManagement.setCreateDialogOpen}
+          mode='create'
+          formData={roleManagement.formData}
+          onFormDataChange={roleManagement.setFormData}
+          onSubmit={() =>
+            roleManagement.handleCreateRole(() => fetchRoles(filters))
+          }
+          loading={roleManagement.formLoading}
+        />
+
+        <RoleFormDialog
+          open={roleManagement.editDialogOpen}
+          onOpenChange={roleManagement.setEditDialogOpen}
+          mode='edit'
+          role={roleManagement.editingRole}
+          formData={roleManagement.formData}
+          onFormDataChange={roleManagement.setFormData}
+          onSubmit={() =>
+            roleManagement.handleEditRole(() => fetchRoles(filters))
+          }
+          loading={roleManagement.formLoading}
+        />
+
+        {/* 权限分配弹窗 */}
+        <PermissionAssignDialog
+          open={roleManagement.permissionDialogOpen}
+          onOpenChange={roleManagement.setPermissionDialogOpen}
+          role={roleManagement.editingRole}
+          permissions={roleManagement.allPermissions}
+          selectedPermissions={roleManagement.rolePermissions}
+          onPermissionsChange={roleManagement.setRolePermissions}
+          onSave={() =>
+            roleManagement.handleSavePermissions(() => fetchRoles(filters))
+          }
+          loading={roleManagement.formLoading}
+        />
       </div>
     </PageContainer>
   );

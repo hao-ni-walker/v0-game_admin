@@ -60,6 +60,8 @@ export async function GET(request: Request) {
         name: permissions.name,
         code: permissions.code,
         description: permissions.description,
+        parentId: permissions.parentId,
+        sortOrder: permissions.sortOrder,
         createdAt: permissions.createdAt,
         updatedAt: permissions.updatedAt
       })
