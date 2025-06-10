@@ -4,6 +4,14 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/)。
 
+### [0.0.5](https://github.com/guizimo/n-admin/compare/v0.0.4...v0.0.5) (2025-06-10)
+
+
+### ✨ 新增功能
+
+* **代码优化:** 更新布局组件和API参数处理 ([c458399](https://github.com/guizimo/n-admin/commit/c4583996f7c3367d1b097ee3660e75eff106aa43))
+* **权限管理:** 引入权限守卫并优化页面结构 ([3fe959e](https://github.com/guizimo/n-admin/commit/3fe959e25d73c42e21273d4b375efb1bcbc47fc3))
+
 ### [0.0.4](https://github.com/guizimo/n-admin/compare/v0.0.3...v0.0.4) (2025-06-10)
 
 
