@@ -4,6 +4,15 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/)。
 
+### [0.0.7](https://github.com/guizimo/n-admin/compare/v0.0.6...v0.0.7) (2025-06-10)
+
+
+### ✨ 新增功能
+
+* **导航组件:** 增强导航菜单的激活状态管理 ([3452cae](https://github.com/guizimo/n-admin/commit/3452cae67f749a0da9b7c13b7ccb2f738f51c242))
+* **依赖管理:** 更新依赖项并添加日志功能 ([a2b46b6](https://github.com/guizimo/n-admin/commit/a2b46b64fa5f936f1a3d6a2cbc07370b6afce084))
+* **仪表盘:** 删除过时的统计组件和相关错误处理 ([514b950](https://github.com/guizimo/n-admin/commit/514b950c527447c8b7f03211f76d742c2f79c93f))
+
 ### [0.0.6](https://github.com/guizimo/n-admin/compare/v0.0.5...v0.0.6) (2025-06-10)
 
 
