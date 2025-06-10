@@ -4,6 +4,13 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/)。
 
+### [0.0.6](https://github.com/guizimo/n-admin/compare/v0.0.5...v0.0.6) (2025-06-10)
+
+
+### ✨ 新增功能
+
+* **发布流程:** 更新发布脚本以创建更完整的发布包 ([a04b3a1](https://github.com/guizimo/n-admin/commit/a04b3a1ec592669935ccd59ca4d53cbb449d28bf))
+
 ### [0.0.5](https://github.com/guizimo/n-admin/compare/v0.0.4...v0.0.5) (2025-06-10)
 
 
