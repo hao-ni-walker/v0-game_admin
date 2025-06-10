@@ -7,10 +7,11 @@ import { preventSuperAdminModification } from '@/lib/super-admin';
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: number } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { id: idStr } = await params;
+    const id = parseInt(idStr);
     await preventSuperAdminModification(id);
     const body = await request.json();
     const { username, email, password, roleId } = body;
@@ -40,10 +41,11 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: number } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { id: idStr } = await params;
+    const id = parseInt(idStr);
     await preventSuperAdminModification(id);
     await db.delete(users).where(eq(users.id, id));
 

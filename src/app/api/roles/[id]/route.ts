@@ -6,10 +6,11 @@ import { NextResponse } from 'next/server';
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: number } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { id: idStr } = await params;
+    const id = parseInt(idStr);
     await preventSuperRoleModification(id);
     const body = await request.json();
     const { name, description } = body;
@@ -27,10 +28,11 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: number } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { id: idStr } = await params;
+    const id = parseInt(idStr);
     await preventSuperRoleModification(id);
 
     await db.delete(roles).where(eq(roles.id, id));

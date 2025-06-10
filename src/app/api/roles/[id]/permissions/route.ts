@@ -6,10 +6,10 @@ import { NextResponse } from 'next/server';
 // 获取角色的权限列表
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const rolePermissionList = await db
       .select({
@@ -32,10 +32,10 @@ export async function GET(
 // 更新角色的权限
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const { permissionIds } = await request.json();
     const roleId = parseInt(id);
 
