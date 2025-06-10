@@ -187,7 +187,7 @@ export default function PermissionManagementPage() {
   // 初始化
   useEffect(() => {
     fetchPermissions(filters);
-  }, [fetchPermissions]);
+  }, [fetchPermissions, filters]);
 
   const handleCreatePermission = async (values: any) => {
     try {

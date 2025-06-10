@@ -191,7 +191,7 @@ export default function UserManagementPage() {
   useEffect(() => {
     fetchRoles();
     fetchUsers(filters);
-  }, [fetchRoles, fetchUsers]);
+  }, [fetchRoles, fetchUsers, filters]);
 
   const handleCreateUser = async (values: any) => {
     try {

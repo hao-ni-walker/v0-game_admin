@@ -11,7 +11,6 @@ import {
   PermissionAssignDialog,
   useRoleManagement,
   type Role,
-  type Permission,
   type FilterParams,
   type PaginationInfo
 } from './components';
@@ -110,7 +109,7 @@ export default function RoleManagementPage() {
           totalPages: 1
         });
       }
-    } catch (error) {
+    } catch {
       toast.error('获取角色列表失败');
       setRoles([]);
     } finally {
@@ -150,17 +149,7 @@ export default function RoleManagementPage() {
 
   useEffect(() => {
     fetchRoles(filters);
-  }, [fetchRoles]);
-
-  const clearFilters = () => {
-    updateFilters({
-      name: '',
-      dateRange: undefined,
-      page: 1
-    });
-  };
-
-  const hasActiveFilters = checkActiveFilters(filters);
+  }, [fetchRoles, filters]);
 
   // 定义筛选字段
   const filterFields: FilterField[] = [
@@ -217,7 +206,7 @@ export default function RoleManagementPage() {
       key: 'actions',
       title: '操作',
       className: 'text-center w-[100px]',
-      render: (value: any, record: Role) => {
+      render: (value: unknown, record: Role) => {
         const actions: ActionItem[] = [
           {
             key: 'edit',

@@ -1,5 +1,5 @@
 import { NavItem } from '@/types/nav';
-import { CircleUserRound, SquareTerminal, Users } from 'lucide-react';
+import { CircleUserRound, SquareTerminal } from 'lucide-react';
 
 export const navList: NavItem[] = [
   {

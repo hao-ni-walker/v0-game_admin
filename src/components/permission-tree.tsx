@@ -174,6 +174,17 @@ function PermissionTreeItem({
 }) {
   const isSelected = selectedIds.includes(permission.id);
 
+  // 获取所有后代权限ID
+  const getAllDescendantIds = useCallback((perm: Permission): number[] => {
+    let ids = [perm.id];
+    if (perm.children) {
+      perm.children.forEach((child) => {
+        ids = ids.concat(getAllDescendantIds(child));
+      });
+    }
+    return ids;
+  }, []);
+
   // 计算是否为半选状态（部分子项被选中）
   const getIndeterminateState = useCallback(
     (perm: Permission): boolean => {
@@ -193,19 +204,8 @@ function PermissionTreeItem({
 
       return hasSelectedChildren && !allChildrenSelected;
     },
-    [selectedIds]
+    [selectedIds, getAllDescendantIds]
   );
-
-  // 获取所有后代权限ID
-  const getAllDescendantIds = useCallback((perm: Permission): number[] => {
-    let ids = [perm.id];
-    if (perm.children) {
-      perm.children.forEach((child) => {
-        ids = ids.concat(getAllDescendantIds(child));
-      });
-    }
-    return ids;
-  }, []);
 
   const isIndeterminate = getIndeterminateState(permission);
 

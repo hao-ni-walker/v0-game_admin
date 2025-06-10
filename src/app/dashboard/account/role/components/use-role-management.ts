@@ -69,7 +69,7 @@ export function useRoleManagement() {
           const error = await response.json();
           toast.error(error.message || '创建角色失败');
         }
-      } catch (error) {
+      } catch {
         toast.error('创建角色失败');
       } finally {
         setFormLoading(false);
@@ -104,7 +104,7 @@ export function useRoleManagement() {
           const error = await response.json();
           toast.error(error.message || '更新角色失败');
         }
-      } catch (error) {
+      } catch {
         toast.error('更新角色失败');
       } finally {
         setFormLoading(false);
@@ -146,7 +146,7 @@ export function useRoleManagement() {
           const error = await response.json();
           toast.error(error.message || '权限分配失败');
         }
-      } catch (error) {
+      } catch {
         toast.error('权限分配失败');
       } finally {
         setFormLoading(false);
@@ -170,7 +170,7 @@ export function useRoleManagement() {
           const error = await response.json();
           toast.error(error.message || '删除角色失败');
         }
-      } catch (error) {
+      } catch {
         toast.error('删除角色失败');
       }
     },

@@ -2,18 +2,7 @@
 
 import Image from 'next/image';
 import * as React from 'react';
-import {
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  LifeBuoy,
-  Map,
-  PieChart,
-  Send,
-  Settings2,
-  SquareTerminal
-} from 'lucide-react';
+import { LifeBuoy, Send } from 'lucide-react';
 
 import { NavMain } from '@/components/layout/nav-main';
 import { NavSecondary } from '@/components/layout/nav-secondary';

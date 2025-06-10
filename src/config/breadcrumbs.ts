@@ -39,7 +39,7 @@ export const getBreadcrumbs = (pathname: string): BreadcrumbItem[] => {
   addedPaths.add('/dashboard/overview');
 
   let currentPath = '';
-  paths.forEach((path, index) => {
+  paths.forEach((path) => {
     currentPath += `/${path}`;
 
     const matchedNav = findNavItem(navList, currentPath);
