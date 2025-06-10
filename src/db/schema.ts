@@ -56,7 +56,15 @@ export const rolePermissions = mysqlTable(
 );
 
 // 定义表关系
+export const usersRelations = relations(users, ({ one }) => ({
+  role: one(roles, {
+    fields: [users.roleId],
+    references: [roles.id]
+  })
+}));
+
 export const rolesRelations = relations(roles, ({ many }) => ({
+  users: many(users),
   rolePermissions: many(rolePermissions)
 }));
 
@@ -68,3 +76,17 @@ export const permissionsRelations = relations(permissions, ({ many, one }) => ({
   }),
   children: many(permissions, { relationName: 'parent_child' })
 }));
+
+export const rolePermissionsRelations = relations(
+  rolePermissions,
+  ({ one }) => ({
+    role: one(roles, {
+      fields: [rolePermissions.roleId],
+      references: [roles.id]
+    }),
+    permission: one(permissions, {
+      fields: [rolePermissions.permissionId],
+      references: [permissions.id]
+    })
+  })
+);

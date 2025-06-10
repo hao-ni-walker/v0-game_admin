@@ -4,6 +4,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Plus, Edit } from 'lucide-react';
+import { PermissionGuard } from '@/components/auth/permission-guard';
+import { PERMISSIONS } from '@/lib/permissions';
 
 // shadcn/ui components
 import {
@@ -355,78 +357,80 @@ export default function PermissionManagementPage() {
   ];
 
   return (
-    <PageContainer scrollable={false}>
-      <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-6'>
-        {/* 页面头部 */}
-        <PageHeader
-          title='权限管理'
-          description='管理系统权限和访问控制'
-          action={{
-            label: '新增权限',
-            onClick: () => setCreateDialogOpen(true),
-            icon: <Plus className='mr-2 h-4 w-4' />
-          }}
-        />
-
-        {/* 搜索和筛选 */}
-        <SearchFilter
-          fields={filterFields}
-          values={filters}
-          onValuesChange={updateFilters}
-          debounceDelay={500}
-        />
-
-        {/* 数据表格 */}
-        <div className='flex min-h-0 flex-1 flex-col'>
-          <DataTable
-            columns={columns}
-            data={permissions}
-            loading={loading}
-            emptyText='暂无权限数据'
-            rowKey='id'
+    <PermissionGuard permissions={PERMISSIONS.PERMISSION.READ}>
+      <PageContainer scrollable={false}>
+        <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-6'>
+          {/* 页面头部 */}
+          <PageHeader
+            title='权限管理'
+            description='管理系统权限和访问控制'
+            action={{
+              label: '新增权限',
+              onClick: () => setCreateDialogOpen(true),
+              icon: <Plus className='mr-2 h-4 w-4' />
+            }}
           />
 
-          {/* 分页控件 */}
-          <Pagination
-            pagination={pagination}
-            onPageChange={(page) => updateFilters({ page })}
-            onPageSizeChange={(limit) => updateFilters({ limit, page: 1 })}
-            pageSizeOptions={[10, 20, 30, 50, 100]}
+          {/* 搜索和筛选 */}
+          <SearchFilter
+            fields={filterFields}
+            values={filters}
+            onValuesChange={updateFilters}
+            debounceDelay={500}
           />
-        </div>
 
-        {/* 新增权限弹窗 */}
-        <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>新增权限</DialogTitle>
-            </DialogHeader>
-            <PermissionForm
-              onSubmit={handleCreatePermission}
-              onCancel={() => setCreateDialogOpen(false)}
+          {/* 数据表格 */}
+          <div className='flex min-h-0 flex-1 flex-col'>
+            <DataTable
+              columns={columns}
+              data={permissions}
+              loading={loading}
+              emptyText='暂无权限数据'
+              rowKey='id'
             />
-          </DialogContent>
-        </Dialog>
 
-        {/* 编辑权限弹窗 */}
-        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>编辑权限</DialogTitle>
-            </DialogHeader>
-            {editingPermission && (
+            {/* 分页控件 */}
+            <Pagination
+              pagination={pagination}
+              onPageChange={(page) => updateFilters({ page })}
+              onPageSizeChange={(limit) => updateFilters({ limit, page: 1 })}
+              pageSizeOptions={[10, 20, 30, 50, 100]}
+            />
+          </div>
+
+          {/* 新增权限弹窗 */}
+          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>新增权限</DialogTitle>
+              </DialogHeader>
               <PermissionForm
-                initialData={editingPermission}
-                onSubmit={handleUpdatePermission}
-                onCancel={() => {
-                  setEditDialogOpen(false);
-                  setEditingPermission(null);
-                }}
+                onSubmit={handleCreatePermission}
+                onCancel={() => setCreateDialogOpen(false)}
               />
-            )}
-          </DialogContent>
-        </Dialog>
-      </div>
-    </PageContainer>
+            </DialogContent>
+          </Dialog>
+
+          {/* 编辑权限弹窗 */}
+          <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>编辑权限</DialogTitle>
+              </DialogHeader>
+              {editingPermission && (
+                <PermissionForm
+                  initialData={editingPermission}
+                  onSubmit={handleUpdatePermission}
+                  onCancel={() => {
+                    setEditDialogOpen(false);
+                    setEditingPermission(null);
+                  }}
+                />
+              )}
+            </DialogContent>
+          </Dialog>
+        </div>
+      </PageContainer>
+    </PermissionGuard>
   );
 }

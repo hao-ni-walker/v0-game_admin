@@ -4,7 +4,7 @@ import Image from 'next/image';
 import * as React from 'react';
 import { LifeBuoy, Send } from 'lucide-react';
 
-import { NavMain } from '@/components/layout/nav-main';
+import { NavMainWithPermission } from '@/components/layout/nav-main-with-permission';
 import { NavSecondary } from '@/components/layout/nav-secondary';
 import { NavUser } from '@/components/layout/nav-user';
 import {
@@ -64,7 +64,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain />
+        <NavMainWithPermission />
         <NavSecondary items={data.navSecondary} className='mt-auto' />
       </SidebarContent>
       <SidebarFooter>

@@ -4,6 +4,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Plus, Edit, Users, Settings } from 'lucide-react';
+import { PermissionGuard } from '@/components/auth/permission-guard';
+import { PERMISSIONS } from '@/lib/permissions';
 
 // 组件导入
 import {
@@ -234,86 +236,88 @@ export default function RoleManagementPage() {
   ];
 
   return (
-    <PageContainer scrollable={false}>
-      <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-6'>
-        {/* 页面头部 */}
-        <PageHeader
-          title='角色管理'
-          description='管理系统角色和权限'
-          action={{
-            label: '新增角色',
-            onClick: roleManagement.openCreateDialog,
-            icon: <Plus className='mr-2 h-4 w-4' />
-          }}
-        />
-
-        {/* 搜索和筛选 */}
-        <SearchFilter
-          fields={filterFields}
-          values={filters}
-          onValuesChange={updateFilters}
-          debounceDelay={500}
-        />
-
-        {/* 数据表格 */}
-        <div className='flex min-h-0 flex-1 flex-col'>
-          <DataTable
-            columns={columns}
-            data={roles}
-            loading={loading}
-            emptyText='暂无角色数据'
-            rowKey='id'
+    <PermissionGuard permissions={PERMISSIONS.ROLE.READ}>
+      <PageContainer scrollable={false}>
+        <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-6'>
+          {/* 页面头部 */}
+          <PageHeader
+            title='角色管理'
+            description='管理系统角色和权限'
+            action={{
+              label: '新增角色',
+              onClick: roleManagement.openCreateDialog,
+              icon: <Plus className='mr-2 h-4 w-4' />
+            }}
           />
 
-          {/* 分页控件 */}
-          <Pagination
-            pagination={pagination}
-            onPageChange={(page) => updateFilters({ page })}
-            onPageSizeChange={(limit) => updateFilters({ limit, page: 1 })}
-            pageSizeOptions={[10, 20, 30, 50]}
+          {/* 搜索和筛选 */}
+          <SearchFilter
+            fields={filterFields}
+            values={filters}
+            onValuesChange={updateFilters}
+            debounceDelay={500}
+          />
+
+          {/* 数据表格 */}
+          <div className='flex min-h-0 flex-1 flex-col'>
+            <DataTable
+              columns={columns}
+              data={roles}
+              loading={loading}
+              emptyText='暂无角色数据'
+              rowKey='id'
+            />
+
+            {/* 分页控件 */}
+            <Pagination
+              pagination={pagination}
+              onPageChange={(page) => updateFilters({ page })}
+              onPageSizeChange={(limit) => updateFilters({ limit, page: 1 })}
+              pageSizeOptions={[10, 20, 30, 50]}
+            />
+          </div>
+
+          {/* 新增/编辑角色弹窗 */}
+          <RoleFormDialog
+            open={roleManagement.createDialogOpen}
+            onOpenChange={roleManagement.setCreateDialogOpen}
+            mode='create'
+            formData={roleManagement.formData}
+            onFormDataChange={roleManagement.setFormData}
+            onSubmit={() =>
+              roleManagement.handleCreateRole(() => fetchRoles(filters))
+            }
+            loading={roleManagement.formLoading}
+          />
+
+          <RoleFormDialog
+            open={roleManagement.editDialogOpen}
+            onOpenChange={roleManagement.setEditDialogOpen}
+            mode='edit'
+            role={roleManagement.editingRole}
+            formData={roleManagement.formData}
+            onFormDataChange={roleManagement.setFormData}
+            onSubmit={() =>
+              roleManagement.handleEditRole(() => fetchRoles(filters))
+            }
+            loading={roleManagement.formLoading}
+          />
+
+          {/* 权限分配弹窗 */}
+          <PermissionAssignDialog
+            open={roleManagement.permissionDialogOpen}
+            onOpenChange={roleManagement.setPermissionDialogOpen}
+            role={roleManagement.editingRole}
+            permissions={roleManagement.allPermissions}
+            selectedPermissions={roleManagement.rolePermissions}
+            onPermissionsChange={roleManagement.setRolePermissions}
+            onSave={() =>
+              roleManagement.handleSavePermissions(() => fetchRoles(filters))
+            }
+            loading={roleManagement.formLoading}
           />
         </div>
-
-        {/* 新增/编辑角色弹窗 */}
-        <RoleFormDialog
-          open={roleManagement.createDialogOpen}
-          onOpenChange={roleManagement.setCreateDialogOpen}
-          mode='create'
-          formData={roleManagement.formData}
-          onFormDataChange={roleManagement.setFormData}
-          onSubmit={() =>
-            roleManagement.handleCreateRole(() => fetchRoles(filters))
-          }
-          loading={roleManagement.formLoading}
-        />
-
-        <RoleFormDialog
-          open={roleManagement.editDialogOpen}
-          onOpenChange={roleManagement.setEditDialogOpen}
-          mode='edit'
-          role={roleManagement.editingRole}
-          formData={roleManagement.formData}
-          onFormDataChange={roleManagement.setFormData}
-          onSubmit={() =>
-            roleManagement.handleEditRole(() => fetchRoles(filters))
-          }
-          loading={roleManagement.formLoading}
-        />
-
-        {/* 权限分配弹窗 */}
-        <PermissionAssignDialog
-          open={roleManagement.permissionDialogOpen}
-          onOpenChange={roleManagement.setPermissionDialogOpen}
-          role={roleManagement.editingRole}
-          permissions={roleManagement.allPermissions}
-          selectedPermissions={roleManagement.rolePermissions}
-          onPermissionsChange={roleManagement.setRolePermissions}
-          onSave={() =>
-            roleManagement.handleSavePermissions(() => fetchRoles(filters))
-          }
-          loading={roleManagement.formLoading}
-        />
-      </div>
-    </PageContainer>
+      </PageContainer>
+    </PermissionGuard>
   );
 }
