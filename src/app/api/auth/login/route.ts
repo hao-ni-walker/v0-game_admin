@@ -4,6 +4,7 @@ import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
+import { Logger } from '@/lib/logger';
 
 export async function POST(request: Request) {
   try {
@@ -16,11 +17,29 @@ export async function POST(request: Request) {
       .limit(1);
 
     if (!user.length) {
+      // 记录登录失败日志 - 用户不存在
+      const logger = new Logger('用户认证');
+      await logger.warn('用户登录', '登录失败：用户不存在', {
+        reason: '用户不存在',
+        email: email,
+        timestamp: new Date().toISOString()
+      });
+
       return NextResponse.json({ message: '邮箱或密码错误' }, { status: 401 });
     }
 
     const isValid = await bcrypt.compare(password, user[0].password);
     if (!isValid) {
+      // 记录登录失败日志 - 密码错误
+      const logger = new Logger('用户认证', user[0].id);
+      await logger.warn('用户登录', '登录失败：密码错误', {
+        reason: '密码错误',
+        email: email,
+        userId: user[0].id,
+        username: user[0].username,
+        timestamp: new Date().toISOString()
+      });
+
       return NextResponse.json({ message: '邮箱或密码错误' }, { status: 401 });
     }
 
@@ -37,6 +56,17 @@ export async function POST(request: Request) {
       { expiresIn: '1d' }
     );
 
+    // 记录登录成功日志
+    const logger = new Logger('用户认证', user[0].id);
+    await logger.info('用户登录', '用户登录成功', {
+      userId: user[0].id,
+      username: user[0].username,
+      email: user[0].email,
+      roleId: user[0].roleId,
+      loginTime: new Date().toISOString(),
+      tokenExpiry: '24小时'
+    });
+
     const response = NextResponse.json(
       { message: '登录成功', user: { id: user[0].id, email: user[0].email } },
       { status: 200 }
@@ -51,6 +81,14 @@ export async function POST(request: Request) {
 
     return response;
   } catch (error) {
+    // 记录服务器错误日志
+    const logger = new Logger('用户认证');
+    await logger.error('用户登录', '登录过程发生服务器错误', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString()
+    });
+
     return NextResponse.json({ message: '服务器错误' }, { status: 500 });
   }
 }

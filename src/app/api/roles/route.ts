@@ -2,6 +2,8 @@ import { db } from '@/db';
 import { roles, users } from '@/db/schema';
 import { NextResponse } from 'next/server';
 import { like, and, gte, lte, count, eq, sql } from 'drizzle-orm';
+import { Logger } from '@/lib/logger';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(request: Request) {
   try {
@@ -89,17 +91,64 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const currentUser = getCurrentUser(request);
+  const logger = new Logger('角色管理', currentUser?.id);
+
   try {
     const body = await request.json();
     const { name, description } = body;
+
+    // 验证必填字段
+    if (!name) {
+      await logger.warn('创建角色', '创建角色失败：缺少角色名称', {
+        operatorId: currentUser?.id,
+        operatorName: currentUser?.username
+      });
+      return NextResponse.json(
+        { message: '角色名称不能为空' },
+        { status: 400 }
+      );
+    }
+
+    // 检查角色名是否已存在
+    const existingRole = await db
+      .select()
+      .from(roles)
+      .where(eq(roles.name, name))
+      .limit(1);
+
+    if (existingRole.length > 0) {
+      await logger.warn('创建角色', '创建角色失败：角色名已存在', {
+        roleName: name,
+        operatorId: currentUser?.id,
+        operatorName: currentUser?.username
+      });
+      return NextResponse.json({ message: '角色名已存在' }, { status: 400 });
+    }
 
     await db.insert(roles).values({
       name,
       description
     });
 
+    // 记录创建成功日志
+    await logger.info('创建角色', '角色创建成功', {
+      roleName: name,
+      description,
+      operatorId: currentUser?.id,
+      operatorName: currentUser?.username,
+      timestamp: new Date().toISOString()
+    });
+
     return NextResponse.json({ message: '角色创建成功' });
   } catch (error) {
+    await logger.error('创建角色', '创建角色失败：系统错误', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      operatorId: currentUser?.id,
+      operatorName: currentUser?.username
+    });
+
     console.error('创建角色失败:', error);
     return NextResponse.json({ error: '创建角色失败' }, { status: 500 });
   }

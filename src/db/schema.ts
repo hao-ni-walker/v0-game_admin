@@ -3,8 +3,10 @@ import {
   varchar,
   int,
   timestamp,
-  primaryKey,
-  boolean
+  boolean,
+  text,
+  json,
+  unique
 } from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
 
@@ -51,9 +53,33 @@ export const rolePermissions = mysqlTable(
     createdAt: timestamp('created_at').defaultNow()
   },
   (t) => ({
-    unq: primaryKey(t.roleId, t.permissionId)
+    unq: unique('role_permission_unique').on(t.roleId, t.permissionId)
   })
 );
+
+// 系统日志表
+export const systemLogs = mysqlTable('system_logs', {
+  id: int('id').primaryKey().autoincrement(),
+  level: varchar('level', { length: 20 }).notNull(), // info, warn, error, debug
+  action: varchar('action', { length: 100 }).notNull(), // 操作类型
+  module: varchar('module', { length: 50 }).notNull(), // 模块名称
+  message: text('message').notNull(), // 日志消息
+  details: json('details'), // 详细信息 JSON
+  userId: int('user_id'), // 操作用户ID
+  userAgent: varchar('user_agent', { length: 500 }), // 用户代理
+  ip: varchar('ip', { length: 45 }), // IP地址
+  requestId: varchar('request_id', { length: 100 }), // 请求ID
+  duration: int('duration'), // 执行时间(毫秒)
+  createdAt: timestamp('created_at').defaultNow()
+});
+
+// 系统日志关系
+export const systemLogsRelations = relations(systemLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [systemLogs.userId],
+    references: [users.id]
+  })
+}));
 
 // 定义表关系
 export const usersRelations = relations(users, ({ one }) => ({

@@ -3,6 +3,8 @@ import { roles, users } from '@/db/schema';
 import bcrypt from 'bcryptjs';
 import { NextResponse } from 'next/server';
 import { eq, like, and, gte, lte, sql } from 'drizzle-orm';
+import { Logger } from '@/lib/logger';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(request: Request) {
   try {
@@ -88,12 +90,25 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const currentUser = getCurrentUser(request);
+  const logger = new Logger('用户管理', currentUser?.id);
+
   try {
     const body = await request.json();
     const { username, email, password, roleId } = body;
 
     // 验证必填字段
     if (!username || !email || !password) {
+      await logger.warn('创建用户', '创建用户失败：缺少必填字段', {
+        missingFields: {
+          username: !username,
+          email: !email,
+          password: !password
+        },
+        operatorId: currentUser?.id,
+        operatorName: currentUser?.username
+      });
+
       return NextResponse.json(
         { message: '请填写所有必填字段' },
         { status: 400 }
@@ -108,6 +123,13 @@ export async function POST(request: Request) {
       .limit(1);
 
     if (existingUser.length > 0) {
+      await logger.warn('创建用户', '创建用户失败：用户名已存在', {
+        username,
+        email,
+        operatorId: currentUser?.id,
+        operatorName: currentUser?.username
+      });
+
       return NextResponse.json({ message: '用户名已存在' }, { status: 400 });
     }
 
@@ -124,8 +146,25 @@ export async function POST(request: Request) {
       avatar: `/avatars/default.jpg`
     });
 
+    // 记录成功日志
+    await logger.info('创建用户', '用户创建成功', {
+      username,
+      email,
+      roleId,
+      operatorId: currentUser?.id,
+      operatorName: currentUser?.username,
+      timestamp: new Date().toISOString()
+    });
+
     return NextResponse.json({ message: '用户创建成功' });
   } catch (error) {
+    await logger.error('创建用户', '创建用户失败：系统错误', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      operatorId: currentUser?.id,
+      operatorName: currentUser?.username
+    });
+
     console.error('创建用户失败:', error);
     return NextResponse.json({ error: '创建用户失败' }, { status: 500 });
   }

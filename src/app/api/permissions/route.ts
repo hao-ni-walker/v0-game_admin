@@ -1,7 +1,9 @@
 import { db } from '@/db';
 import { permissions } from '@/db/schema';
 import { NextResponse } from 'next/server';
-import { like, and, gte, lte, count } from 'drizzle-orm';
+import { like, and, gte, lte, count, eq } from 'drizzle-orm';
+import { Logger } from '@/lib/logger';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(request: Request) {
   try {

@@ -60,3 +60,18 @@ export function verifyToken(token: string): User | null {
     return null;
   }
 }
+
+/**
+ * 从Request中获取当前用户信息 - 用于API routes
+ */
+export function getCurrentUser(request: Request): User | null {
+  try {
+    const token = request.headers.get('cookie')?.match(/token=([^;]+)/)?.[1];
+    if (!token) {
+      return null;
+    }
+    return verifyToken(token);
+  } catch {
+    return null;
+  }
+}

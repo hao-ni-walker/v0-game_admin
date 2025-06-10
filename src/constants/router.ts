@@ -1,5 +1,10 @@
 import { NavItem } from '@/types/nav';
-import { CircleUserRound, SquareTerminal } from 'lucide-react';
+import {
+  CircleUserRound,
+  SquareTerminal,
+  Settings,
+  ScrollText
+} from 'lucide-react';
 
 export const navList: NavItem[] = [
   {
@@ -30,6 +35,20 @@ export const navList: NavItem[] = [
         title: '权限管理',
         shortcut: ['l', 'l'],
         url: '/dashboard/account/permission'
+      }
+    ]
+  },
+  {
+    title: '系统管理',
+    url: '#',
+    icon: Settings,
+    isActive: false,
+    items: [
+      {
+        title: '日志管理',
+        url: '/dashboard/system/logs',
+        shortcut: ['l', 'o'],
+        icon: ScrollText
       }
     ]
   }
