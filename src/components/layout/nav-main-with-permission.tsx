@@ -1,6 +1,8 @@
 'use client';
 
 import { ChevronRight } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { usePermissions } from '@/hooks/use-permissions';
 import { ROUTE_PERMISSIONS } from '@/lib/permissions';
 import {
@@ -24,6 +26,21 @@ import { NavItem } from '@/types/nav';
 
 export function NavMainWithPermission() {
   const { hasAnyPermission, loading } = usePermissions();
+  const pathname = usePathname();
+
+  // 检查是否为当前路径或其子路径
+  const isActivePath = (url: string): boolean => {
+    if (url === '#') return false;
+    return pathname === url || pathname.startsWith(url + '/');
+  };
+
+  // 检查是否有子项被激活
+  const hasActiveChild = (items: NavItem[]): boolean => {
+    return items.some(
+      (item) =>
+        isActivePath(item.url) || (item.items && hasActiveChild(item.items))
+    );
+  };
 
   // 检查单个菜单项是否有权限
   const hasMenuPermission = (url: string): boolean => {
@@ -76,41 +93,63 @@ export function NavMainWithPermission() {
     <SidebarGroup>
       <SidebarGroupLabel>平台</SidebarGroupLabel>
       <SidebarMenu>
-        {filteredNavList.map((item) => (
-          <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip={item.title}>
-                <a href={item.url}>
-                  <item.icon />
-                  <span>{item.title}</span>
-                </a>
-              </SidebarMenuButton>
-              {item.items?.length ? (
-                <>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuAction className='data-[state=open]:rotate-90'>
-                      <ChevronRight />
-                      <span className='sr-only'>Toggle</span>
-                    </SidebarMenuAction>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      {item.items?.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton asChild>
-                            <a href={subItem.url}>
-                              <span>{subItem.title}</span>
-                            </a>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </>
-              ) : null}
-            </SidebarMenuItem>
-          </Collapsible>
-        ))}
+        {filteredNavList.map((item) => {
+          const isItemActive = isActivePath(item.url);
+          const hasActiveSubItem = item.items
+            ? hasActiveChild(item.items)
+            : false;
+          const shouldOpen = isItemActive || hasActiveSubItem;
+
+          return (
+            <Collapsible key={item.title} asChild defaultOpen={shouldOpen}>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  tooltip={item.title}
+                  isActive={isItemActive}
+                >
+                  {item.url === '#' ? (
+                    <div>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </div>
+                  ) : (
+                    <Link href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </Link>
+                  )}
+                </SidebarMenuButton>
+                {item.items?.length ? (
+                  <>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuAction className='data-[state=open]:rotate-90'>
+                        <ChevronRight />
+                        <span className='sr-only'>Toggle</span>
+                      </SidebarMenuAction>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {item.items?.map((subItem) => (
+                          <SidebarMenuSubItem key={subItem.title}>
+                            <SidebarMenuSubButton
+                              asChild
+                              isActive={isActivePath(subItem.url)}
+                            >
+                              <Link href={subItem.url}>
+                                <span>{subItem.title}</span>
+                              </Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </>
+                ) : null}
+              </SidebarMenuItem>
+            </Collapsible>
+          );
+        })}
       </SidebarMenu>
     </SidebarGroup>
   );
