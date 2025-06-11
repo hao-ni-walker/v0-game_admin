@@ -1,3 +1,5 @@
+'use client';
+
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,9 +14,80 @@ import {
 } from 'lucide-react';
 import { getGithubStats } from '@/lib/github';
 import { Star } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default async function Home() {
   const { stars } = await getGithubStats();
+
+  // 滚动监听组件
+  function ScrollNavbar() {
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+      const onScroll = () => setScrolled(window.scrollY > 10);
+      window.addEventListener('scroll', onScroll);
+      return () => window.removeEventListener('scroll', onScroll);
+    }, []);
+
+    return (
+      <nav
+        className={`fixed top-0 left-0 z-30 w-full transition-all duration-300 ${scrolled ? '' : ''}`}
+      >
+        <div className='relative z-10 container mx-auto px-4 py-6'>
+          <div
+            className={`flex items-center justify-between rounded-2xl px-6 py-4 transition-all duration-300 ${
+              scrolled
+                ? 'bg-background/80 border-border/50 border shadow-lg backdrop-blur-sm'
+                : 'bg-background/80 border-border/50 border shadow-lg backdrop-blur-sm'
+            }`}
+          >
+            <div className='flex items-center gap-3'>
+              <div className='relative'>
+                <div className='bg-primary/20 absolute inset-0 rounded-lg blur-sm' />
+                <Image
+                  src='/logo.png'
+                  alt='N-Admin Logo'
+                  width={36}
+                  height={36}
+                  className='relative dark:invert'
+                />
+              </div>
+              <span className='from-foreground to-foreground/70 bg-gradient-to-r bg-clip-text text-xl font-bold text-transparent'>
+                N Admin
+              </span>
+            </div>
+            <div className='flex items-center gap-6'>
+              <a
+                href='https://github.com/guizimo/n-admin'
+                target='_blank'
+                rel='noopener noreferrer'
+                className='text-muted-foreground hover:text-foreground group flex items-center gap-2 transition-colors duration-200'
+              >
+                <Github
+                  size={20}
+                  className='transition-transform duration-200 group-hover:scale-110'
+                />
+                <span className='hidden sm:inline'>GitHub</span>
+                <div className='bg-muted flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm'>
+                  <Star size={14} className='text-yellow-500' />
+                  <span className='font-medium'>{stars}</span>
+                </div>
+              </a>
+              <Button
+                asChild
+                className='shadow-lg transition-shadow duration-300 hover:shadow-xl'
+              >
+                <a href='/dashboard' className='flex items-center gap-2'>
+                  立即使用
+                  <ArrowRight size={16} />
+                </a>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <div className='from-background via-background to-muted/50 flex min-h-screen flex-col bg-gradient-to-br'>
@@ -26,57 +99,12 @@ export default async function Home() {
       </div>
 
       {/* 导航栏 */}
-      <nav className='relative z-10 container mx-auto px-4 py-6'>
-        <div className='bg-background/80 border-border/50 flex items-center justify-between rounded-2xl border px-6 py-4 shadow-lg backdrop-blur-sm'>
-          <div className='flex items-center gap-3'>
-            <div className='relative'>
-              <div className='bg-primary/20 absolute inset-0 rounded-lg blur-sm' />
-              <Image
-                src='/logo.png'
-                alt='N-Admin Logo'
-                width={36}
-                height={36}
-                className='relative dark:invert'
-              />
-            </div>
-            <span className='from-foreground to-foreground/70 bg-gradient-to-r bg-clip-text text-xl font-bold text-transparent'>
-              N Admin
-            </span>
-          </div>
-          <div className='flex items-center gap-6'>
-            <a
-              href='https://github.com/guizimo/n-admin'
-              target='_blank'
-              rel='noopener noreferrer'
-              className='text-muted-foreground hover:text-foreground group flex items-center gap-2 transition-colors duration-200'
-            >
-              <Github
-                size={20}
-                className='transition-transform duration-200 group-hover:scale-110'
-              />
-              <span className='hidden sm:inline'>GitHub</span>
-              <div className='bg-muted flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm'>
-                <Star size={14} className='text-yellow-500' />
-                <span className='font-medium'>{stars}</span>
-              </div>
-            </a>
-            <Button
-              asChild
-              className='shadow-lg transition-shadow duration-300 hover:shadow-xl'
-            >
-              <a href='/dashboard' className='flex items-center gap-2'>
-                立即使用
-                <ArrowRight size={16} />
-              </a>
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <ScrollNavbar />
 
       {/* 主要内容 */}
-      <main className='relative z-10 container mx-auto flex flex-1 flex-col justify-center px-4'>
+      <main className='relative z-10 container mx-auto flex flex-1 flex-col justify-center px-4 pt-28'>
         {/* 英雄区域 */}
-        <div className='mx-auto mb-20 max-w-5xl text-center'>
+        <div className='mx-auto mb-20 flex min-h-[calc(100vh-112px)] max-w-5xl flex-col justify-center text-center'>
           <div className='mb-8'>
             <div className='bg-primary/10 border-primary/20 text-primary mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium'>
               <Zap size={16} />
