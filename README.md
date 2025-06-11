@@ -113,6 +113,8 @@ pnpm install
 cp .env.example .env
 # 编辑 .env 文件，配置数据库和其他环境变量
 
+# 确保数据库已经创建
+
 # 4️⃣ 数据库初始化
 pnpm db:generate && pnpm db:push
 
