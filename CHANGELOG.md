@@ -4,6 +4,17 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/)。
 
+### [0.0.8](https://github.com/guizimo/n-admin/compare/v0.0.7...v0.0.8) (2025-06-12)
+
+
+### ✨ 新增功能
+
+* **代码优化:** 更新 ESLint 配置和组件依赖 ([cd12846](https://github.com/guizimo/n-admin/commit/cd128465656a7491c40320eea8bd66a73557c7b5))
+* 更新.gitignore文件，调整对.env文件的忽略规则，确保.env文件被纳入版本控制。 ([8681537](https://github.com/guizimo/n-admin/commit/86815370dbf900b73a25d8aa5c175a807f6d544b))
+* 更新README和数据库配置，确保环境变量加载和数据库创建提示 ([e0dca4c](https://github.com/guizimo/n-admin/commit/e0dca4c8a7fb1a3b98b89e902cf3723bf3ff29e0))
+* **滚动条样式:** 添加自定义滚动条样式和滚动监听组件 ([290b8ca](https://github.com/guizimo/n-admin/commit/290b8ca0c272c80f532108e33099974e51893b05))
+* **主页优化:** 移除GitHub统计功能并简化导航栏设计 ([9f67e3d](https://github.com/guizimo/n-admin/commit/9f67e3dd800b7cf22edffc912efdd8d7df04d001))
+
 ### [0.0.7](https://github.com/guizimo/n-admin/compare/v0.0.6...v0.0.7) (2025-06-10)
 
 
