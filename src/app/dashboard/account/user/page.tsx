@@ -189,12 +189,12 @@ export default function UserManagementPage() {
   // 初始化
   useEffect(() => {
     fetchRoles();
-  }, []);
+  }, [fetchRoles]);
 
   // 监听filters变化
   useEffect(() => {
     fetchUsers(filters);
-  }, [filters]);
+  }, [fetchUsers, filters]);
 
   const handleCreateUser = async (values: any) => {
     try {

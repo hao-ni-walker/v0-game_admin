@@ -150,7 +150,7 @@ export default function RoleManagementPage() {
 
   useEffect(() => {
     fetchRoles(filters);
-  }, [filters]);
+  }, [fetchRoles, filters]);
 
   // 定义筛选字段
   const filterFields: FilterField[] = [
