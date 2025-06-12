@@ -144,14 +144,13 @@ export default function RoleManagementPage() {
       });
 
       router.push(`?${params.toString()}`);
-      fetchRoles(updatedFilters);
     },
-    [filters, router, fetchRoles]
+    [filters, router]
   );
 
   useEffect(() => {
     fetchRoles(filters);
-  }, [fetchRoles, filters]);
+  }, [filters]);
 
   // 定义筛选字段
   const filterFields: FilterField[] = [

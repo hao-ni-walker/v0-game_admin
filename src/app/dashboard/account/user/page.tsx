@@ -182,18 +182,19 @@ export default function UserManagementPage() {
       });
 
       router.push(`?${params.toString()}`);
-
-      // 获取数据
-      fetchUsers(updatedFilters);
     },
-    [filters, router, fetchUsers]
+    [filters, router]
   );
 
   // 初始化
   useEffect(() => {
     fetchRoles();
+  }, []);
+
+  // 监听filters变化
+  useEffect(() => {
     fetchUsers(filters);
-  }, [fetchRoles, fetchUsers, filters]);
+  }, [filters]);
 
   const handleCreateUser = async (values: any) => {
     try {

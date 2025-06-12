@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
   ArrowRight,
-  Github,
   Shield,
   Zap,
   Palette,
@@ -12,13 +11,9 @@ import {
   BarChart3,
   Code2
 } from 'lucide-react';
-import { getGithubStats } from '@/lib/github';
-import { Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-export default async function Home() {
-  const { stars } = await getGithubStats();
-
+export default function Home() {
   // 滚动监听组件
   function ScrollNavbar() {
     const [scrolled, setScrolled] = useState(false);
@@ -30,56 +25,47 @@ export default async function Home() {
     }, []);
 
     return (
-      <nav
-        className={`fixed top-0 left-0 z-30 w-full transition-all duration-300 ${scrolled ? '' : ''}`}
-      >
-        <div className='relative z-10 container mx-auto px-4 py-6'>
+      <nav className='fixed top-0 left-0 z-30 w-full transition-all duration-300'>
+        <div className='container mx-auto px-4 py-4'>
           <div
-            className={`flex items-center justify-between rounded-2xl px-6 py-4 transition-all duration-300 ${
+            className={`flex items-center justify-between rounded-full px-6 py-3 transition-all duration-300 ${
               scrolled
-                ? 'bg-background/80 border-border/50 border shadow-lg backdrop-blur-sm'
-                : 'bg-background/80 border-border/50 border shadow-lg backdrop-blur-sm'
+                ? 'bg-background/95 border-border/50 border shadow-lg backdrop-blur-md'
+                : 'bg-background/80 border-border/30 border shadow-sm backdrop-blur-sm'
             }`}
           >
+            {/* Logo 部分 */}
             <div className='flex items-center gap-3'>
               <div className='relative'>
-                <div className='bg-primary/20 absolute inset-0 rounded-lg blur-sm' />
-                <Image
-                  src='/logo.png'
-                  alt='N-Admin Logo'
-                  width={36}
-                  height={36}
-                  className='relative dark:invert'
-                />
+                <div className='bg-primary/10 absolute inset-0 rounded-lg blur-sm' />
+                <div className='bg-background relative rounded-lg p-2'>
+                  <Image
+                    src='/logo.png'
+                    alt='N-Admin Logo'
+                    width={24}
+                    height={24}
+                    className='dark:invert'
+                  />
+                </div>
               </div>
-              <span className='from-foreground to-foreground/70 bg-gradient-to-r bg-clip-text text-xl font-bold text-transparent'>
+              <span className='from-foreground to-foreground/80 bg-gradient-to-r bg-clip-text text-lg font-bold text-transparent'>
                 N Admin
               </span>
             </div>
-            <div className='flex items-center gap-6'>
-              <a
-                href='https://github.com/guizimo/n-admin'
-                target='_blank'
-                rel='noopener noreferrer'
-                className='text-muted-foreground hover:text-foreground group flex items-center gap-2 transition-colors duration-200'
-              >
-                <Github
-                  size={20}
-                  className='transition-transform duration-200 group-hover:scale-110'
-                />
-                <span className='hidden sm:inline'>GitHub</span>
-                <div className='bg-muted flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm'>
-                  <Star size={14} className='text-yellow-500' />
-                  <span className='font-medium'>{stars}</span>
-                </div>
-              </a>
+
+            {/* 右侧操作按钮 */}
+            <div className='flex items-center gap-2'>
+              {/* 立即使用按钮 - 更现代的设计 */}
               <Button
                 asChild
-                className='shadow-lg transition-shadow duration-300 hover:shadow-xl'
+                size='sm'
+                className='from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 rounded-full border-0 bg-gradient-to-r shadow-md transition-all duration-200 hover:shadow-lg'
               >
-                <a href='/dashboard' className='flex items-center gap-2'>
-                  立即使用
-                  <ArrowRight size={16} />
+                <a href='/dashboard' className='flex items-center gap-2 px-4'>
+                  <span className='text-primary-foreground text-sm font-medium'>
+                    立即使用
+                  </span>
+                  <ArrowRight size={14} className='text-primary-foreground' />
                 </a>
               </Button>
             </div>
@@ -132,7 +118,7 @@ export default async function Home() {
             <span className='text-primary font-semibold'>企业级应用</span>
           </p>
 
-          <div className='mb-16 flex flex-col justify-center gap-4 sm:flex-row'>
+          <div className='mb-16 flex justify-center'>
             <Button
               size='lg'
               asChild
@@ -142,21 +128,6 @@ export default async function Home() {
                 <Zap size={20} />
                 开始使用
                 <ArrowRight size={20} />
-              </a>
-            </Button>
-            <Button
-              size='lg'
-              variant='outline'
-              asChild
-              className='hover:bg-muted/50 px-8 py-6 text-lg transition-all duration-300'
-            >
-              <a
-                href='https://github.com/guizimo/n-admin'
-                target='_blank'
-                className='flex items-center gap-3'
-              >
-                <Code2 size={20} />
-                查看源码
               </a>
             </Button>
           </div>

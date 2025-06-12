@@ -179,17 +179,14 @@ export default function PermissionManagementPage() {
       });
 
       router.push(`?${params.toString()}`);
-
-      // 获取数据
-      fetchPermissions(updatedFilters);
     },
-    [filters, router, fetchPermissions]
+    [filters, router]
   );
 
   // 初始化
   useEffect(() => {
     fetchPermissions(filters);
-  }, [fetchPermissions, filters]);
+  }, [filters]);
 
   const handleCreatePermission = async (values: any) => {
     try {
