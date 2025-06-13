@@ -1,9 +1,9 @@
 import { db } from '@/db';
 import { roles, users } from '@/db/schema';
-import { NextResponse } from 'next/server';
 import { like, and, gte, lte, count, eq, sql } from 'drizzle-orm';
 import { Logger } from '@/lib/logger';
 import { getCurrentUser } from '@/lib/auth';
+import { successResponse, errorResponse } from '@/service/response';
 
 export async function GET(request: Request) {
   try {
@@ -75,18 +75,15 @@ export async function GET(request: Request) {
     // 计算分页信息
     const totalPages = Math.ceil(total / validLimit);
 
-    return NextResponse.json({
-      data: roleList,
-      pagination: {
-        page: validPage,
-        limit: validLimit,
-        total,
-        totalPages
-      }
+    return successResponse(roleList, {
+      page: validPage,
+      limit: validLimit,
+      total,
+      totalPages
     });
   } catch (error) {
     console.error('获取角色列表失败:', error);
-    return NextResponse.json({ error: '获取角色列表失败' }, { status: 500 });
+    return errorResponse('获取角色列表失败');
   }
 }
 
@@ -104,10 +101,7 @@ export async function POST(request: Request) {
         operatorId: currentUser?.id,
         operatorName: currentUser?.username
       });
-      return NextResponse.json(
-        { message: '角色名称不能为空' },
-        { status: 400 }
-      );
+      return errorResponse('角色名称不能为空');
     }
 
     // 检查角色名是否已存在
@@ -123,7 +117,7 @@ export async function POST(request: Request) {
         operatorId: currentUser?.id,
         operatorName: currentUser?.username
       });
-      return NextResponse.json({ message: '角色名已存在' }, { status: 400 });
+      return errorResponse('角色名已存在');
     }
 
     await db.insert(roles).values({
@@ -140,7 +134,7 @@ export async function POST(request: Request) {
       timestamp: new Date().toISOString()
     });
 
-    return NextResponse.json({ message: '角色创建成功' });
+    return successResponse({ message: '角色创建成功' });
   } catch (error) {
     await logger.error('创建角色', '创建角色失败：系统错误', {
       error: error instanceof Error ? error.message : String(error),
@@ -150,6 +144,6 @@ export async function POST(request: Request) {
     });
 
     console.error('创建角色失败:', error);
-    return NextResponse.json({ error: '创建角色失败' }, { status: 500 });
+    return errorResponse('创建角色失败');
   }
 }

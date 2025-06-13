@@ -2,9 +2,9 @@ import { db } from '@/db';
 import { roles } from '@/db/schema';
 import { preventSuperRoleModification } from '@/lib/super-admin';
 import { eq } from 'drizzle-orm';
-import { NextResponse } from 'next/server';
 import { Logger } from '@/lib/logger';
 import { getCurrentUser } from '@/lib/auth';
+import { errorResponse, successResponse } from '@/service/response';
 
 export async function PUT(
   request: Request,
@@ -30,7 +30,7 @@ export async function PUT(
         operatorId: currentUser?.id,
         operatorName: currentUser?.username
       });
-      return NextResponse.json({ message: '角色不存在' }, { status: 404 });
+      return errorResponse('角色不存在');
     }
 
     await preventSuperRoleModification(id);
@@ -58,7 +58,7 @@ export async function PUT(
       timestamp: new Date().toISOString()
     });
 
-    return NextResponse.json({ message: '角色更新成功' });
+    return successResponse('角色更新成功');
   } catch (error) {
     await logger.error('更新角色', '更新角色失败：系统错误', {
       error: error instanceof Error ? error.message : String(error),
@@ -67,10 +67,7 @@ export async function PUT(
       operatorName: currentUser?.username
     });
 
-    return NextResponse.json(
-      { error: (error as Error)?.message || '更新角色失败' },
-      { status: 500 }
-    );
+    return errorResponse('更新角色失败');
   }
 }
 
@@ -98,7 +95,7 @@ export async function DELETE(
         operatorId: currentUser?.id,
         operatorName: currentUser?.username
       });
-      return NextResponse.json({ message: '角色不存在' }, { status: 404 });
+      return errorResponse('角色不存在');
     }
 
     await preventSuperRoleModification(id);
@@ -114,7 +111,7 @@ export async function DELETE(
       timestamp: new Date().toISOString()
     });
 
-    return NextResponse.json({ message: '角色删除成功' });
+    return successResponse('角色删除成功');
   } catch (error) {
     await logger.error('删除角色', '删除角色失败：系统错误', {
       error: error instanceof Error ? error.message : String(error),
@@ -123,9 +120,6 @@ export async function DELETE(
       operatorName: currentUser?.username
     });
 
-    return NextResponse.json(
-      { error: (error as Error)?.message || '删除角色失败' },
-      { status: 500 }
-    );
+    return errorResponse('删除角色失败');
   }
 }

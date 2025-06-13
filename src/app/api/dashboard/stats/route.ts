@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { users, roles, permissions, systemLogs } from '@/db/schema';
 import { count, sql, desc, gte } from 'drizzle-orm';
+import { successResponse, errorResponse } from '@/service/response';
 
 export async function GET() {
   try {
@@ -103,7 +103,7 @@ export async function GET() {
         ? `+${((todayUsers[0].count / weekUsers[0].count) * 100).toFixed(1)}%`
         : '+0%';
 
-    return NextResponse.json({
+    return successResponse({
       overview: {
         totalUsers: totalUsers[0].count || 0,
         todayUsers: todayUsers[0].count || 0,
@@ -122,6 +122,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error('获取dashboard统计数据失败:', error);
-    return NextResponse.json({ error: '获取统计数据失败' }, { status: 500 });
+    return errorResponse('获取统计数据失败');
   }
 }

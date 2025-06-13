@@ -13,21 +13,12 @@ import {
   Bug,
   BarChart3
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { zhCN } from 'date-fns/locale';
 import { PermissionGuard } from '@/components/auth/permission-guard';
 import { PERMISSIONS } from '@/lib/permissions';
 
 // shadcn/ui components
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
 
 // 表格相关组件
 import {
@@ -44,6 +35,7 @@ import {
 
 import { LogDetailDialog } from './components/log-detail-dialog';
 import PageContainer from '@/components/layout/page-container';
+import { LogAPI } from '@/service/request';
 
 // 类型定义
 interface LogItem {
@@ -115,7 +107,6 @@ export default function LogsPage() {
 
   // 状态管理
   const [logs, setLogs] = useState<LogItem[]>([]);
-  const [stats, setStats] = useState<LogStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
@@ -153,19 +144,6 @@ export default function LogsPage() {
     setFilters(urlFilters);
   }, [searchParams]);
 
-  // 获取日志统计
-  const fetchStats = useCallback(async () => {
-    try {
-      const response = await fetch('/api/logs/stats');
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data);
-      }
-    } catch (error) {
-      console.error('获取统计失败:', error);
-    }
-  }, []);
-
   // 获取日志列表
   const fetchLogs = useCallback(async (currentFilters: FilterParams) => {
     try {
@@ -191,16 +169,30 @@ export default function LogsPage() {
         }
       });
 
-      const response = await fetch(`/api/logs?${params.toString()}`);
-      const result = await response.json();
+      const res = await LogAPI.getLogs(params);
+      if (res.code === 0) {
+        setLogs(res.data || []);
+      } else {
+        toast.error(res.message || '获取日志列表失败');
+      }
 
-      setLogs(result.data || []);
-      setPagination({
-        page: result.pagination?.page || 1,
-        limit: result.pagination?.limit || 20,
-        total: result.pagination?.total || 0,
-        totalPages: result.pagination?.totalPages || 0
-      });
+      if (res.pager) {
+        setPagination({
+          page: res.pager?.page || 1,
+          limit: res.pager?.limit || 20,
+          total: res.pager?.total || 0,
+          totalPages: res.pager?.totalPages || 0
+        });
+      } else {
+        // 如果API没有返回分页信息，手动计算
+        const total = Array.isArray(res.data) ? res.data.length : 0;
+        setPagination({
+          page: 1,
+          limit: total,
+          total,
+          totalPages: 1
+        });
+      }
     } catch (error) {
       toast.error('获取日志列表失败');
       setLogs([]);
@@ -249,30 +241,8 @@ export default function LogsPage() {
 
   // 初始化
   useEffect(() => {
-    fetchStats();
     fetchLogs(filters);
-  }, [fetchStats, fetchLogs, filters]);
-
-  // 清理日志
-  const clearLogs = async (days: number) => {
-    if (!confirm(`确定要删除 ${days} 天前的日志吗？`)) return;
-
-    try {
-      const response = await fetch(`/api/logs?days=${days}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        toast.success(result.message);
-        fetchLogs(filters);
-        fetchStats();
-      }
-    } catch (error) {
-      console.error('清理日志失败:', error);
-      toast.error('清理日志失败');
-    }
-  };
+  }, [fetchLogs, filters]);
 
   const clearFilters = () => {
     updateFilters({
@@ -427,7 +397,6 @@ export default function LogsPage() {
               label: '刷新数据',
               onClick: () => {
                 fetchLogs(filters);
-                fetchStats();
               },
               icon: <RefreshCw className='mr-2 h-4 w-4' />
             }}
@@ -443,28 +412,7 @@ export default function LogsPage() {
             />
 
             {/* 操作按钮 */}
-            <div className='flex justify-end'>
-              <div className='flex items-center gap-2'>
-                <Button
-                  onClick={() => clearLogs(30)}
-                  variant='outline'
-                  size='sm'
-                  className='text-red-600 hover:text-red-700'
-                >
-                  <Trash2 className='mr-2 h-4 w-4' />
-                  清理30天前
-                </Button>
-                <Button
-                  onClick={() => clearLogs(7)}
-                  variant='outline'
-                  size='sm'
-                  className='text-red-600 hover:text-red-700'
-                >
-                  <Trash2 className='mr-2 h-4 w-4' />
-                  清理7天前
-                </Button>
-              </div>
-            </div>
+            <div className='flex justify-end'></div>
           </div>
 
           {/* 数据表格 */}

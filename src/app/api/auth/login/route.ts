@@ -5,6 +5,11 @@ import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import { Logger } from '@/lib/logger';
+import {
+  successResponse,
+  errorResponse,
+  unauthorizedResponse
+} from '@/service/response';
 
 export async function POST(request: Request) {
   try {
@@ -25,7 +30,7 @@ export async function POST(request: Request) {
         timestamp: new Date().toISOString()
       });
 
-      return NextResponse.json({ message: '邮箱或密码错误' }, { status: 401 });
+      return unauthorizedResponse('邮箱或密码错误');
     }
 
     const isValid = await bcrypt.compare(password, user[0].password);
@@ -40,7 +45,7 @@ export async function POST(request: Request) {
         timestamp: new Date().toISOString()
       });
 
-      return NextResponse.json({ message: '邮箱或密码错误' }, { status: 401 });
+      return unauthorizedResponse('邮箱或密码错误');
     }
 
     const token = sign(
@@ -67,10 +72,11 @@ export async function POST(request: Request) {
       tokenExpiry: '24小时'
     });
 
-    const response = NextResponse.json(
-      { message: '登录成功', user: { id: user[0].id, email: user[0].email } },
-      { status: 200 }
-    );
+    const response = successResponse({
+      message: '登录成功',
+      user: { id: user[0].id, email: user[0].email },
+      token
+    });
 
     response.cookies.set('token', token, {
       httpOnly: true,
@@ -89,6 +95,6 @@ export async function POST(request: Request) {
       timestamp: new Date().toISOString()
     });
 
-    return NextResponse.json({ message: '服务器错误' }, { status: 500 });
+    return errorResponse('服务器错误');
   }
 }

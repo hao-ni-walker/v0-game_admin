@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import { roles } from '@/db/schema';
-import { NextResponse } from 'next/server';
+import { errorResponse, successResponse } from '@/service/response';
 
 export async function GET() {
   try {
@@ -11,11 +11,9 @@ export async function GET() {
       })
       .from(roles);
 
-    return NextResponse.json({
-      data: roleList
-    });
+    return successResponse(roleList);
   } catch (error) {
     console.error('获取角色标签失败:', error);
-    return NextResponse.json({ error: '获取角色标签失败' }, { status: 500 });
+    return errorResponse('获取角色标签失败');
   }
 }

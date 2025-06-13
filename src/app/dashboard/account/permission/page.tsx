@@ -32,6 +32,7 @@ import {
 
 import { PermissionForm } from './components/permission-form';
 import PageContainer from '@/components/layout/page-container';
+import { PermissionAPI } from '@/service/request';
 
 // 类型定义
 interface Permission {
@@ -123,20 +124,23 @@ export default function PermissionManagementPage() {
         }
       });
 
-      const response = await fetch(`/api/permissions?${params.toString()}`);
-      const result = await response.json();
+      const res = await PermissionAPI.getPermissions(params);
+      if (res.code === 0) {
+        setPermissions(res.data || []);
+      } else {
+        toast.error(res.message || '获取权限列表失败');
+      }
 
-      setPermissions(result.data || result || []);
-      if (result.pagination) {
+      if (res.peger) {
         setPagination({
-          page: result.pagination.page || 1,
-          limit: result.pagination.limit || 10,
-          total: result.pagination.total || 0,
-          totalPages: result.pagination.totalPages || 0
+          page: res.pager.page || 1,
+          limit: res.pager.limit || 10,
+          total: res.pager.total || 0,
+          totalPages: res.pager.totalPages || 0
         });
       } else {
         // 如果API没有返回分页信息，手动计算
-        const total = Array.isArray(result) ? result.length : 0;
+        const total = Array.isArray(res.data) ? res.data.length : 0;
         setPagination({
           page: 1,
           limit: total,
@@ -190,19 +194,14 @@ export default function PermissionManagementPage() {
 
   const handleCreatePermission = async (values: any) => {
     try {
-      const response = await fetch('/api/permissions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values)
-      });
+      const res = await PermissionAPI.createPermission(values);
 
-      if (response.ok) {
+      if (res.code === 0) {
         toast.success('权限创建成功');
         setCreateDialogOpen(false);
         fetchPermissions(filters);
       } else {
-        const error = await response.json();
-        toast.error(error.message || '创建权限失败');
+        toast.error(res.message || '创建权限失败');
       }
     } catch (error) {
       toast.error('创建权限失败');
@@ -213,20 +212,18 @@ export default function PermissionManagementPage() {
     if (!editingPermission) return;
 
     try {
-      const response = await fetch(`/api/permissions/${editingPermission.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values)
-      });
+      const res = await PermissionAPI.updatePermission(
+        editingPermission.id,
+        values
+      );
 
-      if (response.ok) {
+      if (res.code === 0) {
         toast.success('权限更新成功');
         setEditDialogOpen(false);
         setEditingPermission(null);
         fetchPermissions(filters);
       } else {
-        const error = await response.json();
-        toast.error(error.message || '更新权限失败');
+        toast.error(res.message || '更新权限失败');
       }
     } catch (error) {
       toast.error('更新权限失败');
@@ -235,16 +232,13 @@ export default function PermissionManagementPage() {
 
   const handleDeletePermission = async (permission: Permission) => {
     try {
-      const response = await fetch(`/api/permissions/${permission.id}`, {
-        method: 'DELETE'
-      });
+      const res = await PermissionAPI.deletePermission(permission.id);
 
-      if (response.ok) {
+      if (res.code === 0) {
         toast.success('权限删除成功');
         fetchPermissions(filters);
       } else {
-        const error = await response.json();
-        toast.error(error.message || '删除权限失败');
+        toast.error(res.message || '删除权限失败');
       }
     } catch (error) {
       toast.error('删除权限失败');

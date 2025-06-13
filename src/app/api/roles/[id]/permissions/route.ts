@@ -1,9 +1,9 @@
 import { db } from '@/db';
 import { rolePermissions, permissions, roles } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import { NextResponse } from 'next/server';
 import { Logger } from '@/lib/logger';
 import { getCurrentUser } from '@/lib/auth';
+import { errorResponse, successResponse } from '@/service/response';
 
 // 获取角色的权限列表
 export async function GET(
@@ -24,10 +24,10 @@ export async function GET(
       .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
       .where(eq(rolePermissions.roleId, parseInt(id)));
 
-    return NextResponse.json(rolePermissionList);
+    return successResponse(rolePermissionList);
   } catch (error) {
     console.error('获取角色权限失败:', error);
-    return NextResponse.json({ error: '获取角色权限失败' }, { status: 500 });
+    return errorResponse('获取角色权限失败');
   }
 }
 
@@ -57,7 +57,7 @@ export async function PUT(
         operatorId: currentUser?.id,
         operatorName: currentUser?.username
       });
-      return NextResponse.json({ message: '角色不存在' }, { status: 404 });
+      return errorResponse('角色不存在');
     }
 
     // 获取原有权限用于对比
@@ -118,7 +118,7 @@ export async function PUT(
       timestamp: new Date().toISOString()
     });
 
-    return NextResponse.json({ message: '权限更新成功' });
+    return successResponse('权限更新成功');
   } catch (error) {
     await logger.error('分配权限', '权限分配失败：系统错误', {
       error: error instanceof Error ? error.message : String(error),
@@ -128,6 +128,6 @@ export async function PUT(
     });
 
     console.error('更新角色权限失败:', error);
-    return NextResponse.json({ error: '更新角色权限失败' }, { status: 500 });
+    return errorResponse('更新角色权限失败');
   }
 }

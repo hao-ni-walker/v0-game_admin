@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { systemLogs } from '@/db/schema';
 import { count, eq, sql, gte } from 'drizzle-orm';
 import { getUserFromRequest } from '@/lib/server-permissions';
+import { errorResponse, successResponse } from '@/service/response';
 
 export async function GET(request: NextRequest) {
   try {
@@ -70,7 +71,7 @@ export async function GET(request: NextRequest) {
       .groupBy(sql`DATE(${systemLogs.createdAt})`)
       .orderBy(sql`DATE(${systemLogs.createdAt})`);
 
-    return NextResponse.json({
+    return successResponse({
       overview: {
         total: totalLogs.count,
         today: todayLogs.count,
@@ -91,6 +92,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('获取日志统计失败:', error);
-    return NextResponse.json({ error: '获取日志统计失败' }, { status: 500 });
+    return errorResponse('获取日志统计失败');
   }
 }

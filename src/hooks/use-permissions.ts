@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from './use-auth';
+import { AuthAPI } from '@/service/request';
 
 /**
  * 客户端权限检查hook
@@ -20,10 +21,9 @@ export function usePermissions() {
       }
 
       try {
-        const response = await fetch('/api/auth/permissions');
-        if (response.ok) {
-          const perms = await response.json();
-          setPermissions(perms);
+        const response = await AuthAPI.getPermissions();
+        if (response.code === 0) {
+          setPermissions(response.data);
         }
       } catch (error) {
         console.error('获取权限失败:', error);

@@ -1,7 +1,7 @@
 import { db } from '@/db';
 import { permissions } from '@/db/schema';
+import { errorResponse, successResponse } from '@/service/response';
 import { eq } from 'drizzle-orm';
-import { NextResponse } from 'next/server';
 
 export async function PUT(
   request: Request,
@@ -17,9 +17,9 @@ export async function PUT(
       .set({ name, code, description })
       .where(eq(permissions.id, parseInt(id)));
 
-    return NextResponse.json({ message: '权限更新成功' });
+    return successResponse('权限更新成功');
   } catch (error) {
-    return NextResponse.json({ error: '更新权限失败' }, { status: 500 });
+    return errorResponse('更新权限失败');
   }
 }
 
@@ -32,8 +32,8 @@ export async function DELETE(
 
     await db.delete(permissions).where(eq(permissions.id, parseInt(id)));
 
-    return NextResponse.json({ message: '权限删除成功' });
+    return successResponse('权限删除成功');
   } catch (error) {
-    return NextResponse.json({ error: '删除权限失败' }, { status: 500 });
+    return errorResponse('删除权限失败');
   }
 }

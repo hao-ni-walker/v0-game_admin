@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import type { Role, Permission, FormData } from './types';
+import { PermissionAPI, RoleAPI } from '@/service/request';
 
 export function useRoleManagement() {
   // 弹窗状态
@@ -25,9 +26,12 @@ export function useRoleManagement() {
   // 获取所有权限
   const fetchAllPermissions = useCallback(async () => {
     try {
-      const response = await fetch('/api/permissions/all');
-      const result = await response.json();
-      setAllPermissions(result.data || result || []);
+      const res = await PermissionAPI.getAllPermissions();
+      if (res.code === 0) {
+        setAllPermissions(res.data || []);
+      } else {
+        toast.error(res.message || '获取权限列表失败');
+      }
     } catch (error) {
       console.error('获取权限列表失败:', error);
     }
@@ -36,9 +40,12 @@ export function useRoleManagement() {
   // 获取角色的权限
   const fetchRolePermissions = useCallback(async (roleId: number) => {
     try {
-      const response = await fetch(`/api/roles/${roleId}/permissions`);
-      const permissions = await response.json();
-      setRolePermissions(permissions.map((p: Permission) => p.id));
+      const res = await RoleAPI.getRolePermissions(roleId);
+      if (res.code === 0) {
+        setRolePermissions(res.data.map((p: Permission) => p.id));
+      } else {
+        toast.error(res.message || '获取角色权限失败');
+      }
     } catch (error) {
       console.error('获取角色权限失败:', error);
     }
@@ -54,20 +61,15 @@ export function useRoleManagement() {
 
       try {
         setFormLoading(true);
-        const response = await fetch('/api/roles', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
+        const res = await RoleAPI.createRole(formData);
 
-        if (response.ok) {
+        if (res.code === 0) {
           toast.success('角色创建成功');
           setCreateDialogOpen(false);
           setFormData({ name: '', description: '' });
           onSuccess?.();
         } else {
-          const error = await response.json();
-          toast.error(error.message || '创建角色失败');
+          toast.error(res.message || '创建角色失败');
         }
       } catch {
         toast.error('创建角色失败');
@@ -88,21 +90,16 @@ export function useRoleManagement() {
 
       try {
         setFormLoading(true);
-        const response = await fetch(`/api/roles/${editingRole.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
+        const res = await RoleAPI.updateRole(editingRole.id, formData);
 
-        if (response.ok) {
+        if (res.code === 0) {
           toast.success('角色更新成功');
           setEditDialogOpen(false);
           setEditingRole(null);
           setFormData({ name: '', description: '' });
           onSuccess?.();
         } else {
-          const error = await response.json();
-          toast.error(error.message || '更新角色失败');
+          toast.error(res.message || '更新角色失败');
         }
       } catch {
         toast.error('更新角色失败');
@@ -125,16 +122,12 @@ export function useRoleManagement() {
           permissions: rolePermissions
         });
 
-        const response = await fetch(
-          `/api/roles/${editingRole.id}/permissions`,
-          {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ permissionIds: rolePermissions })
-          }
+        const res = await RoleAPI.updateRolePermissions(
+          editingRole.id,
+          rolePermissions
         );
 
-        if (response.ok) {
+        if (res.code === 0) {
           toast.success(
             `权限分配成功！已为角色"${editingRole.name}"分配${rolePermissions.length}个权限`
           );
@@ -143,8 +136,7 @@ export function useRoleManagement() {
           setRolePermissions([]);
           onSuccess?.();
         } else {
-          const error = await response.json();
-          toast.error(error.message || '权限分配失败');
+          toast.error(res.message || '权限分配失败');
         }
       } catch {
         toast.error('权限分配失败');
@@ -159,16 +151,13 @@ export function useRoleManagement() {
   const handleDeleteRole = useCallback(
     async (role: Role, onSuccess?: () => void) => {
       try {
-        const response = await fetch(`/api/roles/${role.id}`, {
-          method: 'DELETE'
-        });
+        const res = await RoleAPI.deleteRole(role.id);
 
-        if (response.ok) {
+        if (res.code === 0) {
           toast.success('角色删除成功');
           onSuccess?.();
         } else {
-          const error = await response.json();
-          toast.error(error.message || '删除角色失败');
+          toast.error(res.message || '删除角色失败');
         }
       } catch {
         toast.error('删除角色失败');

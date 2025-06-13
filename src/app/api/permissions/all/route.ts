@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import { permissions } from '@/db/schema';
-import { NextResponse } from 'next/server';
+import { errorResponse, successResponse } from '@/service/response';
 
 export async function GET() {
   try {
@@ -17,11 +17,9 @@ export async function GET() {
       .from(permissions)
       .orderBy(permissions.sortOrder);
 
-    return NextResponse.json({
-      data: allPermissions
-    });
+    return successResponse(allPermissions);
   } catch (error) {
     console.error('获取权限列表失败:', error);
-    return NextResponse.json({ error: '获取权限列表失败' }, { status: 500 });
+    return errorResponse('获取权限列表失败');
   }
 }

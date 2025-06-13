@@ -33,6 +33,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 
 import PageContainer from '@/components/layout/page-container';
+import { RoleAPI } from '@/service/request';
 
 export default function RoleManagementPage() {
   const searchParams = useSearchParams();
@@ -90,20 +91,23 @@ export default function RoleManagementPage() {
         }
       });
 
-      const response = await fetch(`/api/roles?${params.toString()}`);
-      const result = await response.json();
+      const res = await RoleAPI.getRoles(params);
+      if (res.code === 0) {
+        setRoles(res.data || []);
+      } else {
+        toast.error(res.message || '获取角色列表失败');
+      }
 
-      setRoles(result.data || result || []);
-      if (result.pagination) {
+      if (res.pager) {
         setPagination({
-          page: result.pagination.page || 1,
-          limit: result.pagination.limit || 10,
-          total: result.pagination.total || 0,
-          totalPages: result.pagination.totalPages || 0
+          page: res.pager.page || 1,
+          limit: res.pager.limit || 10,
+          total: res.pager.total || 0,
+          totalPages: res.pager.totalPages || 0
         });
       } else {
         // 如果API没有返回分页信息，手动计算
-        const total = result.length || 0;
+        const total = res.data.length || 0;
         setPagination({
           page: 1,
           limit: total,

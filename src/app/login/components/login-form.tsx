@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { AuthAPI } from '@/service/request';
 
 export function LoginForm({
   className,
@@ -36,25 +37,15 @@ export function LoginForm({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || '登录失败');
+      const res = await AuthAPI.login(formData);
+      if (res.code === 0) {
+        toast.success('登录成功');
+        router.push('/dashboard');
+        router.refresh();
+      } else {
+        toast.error(res.message || '登录失败');
       }
-
-      toast.success('登录成功');
-      router.push('/dashboard');
-      router.refresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : '登录失败');
     } finally {

@@ -21,6 +21,8 @@ import {
 import { getInitials } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
+import { AuthAPI } from '@/service/request';
+import { toast } from 'sonner';
 
 export function NavUser() {
   const { isMobile } = useSidebar();
@@ -37,13 +39,14 @@ export function NavUser() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST'
-      });
+      const res = await AuthAPI.logout();
 
-      if (response.ok) {
+      if (res.code === 0) {
+        toast.success(res.message || '退出登录成功');
         router.push('/login');
         router.refresh();
+      } else {
+        toast.error(res.message || '退出登录失败');
       }
     } catch (error) {
       console.error('退出登录失败:', error);

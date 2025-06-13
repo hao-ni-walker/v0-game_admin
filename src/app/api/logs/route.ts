@@ -1,15 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { db } from '@/db';
 import { systemLogs, users } from '@/db/schema';
 import { desc, eq, like, and, gte, lte, count } from 'drizzle-orm';
 import { getUserFromRequest } from '@/lib/server-permissions';
+import {
+  successResponse,
+  errorResponse,
+  unauthorizedResponse
+} from '@/service/response';
 
 export async function GET(request: NextRequest) {
   try {
     // 检查用户权限
     const userId = await getUserFromRequest();
     if (!userId) {
-      return NextResponse.json({ error: '未授权' }, { status: 401 });
+      return unauthorizedResponse('未授权');
     }
 
     const { searchParams } = new URL(request.url);
@@ -83,18 +88,15 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .offset((page - 1) * limit);
 
-    return NextResponse.json({
-      data: logs,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit)
-      }
+    return successResponse(logs, {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
     });
   } catch (error) {
     console.error('获取日志失败:', error);
-    return NextResponse.json({ error: '获取日志失败' }, { status: 500 });
+    return errorResponse('获取日志失败');
   }
 }
 
@@ -103,7 +105,7 @@ export async function DELETE(request: NextRequest) {
     // 检查用户权限
     const userId = await getUserFromRequest();
     if (!userId) {
-      return NextResponse.json({ error: '未授权' }, { status: 401 });
+      return unauthorizedResponse('未授权');
     }
 
     const { searchParams } = new URL(request.url);
@@ -115,11 +117,11 @@ export async function DELETE(request: NextRequest) {
 
     await db.delete(systemLogs).where(lte(systemLogs.createdAt, cutoffDate));
 
-    return NextResponse.json({
+    return successResponse({
       message: `成功删除 ${days} 天前的日志`
     });
   } catch (error) {
     console.error('删除日志失败:', error);
-    return NextResponse.json({ error: '删除日志失败' }, { status: 500 });
+    return errorResponse('删除日志失败');
   }
 }

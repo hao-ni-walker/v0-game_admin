@@ -18,32 +18,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import PageContainer from '@/components/layout/page-container';
 import { useAuth } from '@/hooks/use-auth';
-import {
-  Users,
-  UserCheck,
-  Shield,
-  FileText,
-  AlertTriangle,
-  Activity,
-  TrendingUp,
-  TrendingDown,
-  Clock,
-  RefreshCw
-} from 'lucide-react';
+import { TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 import { formatDateTime, PageHeader } from '@/components/custom-table';
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  PieChart,
-  Pie,
-  Cell
-} from 'recharts';
+import { Area, AreaChart, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { DashboardAPI } from '@/service/request';
+import { toast } from 'sonner';
 
 interface DashboardStats {
   overview: {
@@ -75,20 +54,6 @@ interface DashboardStats {
   }>;
 }
 
-const levelColors = {
-  info: 'hsl(var(--chart-1))',
-  warn: 'hsl(var(--chart-2))',
-  error: 'hsl(var(--chart-3))',
-  debug: 'hsl(var(--chart-4))'
-};
-
-const levelBadgeColors = {
-  info: 'bg-blue-100 text-blue-800',
-  warn: 'bg-yellow-100 text-yellow-800',
-  error: 'bg-red-100 text-red-800',
-  debug: 'bg-gray-100 text-gray-800'
-};
-
 export default function DashboardOverview() {
   const { session } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -105,10 +70,11 @@ export default function DashboardOverview() {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/dashboard/stats');
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data);
+      const res = await DashboardAPI.getStats();
+      if (res.code === 0) {
+        setStats(res.data);
+      } else {
+        toast.error(res.message || '获取dashboard数据失败');
       }
     } catch (error) {
       console.error('获取dashboard数据失败:', error);

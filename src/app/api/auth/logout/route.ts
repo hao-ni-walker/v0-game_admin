@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { successResponse } from '@/service/response';
 import { verify } from 'jsonwebtoken';
 import { Logger } from '@/lib/logger';
 
@@ -31,13 +31,7 @@ export async function POST(request: Request) {
       hasValidToken: !!token
     });
 
-    const response = NextResponse.json(
-      { message: '退出成功' },
-      { status: 200 }
-    );
-    response.cookies.delete('token');
-
-    return response;
+    return successResponse('退出成功');
   } catch (error) {
     // 记录登出错误日志
     const logger = new Logger('用户认证');
@@ -45,13 +39,6 @@ export async function POST(request: Request) {
       error: error instanceof Error ? error.message : String(error),
       timestamp: new Date().toISOString()
     });
-
-    // 即使发生错误也要清除token
-    const response = NextResponse.json(
-      { message: '退出成功' },
-      { status: 200 }
-    );
-    response.cookies.delete('token');
-    return response;
+    return successResponse('退出成功');
   }
 }

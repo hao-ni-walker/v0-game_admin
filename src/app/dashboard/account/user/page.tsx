@@ -32,6 +32,7 @@ import {
 
 import { UserForm } from './components/user-form';
 import PageContainer from '@/components/layout/page-container';
+import { RoleAPI, UserAPI } from '@/service/request';
 
 // 类型定义
 interface User {
@@ -108,9 +109,12 @@ export default function UserManagementPage() {
   // 获取角色列表
   const fetchRoles = useCallback(async () => {
     try {
-      const response = await fetch('/api/roles/label');
-      const res = await response.json();
-      setRoles(res.data);
+      const res = await RoleAPI.getRoleLabels();
+      if (res.code === 0) {
+        setRoles(res.data);
+      } else {
+        toast.error(res.message || '获取角色列表失败');
+      }
     } catch (error) {
       console.error('获取角色列表失败:', error);
     }
@@ -137,15 +141,17 @@ export default function UserManagementPage() {
         }
       });
 
-      const response = await fetch(`/api/users?${params.toString()}`);
-      const result = await response.json();
-
-      setUsers(result.data || []);
+      const res = await UserAPI.getUsers(params);
+      if (res.code === 0) {
+        setUsers(res.data || []);
+      } else {
+        toast.error(res.message || '获取用户列表失败');
+      }
       setPagination({
-        page: result.pagination?.page || 1,
-        limit: result.pagination?.limit || 10,
-        total: result.pagination?.total || 0,
-        totalPages: result.pagination?.totalPages || 0
+        page: res.pager?.page || 1,
+        limit: res.pager?.limit || 10,
+        total: res.pager?.total || 0,
+        totalPages: res.pager?.totalPages || 0
       });
     } catch (error) {
       toast.error('获取用户列表失败');
@@ -198,19 +204,14 @@ export default function UserManagementPage() {
 
   const handleCreateUser = async (values: any) => {
     try {
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values)
-      });
+      const res = await UserAPI.createUser(values);
 
-      if (response.ok) {
+      if (res.code === 0) {
         toast.success('用户创建成功');
         setCreateDialogOpen(false);
         fetchUsers(filters);
       } else {
-        const error = await response.json();
-        toast.error(error.message || '创建用户失败');
+        toast.error(res.message || '创建用户失败');
       }
     } catch (error) {
       toast.error('创建用户失败');
@@ -221,20 +222,15 @@ export default function UserManagementPage() {
     if (!editingUser) return;
 
     try {
-      const response = await fetch(`/api/users/${editingUser.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values)
-      });
+      const res = await UserAPI.updateUser(editingUser.id, values);
 
-      if (response.ok) {
+      if (res.code === 0) {
         toast.success('用户更新成功');
         setEditDialogOpen(false);
         setEditingUser(null);
         fetchUsers(filters);
       } else {
-        const error = await response.json();
-        toast.error(error.message || '更新用户失败');
+        toast.error(res.message || '更新用户失败');
       }
     } catch (error) {
       toast.error('更新用户失败');
@@ -243,16 +239,13 @@ export default function UserManagementPage() {
 
   const handleDeleteUser = async (user: User) => {
     try {
-      const response = await fetch(`/api/users/${user.id}`, {
-        method: 'DELETE'
-      });
+      const res = await UserAPI.deleteUser(user.id);
 
-      if (response.ok) {
+      if (res.code === 0) {
         toast.success('用户删除成功');
         fetchUsers(filters);
       } else {
-        const error = await response.json();
-        toast.error(error.message || '删除用户失败');
+        toast.error(res.message || '删除用户失败');
       }
     } catch (error) {
       toast.error('删除用户失败');

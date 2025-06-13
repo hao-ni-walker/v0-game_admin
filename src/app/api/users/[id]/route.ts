@@ -2,10 +2,14 @@ import { db } from '@/db';
 import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
-import { NextResponse } from 'next/server';
 import { preventSuperAdminModification } from '@/lib/super-admin';
 import { Logger } from '@/lib/logger';
 import { getCurrentUser } from '@/lib/auth';
+import {
+  successResponse,
+  errorResponse,
+  notFoundResponse
+} from '@/service/response';
 
 export async function PUT(
   request: Request,
@@ -31,7 +35,7 @@ export async function PUT(
         operatorId: currentUser?.id,
         operatorName: currentUser?.username
       });
-      return NextResponse.json({ message: '用户不存在' }, { status: 404 });
+      return notFoundResponse('用户不存在');
     }
 
     await preventSuperAdminModification(id);
@@ -76,7 +80,7 @@ export async function PUT(
       timestamp: new Date().toISOString()
     });
 
-    return NextResponse.json({ message: '用户更新成功' });
+    return successResponse({ message: '用户更新成功' });
   } catch (error) {
     await logger.error('更新用户', '更新用户失败：系统错误', {
       error: error instanceof Error ? error.message : String(error),
@@ -85,10 +89,7 @@ export async function PUT(
       operatorName: currentUser?.username
     });
 
-    return NextResponse.json(
-      { error: (error as Error)?.message || '更新用户失败' },
-      { status: 500 }
-    );
+    return errorResponse((error as Error)?.message || '更新用户失败');
   }
 }
 
@@ -116,7 +117,7 @@ export async function DELETE(
         operatorId: currentUser?.id,
         operatorName: currentUser?.username
       });
-      return NextResponse.json({ message: '用户不存在' }, { status: 404 });
+      return notFoundResponse('用户不存在');
     }
 
     await preventSuperAdminModification(id);
@@ -132,7 +133,7 @@ export async function DELETE(
       timestamp: new Date().toISOString()
     });
 
-    return NextResponse.json({ message: '用户删除成功' });
+    return successResponse({ message: '用户删除成功' });
   } catch (error) {
     await logger.error('删除用户', '删除用户失败：系统错误', {
       error: error instanceof Error ? error.message : String(error),
@@ -141,9 +142,6 @@ export async function DELETE(
       operatorName: currentUser?.username
     });
 
-    return NextResponse.json(
-      { error: (error as Error)?.message || '删除用户失败' },
-      { status: 500 }
-    );
+    return errorResponse((error as Error)?.message || '删除用户失败');
   }
 }

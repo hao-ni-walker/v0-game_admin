@@ -1,9 +1,7 @@
 import { db } from '@/db';
 import { permissions } from '@/db/schema';
-import { NextResponse } from 'next/server';
-import { like, and, gte, lte, count, eq } from 'drizzle-orm';
-import { Logger } from '@/lib/logger';
-import { getCurrentUser } from '@/lib/auth';
+import { like, and, gte, lte, count } from 'drizzle-orm';
+import { successResponse, errorResponse } from '@/service/response';
 
 export async function GET(request: Request) {
   try {
@@ -79,18 +77,15 @@ export async function GET(request: Request) {
     // 计算分页信息
     const totalPages = Math.ceil(total / validLimit);
 
-    return NextResponse.json({
-      data: permissionList,
-      pagination: {
-        page: validPage,
-        limit: validLimit,
-        total,
-        totalPages
-      }
+    return successResponse(permissionList, {
+      page: validPage,
+      limit: validLimit,
+      total,
+      totalPages
     });
   } catch (error) {
     console.error('获取权限列表失败:', error);
-    return NextResponse.json({ error: '获取权限列表失败' }, { status: 500 });
+    return errorResponse('获取权限列表失败');
   }
 }
 
@@ -105,9 +100,9 @@ export async function POST(request: Request) {
       description
     });
 
-    return NextResponse.json({ message: '权限创建成功' });
+    return successResponse({ message: '权限创建成功' });
   } catch (error) {
     console.error('创建权限失败:', error);
-    return NextResponse.json({ error: '创建权限失败' }, { status: 500 });
+    return errorResponse('创建权限失败');
   }
 }

@@ -1,10 +1,10 @@
 import { db } from '@/db';
 import { roles, users } from '@/db/schema';
 import bcrypt from 'bcryptjs';
-import { NextResponse } from 'next/server';
 import { eq, like, and, gte, lte, sql } from 'drizzle-orm';
 import { Logger } from '@/lib/logger';
 import { getCurrentUser } from '@/lib/auth';
+import { successResponse, errorResponse } from '@/service/response';
 
 export async function GET(request: Request) {
   try {
@@ -74,18 +74,15 @@ export async function GET(request: Request) {
 
     const total = totalResult[0]?.count || 0;
 
-    return NextResponse.json({
-      data: userList,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(Number(total) / limit)
-      }
+    return successResponse(userList, {
+      page,
+      limit,
+      total: Number(total),
+      totalPages: Math.ceil(Number(total) / limit)
     });
   } catch (error) {
     console.error('获取用户列表失败:', error);
-    return NextResponse.json({ error: '获取用户列表失败' }, { status: 500 });
+    return errorResponse('获取用户列表失败');
   }
 }
 
@@ -109,10 +106,7 @@ export async function POST(request: Request) {
         operatorName: currentUser?.username
       });
 
-      return NextResponse.json(
-        { message: '请填写所有必填字段' },
-        { status: 400 }
-      );
+      return errorResponse('请填写所有必填字段');
     }
 
     // 检查用户名或邮箱是否已存在
@@ -130,7 +124,7 @@ export async function POST(request: Request) {
         operatorName: currentUser?.username
       });
 
-      return NextResponse.json({ message: '用户名已存在' }, { status: 400 });
+      return errorResponse('用户名已存在');
     }
 
     // 加密密码
@@ -156,7 +150,7 @@ export async function POST(request: Request) {
       timestamp: new Date().toISOString()
     });
 
-    return NextResponse.json({ message: '用户创建成功' });
+    return successResponse({ message: '用户创建成功' });
   } catch (error) {
     await logger.error('创建用户', '创建用户失败：系统错误', {
       error: error instanceof Error ? error.message : String(error),
@@ -166,6 +160,6 @@ export async function POST(request: Request) {
     });
 
     console.error('创建用户失败:', error);
-    return NextResponse.json({ error: '创建用户失败' }, { status: 500 });
+    return errorResponse('创建用户失败');
   }
 }
