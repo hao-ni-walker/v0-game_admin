@@ -1,15 +1,15 @@
-import { mockLogAPI } from '@/mock';
-import { isStaticDeployment, apiRequest, buildSearchParams } from './base';
+import { apiRequest, buildSearchParams } from './base';
 
 // 日志相关 API
 export class LogAPI {
   // 获取日志列表
-  static async getLogs(params: any = {}) {
-    if (isStaticDeployment) {
-      return mockLogAPI.getLogs(params);
-    }
-
-    const queryString = buildSearchParams(params);
-    return apiRequest(`/logs?${queryString}`);
+  static async getLogs(params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    level?: string;
+  }) {
+    const searchParams = buildSearchParams(params || {});
+    return apiRequest(`/logs${searchParams ? `?${searchParams}` : ''}`);
   }
 }

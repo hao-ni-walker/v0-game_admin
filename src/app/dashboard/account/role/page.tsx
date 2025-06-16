@@ -74,20 +74,17 @@ export default function RoleManagementPage() {
     try {
       setLoading(true);
 
-      const params = new URLSearchParams();
+      const params: Record<string, any> = {};
       Object.entries(currentFilters).forEach(([key, value]) => {
         if (key === 'dateRange' && value) {
           // 处理日期范围
           const dateRange = value as { from: Date; to: Date };
           if (dateRange.from && dateRange.to) {
-            params.append(
-              'startDate',
-              dateRange.from.toISOString().split('T')[0]
-            );
-            params.append('endDate', dateRange.to.toISOString().split('T')[0]);
+            params.startDate = dateRange.from.toISOString().split('T')[0];
+            params.endDate = dateRange.to.toISOString().split('T')[0];
           }
         } else if (value !== undefined && value !== null && value !== '') {
-          params.append(key, String(value));
+          params[key] = value;
         }
       });
 

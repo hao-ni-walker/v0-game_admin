@@ -109,7 +109,7 @@ export default function UserManagementPage() {
   // 获取角色列表
   const fetchRoles = useCallback(async () => {
     try {
-      const res = await RoleAPI.getRoleLabels();
+      const res = await RoleAPI.getAllRoles();
       if (res.code === 0) {
         setRoles(res.data);
       } else {
@@ -125,7 +125,7 @@ export default function UserManagementPage() {
     try {
       setLoading(true);
 
-      const params = new URLSearchParams();
+      const params: Record<string, any> = {};
       Object.entries(currentFilters).forEach(([key, value]) => {
         if (key === 'dateRange' && value) {
           // 处理日期范围
@@ -133,11 +133,11 @@ export default function UserManagementPage() {
           if (dateRange.from && dateRange.to) {
             const startDateStr = dateRange.from.toISOString().split('T')[0];
             const endDateStr = dateRange.to.toISOString().split('T')[0];
-            params.append('startDate', startDateStr);
-            params.append('endDate', endDateStr);
+            params.startDate = startDateStr;
+            params.endDate = endDateStr;
           }
         } else if (value !== undefined && value !== null && value !== '') {
-          params.append(key, String(value));
+          params[key] = value;
         }
       });
 

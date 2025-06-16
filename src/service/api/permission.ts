@@ -1,38 +1,30 @@
-import { mockPermissionAPI } from '@/mock';
-import { isStaticDeployment, apiRequest, buildSearchParams } from './base';
+import { apiRequest, buildSearchParams } from './base';
 
 // 权限相关 API
 export class PermissionAPI {
-  // 获取所有权限
-  static async getAllPermissions() {
-    if (isStaticDeployment) {
-      return mockPermissionAPI.getAllPermissions();
-    }
-    return apiRequest('/permissions/all');
-  }
   // 获取权限列表
-  static async getPermissions(params: any = {}) {
-    if (isStaticDeployment) {
-      return mockPermissionAPI.getPermissions(params);
-    }
-
-    const queryString = buildSearchParams(params);
-    return apiRequest(`/permissions?${queryString}`);
+  static async getPermissions(params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    parentId?: number;
+  }) {
+    const searchParams = buildSearchParams(params || {});
+    return apiRequest(`/permissions${searchParams ? `?${searchParams}` : ''}`);
   }
 
-  // 根据 ID 获取权限
-  static async getPermissionById(id: number) {
-    if (isStaticDeployment) {
-      return mockPermissionAPI.getPermissionById(id);
-    }
+  // 获取权限树结构
+  static async getPermissionTree() {
+    return apiRequest('/permissions/tree');
+  }
+
+  // 获取权限详情
+  static async getPermission(id: number) {
     return apiRequest(`/permissions/${id}`);
   }
 
   // 创建权限
   static async createPermission(permissionData: any) {
-    if (isStaticDeployment) {
-      return mockPermissionAPI.createPermission(permissionData);
-    }
     return apiRequest('/permissions', {
       method: 'POST',
       body: JSON.stringify(permissionData)
@@ -41,9 +33,6 @@ export class PermissionAPI {
 
   // 更新权限
   static async updatePermission(id: number, permissionData: any) {
-    if (isStaticDeployment) {
-      return mockPermissionAPI.updatePermission(id, permissionData);
-    }
     return apiRequest(`/permissions/${id}`, {
       method: 'PUT',
       body: JSON.stringify(permissionData)
@@ -52,27 +41,18 @@ export class PermissionAPI {
 
   // 删除权限
   static async deletePermission(id: number) {
-    if (isStaticDeployment) {
-      return mockPermissionAPI.deletePermission(id);
-    }
     return apiRequest(`/permissions/${id}`, {
       method: 'DELETE'
     });
   }
 
-  // 获取权限树结构
-  static async getPermissionTree() {
-    if (isStaticDeployment) {
-      return mockPermissionAPI.getPermissionTree();
-    }
-    return apiRequest('/permissions/tree');
+  // 获取权限子节点
+  static async getPermissionChildren(parentId: number) {
+    return apiRequest(`/permissions/${parentId}/children`);
   }
 
-  // 根据父级ID获取子权限
-  static async getPermissionsByParent(parentId: number | null) {
-    if (isStaticDeployment) {
-      return mockPermissionAPI.getPermissionsByParent(parentId);
-    }
-    return apiRequest(`/permissions/children?parentId=${parentId}`);
+  // 获取所有权限（用于下拉选择）
+  static async getAllPermissions() {
+    return apiRequest('/permissions/all');
   }
 }

@@ -31,10 +31,9 @@ jobs:
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
 
-    - name: Build static version
-      run: pnpm build:static
+    - name: Build application
+      run: pnpm build
       env:
-        STATIC_EXPORT: true
         NODE_ENV: production
 
     - name: Setup Pages
@@ -43,7 +42,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: ./out
+        path: ./.next
 
     - name: Deploy to GitHub Pages
       id: deployment

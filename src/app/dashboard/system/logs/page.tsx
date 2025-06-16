@@ -149,15 +149,15 @@ export default function LogsPage() {
     try {
       setLoading(true);
 
-      const params = new URLSearchParams();
+      const params: Record<string, any> = {};
       Object.entries(currentFilters).forEach(([key, value]) => {
         if (key === 'dateRange' && value) {
           const dateRange = value as { from: Date; to: Date };
           if (dateRange.from && dateRange.to) {
             const startDateStr = dateRange.from.toISOString().split('T')[0];
             const endDateStr = dateRange.to.toISOString().split('T')[0];
-            params.append('startDate', startDateStr);
-            params.append('endDate', endDateStr);
+            params.startDate = startDateStr;
+            params.endDate = endDateStr;
           }
         } else if (
           value !== undefined &&
@@ -165,7 +165,7 @@ export default function LogsPage() {
           value !== '' &&
           (key !== 'level' || value !== 'all')
         ) {
-          params.append(key, String(value));
+          params[key] = value;
         }
       });
 

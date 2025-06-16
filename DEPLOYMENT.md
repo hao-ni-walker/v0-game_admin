@@ -1,174 +1,189 @@
-# GitHub Pages 部署指南
+# 部署指南
 
-本项目支持部署到 GitHub Pages 作为静态预览版本，使用 Mock 数据展示功能。
+本项目是一个基于 Next.js 的管理后台系统，支持多种部署方式。
 
-## 🚀 自动部署
+## 🚀 本地开发
 
-### 1. 启用 GitHub Pages
+### 环境要求
 
-1. 进入你的 GitHub 仓库
-2. 点击 `Settings` 选项卡
-3. 在左侧菜单中找到 `Pages`
-4. 在 `Source` 部分选择 `GitHub Actions`
+- Node.js 18.x 或更高版本
+- pnpm 包管理器
+- PostgreSQL 数据库
 
-### 2. 推送代码
-
-当你推送代码到 `main` 分支时，GitHub Actions 会自动：
-
-- 安装依赖
-- 构建静态版本（使用 Mock 数据）
-- 部署到 GitHub Pages
-
-部署完成后，你可以通过以下 URL 访问：
-
-```
-https://[你的用户名].github.io/n-admin/
-```
-
-## 🛠️ 本地测试
-
-### 开发模式（完整功能）
+### 开发流程
 
 ```bash
-# 安装依赖
+# 1. 安装依赖
 pnpm install
 
-# 启动开发服务器（包含 API 功能）
+# 2. 环境配置
+cp .env.example .env.local
+# 编辑 .env.local，配置数据库连接等环境变量
+
+# 3. 数据库设置
+pnpm db:generate  # 生成数据库迁移文件
+pnpm db:push      # 推送数据库结构
+pnpm init:admin   # 初始化管理员账户
+
+# 4. 启动开发服务器
 pnpm dev
 ```
 
-### 静态预览模式
+## 🛠️ 生产部署
+
+### 1. Vercel 部署（推荐）
+
+#### 自动部署
+
+1. 连接你的 GitHub 仓库到 Vercel
+2. 配置环境变量
+3. 推送代码，自动部署
+
+#### 手动部署
 
 ```bash
-# 构建静态版本（GitHub Pages 预览）
-pnpm build:static
+# 安装 Vercel CLI
+npm i -g vercel
 
-# 构建完成后，静态文件会在 out/ 目录中
-# 可以使用任何静态服务器预览，例如：
-npx serve out
+# 登录并部署
+vercel
 ```
 
-## 📋 功能说明
+### 2. Docker 部署
 
-### 🔄 双模式支持
+```bash
+# 构建镜像
+docker build -t n-admin .
 
-项目现在支持两种模式：
-
-#### 1. 完整功能模式（开发/生产）
-
-- ✅ 真实数据库连接
-- ✅ 完整的 API 功能
-- ✅ 用户认证
-- ✅ 数据持久化
-- 使用命令：`pnpm dev` 或 `pnpm build`
-
-#### 2. 静态预览模式（GitHub Pages）
-
-- ✅ 完整的 UI 界面展示
-- ✅ Mock 数据驱动的功能演示
-- ✅ 响应式设计
-- ✅ 所有页面和组件可正常访问
-- ✅ 搜索、筛选、分页等功能正常工作
-- ✅ 表单提交和数据操作（仅限前端，不会持久化）
-- ❌ 无真实数据库连接
-- ❌ 无服务端 API
-- ❌ 数据不会持久化（刷新页面后重置）
-- 使用命令：`pnpm build:static`
-
-### 演示账号
-
-在静态版本中，你可以使用以下账号登录：
-
-- **邮箱**: admin@example.com
-- **密码**: Admin@123456
-
-## 🔧 技术实现
-
-### 智能环境检测
-
-项目使用智能 API 客户端，会根据环境自动切换：
-
-```typescript
-// 自动检测环境
-const isStaticDeployment =
-  (typeof window !== 'undefined' &&
-    window.location.hostname.includes('github.io')) ||
-  process.env.STATIC_EXPORT === 'true';
-
-// 根据环境选择数据源
-if (isStaticDeployment) {
-  return MockAPI.getUsers(params); // 使用 Mock 数据
-} else {
-  return apiRequest('/users'); // 使用真实 API
-}
+# 运行容器
+docker run -p 3000:3000 -e DATABASE_URL="your_database_url" n-admin
 ```
 
-### Next.js 配置
+### 3. 传统服务器部署
 
-```typescript
-// next.config.ts
-const isStaticExport = process.env.STATIC_EXPORT === 'true';
+```bash
+# 1. 构建应用
+pnpm build
 
-const nextConfig: NextConfig = {
-  ...(isStaticExport && {
-    output: 'export', // 仅在静态构建时启用
-    trailingSlash: true,
-    images: { unoptimized: true },
-    basePath: '/n-admin',
-    assetPrefix: '/n-admin/'
-  })
-};
+# 2. 启动生产服务器
+pnpm start
 ```
 
-## 📁 项目结构
+## 📋 环境变量配置
 
+创建 `.env.local` 文件并配置以下变量：
+
+```bash
+# 数据库配置
+DATABASE_URL="postgresql://username:password@localhost:5432/n_admin"
+
+# JWT 密钥
+JWT_SECRET="your-jwt-secret-key"
+JWT_REFRESH_SECRET="your-jwt-refresh-secret-key"
+
+# 应用配置
+NEXT_PUBLIC_APP_NAME="N-Admin"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+# 邮件配置（可选）
+EMAIL_FROM="noreply@yourdomain.com"
+SMTP_HOST="smtp.yourdomain.com"
+SMTP_PORT="587"
+SMTP_USER="your-smtp-user"
+SMTP_PASSWORD="your-smtp-password"
 ```
-src/
-├── lib/
-│   ├── mock-data.ts      # Mock 数据定义
-│   ├── mock-api.ts       # Mock API 服务
-│   └── api-client.ts     # 智能 API 客户端
-├── app/
-│   ├── api/             # 真实 API 路由（开发模式）
-│   ├── dashboard/       # 仪表板页面
-│   └── login/          # 登录页面
-└── components/
-    └── custom-table/    # 自定义表格组件
+
+## 🗄️ 数据库设置
+
+### PostgreSQL 设置
+
+1. **安装 PostgreSQL**
+2. **创建数据库**：
+
+   ```sql
+   CREATE DATABASE n_admin;
+   CREATE USER n_admin_user WITH PASSWORD 'your_password';
+   GRANT ALL PRIVILEGES ON DATABASE n_admin TO n_admin_user;
+   ```
+
+3. **运行迁移**：
+
+   ```bash
+   pnpm db:generate
+   pnpm db:push
+   ```
+
+4. **初始化管理员**：
+   ```bash
+   pnpm init:admin
+   ```
+
+### 数据库命令
+
+```bash
+# 生成迁移文件
+pnpm db:generate
+
+# 推送数据库结构更改
+pnpm db:push
+
+# 重置数据库（谨慎使用）
+pnpm db:reset
+
+# 查看数据库状态
+pnpm db:status
+
+# 初始化管理员用户
+pnpm init:admin
 ```
 
-## 🎯 使用场景
+## 🔧 部署最佳实践
 
-### 静态部署版本适用于：
+### 1. 性能优化
 
-- 📱 产品演示和展示
-- 🎨 UI/UX 设计评审
-- 👥 团队协作和反馈收集
-- 📊 功能原型验证
-- 🔍 代码审查和测试
+- 启用 gzip 压缩
+- 配置 CDN
+- 优化图片和静态资源
+- 使用合适的缓存策略
 
-### 完整功能版本适用于：
+### 2. 安全配置
 
-- 🚀 生产环境部署
-- 💾 需要数据持久化的场景
-- 👤 真实用户管理
-- 🔐 完整的权限控制
+- 使用强密码和复杂的 JWT 密钥
+- 配置 HTTPS
+- 设置适当的 CORS 策略
+- 定期更新依赖
 
-## 🚨 注意事项
+### 3. 监控和日志
 
-1. **不影响原有功能**: 静态构建不会修改或删除任何原有代码
-2. **仓库名称**: 确保你的仓库名为 `n-admin`，或修改 `next.config.ts` 中的 `basePath`
-3. **分支**: 默认从 `main` 分支部署
-4. **手动触发**: 可以在 GitHub Actions 页面手动触发部署
-5. **构建时间**: 首次部署可能需要几分钟时间
+- 配置错误监控（如 Sentry）
+- 设置性能监控
+- 配置日志收集
 
-## 🔄 更新部署
+## 🚨 常见问题
 
-- **自动**: 每次推送到 main 分支都会触发自动重新部署
-- **手动**: 在 GitHub Actions 页面点击 "Run workflow" 按钮
+### 1. 数据库连接失败
 
-## 💡 开发建议
+- 检查 `DATABASE_URL` 是否正确
+- 确认数据库服务已启动
+- 验证网络连接
 
-1. **日常开发**: 使用 `pnpm dev` 进行开发，享受完整功能
-2. **预览测试**: 使用 `pnpm build:static` 测试静态版本
-3. **生产部署**: 使用 `pnpm build` 构建生产版本
-4. **演示展示**: 使用 GitHub Pages 静态版本进行演示
+### 2. JWT 认证问题
+
+- 确认 `JWT_SECRET` 已设置
+- 检查 token 是否过期
+- 验证 token 格式
+
+### 3. 构建失败
+
+- 检查 Node.js 版本
+- 清理依赖：`rm -rf node_modules && pnpm install`
+- 检查环境变量
+
+## 📞 技术支持
+
+如果在部署过程中遇到问题，请：
+
+1. 检查控制台错误信息
+2. 查看应用日志
+3. 确认环境变量配置
+4. 联系技术支持团队
