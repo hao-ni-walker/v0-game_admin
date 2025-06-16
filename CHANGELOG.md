@@ -4,6 +4,17 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/)。
 
+### [0.0.9](https://github.com/guizimo/n-admin/compare/v0.0.8...v0.0.9) (2025-06-16)
+
+
+### ✨ 新增功能
+
+* **部署优化:** 添加 GitHub Pages 部署指南和静态构建支持 ([39e14a1](https://github.com/guizimo/n-admin/commit/39e14a1cabf3495a91d82b0e5b9054a5a1d6715f))
+* **登录页面优化:** 重构登录页面布局和样式 ([847c584](https://github.com/guizimo/n-admin/commit/847c5841865f8e8debcbad6faea2093e5a30f5d0))
+* 更新 README 文档，简化内容并调整格式 ([7a823d6](https://github.com/guizimo/n-admin/commit/7a823d6da92da3e898adb1f528bdda9c2f195593))
+* 优化仪表板加载体验和更新角色API接口 ([8297c98](https://github.com/guizimo/n-admin/commit/8297c98605cf6bd00c2d27bc7a55dc3ff3a7591a))
+* **重构与优化:** 更新部署文档和移除模拟数据 ([2e45533](https://github.com/guizimo/n-admin/commit/2e4553355941f04c564c0c091667ddf3e04012e2))
+
 ### [0.0.8](https://github.com/guizimo/n-admin/compare/v0.0.7...v0.0.8) (2025-06-12)
 
 
