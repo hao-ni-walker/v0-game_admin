@@ -55,6 +55,6 @@ export class RoleAPI {
 
   // 获取所有角色（用于下拉选择）
   static async getAllRoles() {
-    return apiRequest('/roles/all');
+    return apiRequest('/roles/label');
   }
 }

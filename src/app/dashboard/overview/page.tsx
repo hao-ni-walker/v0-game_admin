@@ -23,6 +23,7 @@ import { formatDateTime, PageHeader } from '@/components/custom-table';
 import { Area, AreaChart, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { DashboardAPI } from '@/service/request';
 import { toast } from 'sonner';
+import { DashboardSkeleton } from '@/components/ui/dashboard-skeleton';
 
 interface DashboardStats {
   overview: {
@@ -90,12 +91,7 @@ export default function DashboardOverview() {
   if (loading) {
     return (
       <PageContainer scrollable={false}>
-        <div className='flex h-[calc(100vh-8rem)] items-center justify-center'>
-          <div className='text-center'>
-            <RefreshCw className='text-primary mx-auto h-8 w-8 animate-spin' />
-            <p className='text-muted-foreground mt-2'>加载中...</p>
-          </div>
-        </div>
+        <DashboardSkeleton />
       </PageContainer>
     );
   }
