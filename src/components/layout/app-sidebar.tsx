@@ -21,13 +21,13 @@ import { siteConfig } from '@/config/site';
 const data = {
   navSecondary: [
     {
-      title: 'Support',
-      url: '#',
+      title: '支持',
+      url: 'https://github.com/guizimo',
       icon: LifeBuoy
     },
     {
-      title: 'Feedback',
-      url: '#',
+      title: '反馈',
+      url: 'https://github.com/guizimo/n-admin/issues',
       icon: Send
     }
   ]
@@ -41,14 +41,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size='lg' asChild>
               <a href='#'>
-                <div className='bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg'>
-                  <Image
-                    src='/logo_bg.png'
-                    alt={siteConfig.name}
-                    width={16}
-                    height={16}
-                    className='size-6'
-                  />
+                <div className='relative'>
+                  <div className='bg-primary/10 absolute inset-0 rounded-lg blur-sm' />
+                  <div className='bg-background relative rounded-lg border p-1 shadow-lg'>
+                    <Image
+                      src='/logo.png'
+                      alt='Logo'
+                      width={24}
+                      height={24}
+                      className='dark:invert'
+                    />
+                  </div>
                 </div>
                 <div className='grid flex-1 text-left text-sm leading-tight'>
                   <span className='truncate font-semibold'>
