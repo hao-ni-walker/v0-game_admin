@@ -28,16 +28,11 @@ export const DEFAULT_FILTERS = {
 } as const;
 
 /**
- * 筛选字段配置（已弃用，新组件直接内置配置）
- * @deprecated 使用新的 UserFilters 组件，不再需要此配置
- */
-
-/**
  * 表格列配置
  */
 export const TABLE_COLUMNS = [
   {
-    key: 'id',
+    key: 'index',
     title: 'ID',
     className: 'text-center w-[60px] font-mono text-sm font-medium'
   },

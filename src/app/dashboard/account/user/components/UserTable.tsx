@@ -11,6 +11,13 @@ import {
 import { User } from '../types';
 import { TABLE_COLUMNS, MESSAGES } from '../constants';
 
+interface EmptyStateProps {
+  icon?: React.ReactNode;
+  title?: string;
+  description?: string;
+  action?: React.ReactNode;
+}
+
 interface UserTableProps {
   /** 用户数据列表 */
   users: User[];
@@ -20,6 +27,8 @@ interface UserTableProps {
   onEdit: (user: User) => void;
   /** 删除用户回调 */
   onDelete: (user: User) => void;
+  /** 空状态配置 */
+  emptyState?: EmptyStateProps;
 }
 
 /**
@@ -30,10 +39,18 @@ export function UserTable({
   users,
   loading,
   onEdit,
-  onDelete
+  onDelete,
+  emptyState
 }: UserTableProps) {
   // 表格列配置
   const columns = TABLE_COLUMNS.map((col) => {
+    if (col.key === 'index') {
+      return {
+        ...col,
+        render: (value: any, record: User, index: number) => index + 1
+      };
+    }
+
     if (col.key === 'role') {
       return {
         ...col,
@@ -87,6 +104,7 @@ export function UserTable({
       data={users}
       loading={loading}
       emptyText={MESSAGES.EMPTY.USERS}
+      emptyState={emptyState}
       rowKey='id'
     />
   );

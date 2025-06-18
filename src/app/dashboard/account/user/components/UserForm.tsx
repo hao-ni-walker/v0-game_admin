@@ -119,11 +119,18 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
       </div>
       <div className='flex justify-end gap-2'>
         {onCancel && (
-          <Button type='button' variant='outline' onClick={onCancel}>
+          <Button
+            type='button'
+            variant='outline'
+            className='cursor-pointer'
+            onClick={onCancel}
+          >
             取消
           </Button>
         )}
-        <Button type='submit'>提交</Button>
+        <Button type='submit' className='cursor-pointer'>
+          提交
+        </Button>
       </div>
     </form>
   );
