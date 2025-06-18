@@ -107,7 +107,7 @@ export default function UserManagementPage() {
   }, [searchParams]);
 
   // 获取角色列表
-  const fetchRoles = useCallback(async () => {
+  const fetchRoles = async () => {
     try {
       const res = await RoleAPI.getAllRoles();
       if (res.code === 0) {
@@ -118,7 +118,7 @@ export default function UserManagementPage() {
     } catch (error) {
       console.error('获取角色列表失败:', error);
     }
-  }, []);
+  };
 
   // 获取用户列表
   const fetchUsers = useCallback(async (currentFilters: FilterParams) => {
@@ -195,7 +195,7 @@ export default function UserManagementPage() {
   // 初始化
   useEffect(() => {
     fetchRoles();
-  }, [fetchRoles]);
+  }, []);
 
   // 监听filters变化
   useEffect(() => {

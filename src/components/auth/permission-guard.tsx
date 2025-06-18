@@ -20,7 +20,7 @@ export function PermissionGuard({
   requireAll = false,
   fallback
 }: PermissionGuardProps) {
-  const { session } = useAuth();
+  const { session, hasHydrated } = useAuth();
   const { loading, hasPermission, hasAnyPermission, hasAllPermissions } =
     usePermissions();
   const router = useRouter();
@@ -42,8 +42,8 @@ export function PermissionGuard({
     }
   };
 
-  // 加载中状态
-  if (loading) {
+  // 加载中状态（包括水合）
+  if (loading || !hasHydrated) {
     return <PermissionSkeleton />;
   }
 

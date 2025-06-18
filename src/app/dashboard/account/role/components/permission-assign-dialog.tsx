@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import {
   PermissionTree,
   type Permission as TreePermission
-} from '@/components/permission-tree';
+} from '@/components/common/permission-tree';
 import type { Role, Permission } from './types';
 
 interface PermissionAssignDialogProps {
