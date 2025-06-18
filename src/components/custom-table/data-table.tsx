@@ -61,36 +61,31 @@ export function DataTable<T extends Record<string, any>>({
   }
 
   return (
-    <div className='bg-background flex h-full flex-col overflow-hidden rounded-md border'>
-      {/* 固定表头 */}
-      <div className='bg-muted/50 flex-shrink-0'>
-        <Table>
-          <TableHeader>
+    <div className='bg-background relative h-full overflow-hidden rounded-md border'>
+      <div className='h-full overflow-auto'>
+        <Table className='h-full'>
+          <TableHeader className='bg-background sticky top-0 z-10'>
             <TableRow className='bg-muted/50 hover:bg-muted/50'>
               {columns.map((column) => (
                 <TableHead
                   key={column.key}
                   className={`bg-muted/50 font-semibold ${column.className || ''}`}
+                  style={{
+                    position: 'sticky',
+                    top: 0,
+                    backgroundColor: 'hsl(var(--muted) / 0.5)'
+                  }}
                 >
                   {column.title}
                 </TableHead>
               ))}
             </TableRow>
           </TableHeader>
-        </Table>
-      </div>
-
-      {/* 可滚动表体 */}
-      <div className='flex-1 overflow-auto'>
-        <Table>
           <TableBody>
             {data.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='h-full text-center'
-                >
-                  <div className='flex h-full min-h-[200px] flex-col items-center justify-center space-y-4'>
+                <TableCell colSpan={columns.length} className='text-center'>
+                  <div className='flex flex-col items-center justify-center space-y-4'>
                     <div className='bg-muted/50 rounded-full p-4'>
                       {emptyState?.icon || (
                         <Database className='text-muted-foreground h-8 w-8' />

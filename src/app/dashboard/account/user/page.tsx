@@ -136,7 +136,7 @@ export default function UserManagementPage() {
 
           {/* 数据表格和分页 */}
           <div className='flex min-h-0 flex-1 flex-col'>
-            <div className='min-h-0 flex-1'>
+            <div className='min-h-0'>
               <UserTable
                 users={users}
                 loading={loading}
