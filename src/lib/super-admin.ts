@@ -22,6 +22,22 @@ export async function preventSuperAdminModification(userId: number) {
   }
 }
 
+export async function preventSuperAdminDisable(
+  userId: number,
+  newStatus: string
+) {
+  if (newStatus === 'disabled') {
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+    if (user.length && user[0]?.isSuperAdmin) {
+      throw new Error('超级管理员不能被禁用');
+    }
+  }
+}
+
 export async function preventSuperRoleModification(roleId: number) {
   const role = await db
     .select()

@@ -33,6 +33,20 @@ export async function POST(request: Request) {
       return unauthorizedResponse('邮箱或密码错误');
     }
 
+    // 检查用户是否被禁用
+    if (user[0].status === 'disabled') {
+      const logger = new Logger('用户认证', user[0].id);
+      await logger.warn('用户登录', '登录失败：用户已被禁用', {
+        reason: '用户已被禁用',
+        email: email,
+        userId: user[0].id,
+        username: user[0].username,
+        timestamp: new Date().toISOString()
+      });
+
+      return unauthorizedResponse('该账户已被禁用，请联系管理员');
+    }
+
     const isValid = await bcrypt.compare(password, user[0].password);
     if (!isValid) {
       // 记录登录失败日志 - 密码错误
@@ -47,6 +61,12 @@ export async function POST(request: Request) {
 
       return unauthorizedResponse('邮箱或密码错误');
     }
+
+    // 更新最后登录时间
+    await db
+      .update(users)
+      .set({ lastLoginAt: new Date() })
+      .where(eq(users.id, user[0].id));
 
     const token = sign(
       {

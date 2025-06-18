@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -25,7 +26,8 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
     username: initialData?.username || '',
     email: initialData?.email || '',
     password: '',
-    roleId: initialData?.roleId ? String(initialData.roleId) : ''
+    roleId: initialData?.roleId ? String(initialData.roleId) : '',
+    status: initialData?.status || 'active'
   });
 
   useEffect(() => {
@@ -53,6 +55,13 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
     setFormData({
       ...formData,
       roleId: value
+    });
+  };
+
+  const handleStatusChange = (checked: boolean) => {
+    setFormData({
+      ...formData,
+      status: checked ? 'disabled' : 'active'
     });
   };
 
@@ -104,6 +113,7 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
           onValueChange={handleRoleChange}
           value={formData.roleId}
           required
+          disabled={initialData?.isSuperAdmin}
         >
           <SelectTrigger className='w-full'>
             <SelectValue placeholder='请选择角色' />
@@ -116,6 +126,32 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
             ))}
           </SelectContent>
         </Select>
+      </div>
+      <div className='grid gap-2'>
+        <Label>状态</Label>
+        <div className='flex items-center space-x-2'>
+          <Checkbox
+            id='status'
+            checked={formData.status === 'disabled'}
+            onCheckedChange={handleStatusChange}
+            disabled={initialData?.isSuperAdmin}
+          />
+          <Label
+            htmlFor='status'
+            className={`text-sm leading-none font-medium ${
+              initialData?.isSuperAdmin
+                ? 'cursor-not-allowed opacity-50'
+                : 'peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+            }`}
+          >
+            禁用用户（禁用后用户无法登录系统）
+            {initialData?.isSuperAdmin && (
+              <span className='text-muted-foreground ml-1 text-xs'>
+                - 超级管理员不能被禁用
+              </span>
+            )}
+          </Label>
+        </div>
       </div>
       <div className='flex justify-end gap-2'>
         {onCancel && (

@@ -4,6 +4,9 @@ export interface User {
   email: string;
   roleId: string;
   createdAt: string;
+  lastLoginAt?: string;
+  status: 'active' | 'disabled';
+  isSuperAdmin?: boolean;
   role?: {
     id: number;
     name: string;
@@ -19,6 +22,7 @@ export interface UserFilters {
   username?: string;
   email?: string;
   roleId?: string;
+  status?: 'all' | 'active' | 'disabled';
   dateRange?: { from: Date; to: Date } | undefined;
   page?: number;
   limit?: number;
@@ -36,6 +40,7 @@ export interface UserFormData {
   email: string;
   password?: string;
   roleId: string;
+  status?: 'active' | 'disabled';
 }
 
 export interface UserManagementState {

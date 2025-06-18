@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/collapsible';
 
 import { UserFilters as UserFiltersType, Role } from '../types';
+import { STATUS_OPTIONS } from '../constants';
 
 interface UserFiltersProps {
   /** 筛选条件值 */
@@ -57,6 +58,7 @@ export function UserFilters({
     username: '',
     email: '',
     roleId: '',
+    status: 'all',
     dateRange: undefined,
     page: 1,
     limit: 10
@@ -71,6 +73,7 @@ export function UserFilters({
       username: filters.username || '',
       email: filters.email || '',
       roleId: filters.roleId || '',
+      status: filters.status || 'all',
       dateRange: filters.dateRange,
       page: filters.page || 1,
       limit: filters.limit || 10
@@ -105,6 +108,7 @@ export function UserFilters({
       username: '',
       email: '',
       roleId: '',
+      status: 'all' as const,
       dateRange: undefined,
       page: 1,
       limit: 10
@@ -127,7 +131,11 @@ export function UserFilters({
    * 检查是否有激活的筛选条件
    */
   const hasActiveFilters = Boolean(
-    formData.username || formData.email || formData.roleId || formData.dateRange
+    formData.username ||
+      formData.email ||
+      formData.roleId ||
+      (formData.status && formData.status !== 'all') ||
+      formData.dateRange
   );
 
   /**
@@ -190,7 +198,7 @@ export function UserFilters({
   const renderAdvancedFilters = () => (
     <Card className='border-dashed'>
       <CardContent className=''>
-        <div className='grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4'>
+        <div className='grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-5'>
           {/* 用户名 */}
           <div className='space-y-1.5'>
             <Label
@@ -250,6 +258,32 @@ export function UserFilters({
                     className='cursor-pointer'
                   >
                     {role.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 状态 */}
+          <div className='space-y-1.5'>
+            <Label className='text-muted-foreground text-xs font-medium'>
+              状态
+            </Label>
+            <Select
+              value={formData.status || 'all'}
+              onValueChange={(value) => updateFormField('status', value)}
+            >
+              <SelectTrigger className='h-9 w-full cursor-pointer'>
+                <SelectValue placeholder='请选择状态' />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUS_OPTIONS.map((status) => (
+                  <SelectItem
+                    key={status.value}
+                    value={status.value}
+                    className='cursor-pointer'
+                  >
+                    {status.label}
                   </SelectItem>
                 ))}
               </SelectContent>

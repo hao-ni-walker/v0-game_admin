@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit } from 'lucide-react';
+import { Edit, UserCheck, UserX, Crown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   DataTable,
@@ -9,7 +9,7 @@ import {
   type DeleteAction
 } from '@/components/custom-table';
 import { User } from '../types';
-import { TABLE_COLUMNS, MESSAGES } from '../constants';
+import { TABLE_COLUMNS, MESSAGES, STATUS_MAP } from '../constants';
 
 interface EmptyStateProps {
   icon?: React.ReactNode;
@@ -27,6 +27,10 @@ interface UserTableProps {
   onEdit: (user: User) => void;
   /** 删除用户回调 */
   onDelete: (user: User) => void;
+  /** 启用用户回调 */
+  onEnable?: (user: User) => void;
+  /** 禁用用户回调 */
+  onDisable?: (user: User) => void;
   /** 空状态配置 */
   emptyState?: EmptyStateProps;
 }
@@ -40,6 +44,8 @@ export function UserTable({
   loading,
   onEdit,
   onDelete,
+  onEnable,
+  onDisable,
   emptyState
 }: UserTableProps) {
   // 表格列配置
@@ -54,11 +60,44 @@ export function UserTable({
     if (col.key === 'role') {
       return {
         ...col,
-        render: (value: any, record: User) =>
-          record.role?.name ? (
+        render: (value: any, record: User) => {
+          return record.isSuperAdmin ? (
+            <Badge
+              variant='outline'
+              className='border-amber-200 bg-amber-50 px-1.5 py-0.5 text-xs text-amber-700'
+            >
+              <Crown className='mr-1 h-3 w-3' />
+              超级管理员
+            </Badge>
+          ) : record.role?.name ? (
             <Badge variant='secondary'>{record.role.name}</Badge>
           ) : (
             <span className='text-muted-foreground'>{MESSAGES.EMPTY.ROLE}</span>
+          );
+        }
+      };
+    }
+
+    if (col.key === 'status') {
+      return {
+        ...col,
+        render: (value: any, record: User) => {
+          const statusInfo = STATUS_MAP[record.status];
+          return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
+        }
+      };
+    }
+
+    if (col.key === 'lastLoginAt') {
+      return {
+        ...col,
+        render: (value: string) =>
+          value ? (
+            <span className='text-sm'>{formatDateTime(value)}</span>
+          ) : (
+            <span className='text-muted-foreground text-sm'>
+              {MESSAGES.EMPTY.LAST_LOGIN}
+            </span>
           )
       };
     }
@@ -83,10 +122,34 @@ export function UserTable({
             }
           ];
 
-          const deleteAction: DeleteAction = {
-            description: MESSAGES.CONFIRM.DELETE(record.username),
-            onConfirm: () => onDelete(record)
-          };
+          // 添加启用/禁用操作（超级管理员不能被禁用）
+          if (record.status === 'disabled' && onEnable) {
+            actions.push({
+              key: 'enable',
+              label: '启用',
+              icon: <UserCheck className='mr-2 h-4 w-4' />,
+              onClick: () => onEnable(record)
+            });
+          } else if (
+            record.status === 'active' &&
+            onDisable &&
+            !record.isSuperAdmin
+          ) {
+            actions.push({
+              key: 'disable',
+              label: '禁用',
+              icon: <UserX className='mr-2 h-4 w-4' />,
+              onClick: () => onDisable(record)
+            });
+          }
+
+          // 超级管理员不能被删除
+          const deleteAction: DeleteAction | undefined = record.isSuperAdmin
+            ? undefined
+            : {
+                description: MESSAGES.CONFIRM.DELETE(record.username),
+                onConfirm: () => onDelete(record)
+              };
 
           return (
             <ActionDropdown actions={actions} deleteAction={deleteAction} />

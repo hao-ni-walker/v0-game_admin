@@ -12,6 +12,7 @@ export async function GET(request: Request) {
     const username = searchParams.get('username');
     const email = searchParams.get('email');
     const roleId = searchParams.get('roleId');
+    const status = searchParams.get('status');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
     const page = parseInt(searchParams.get('page') || '1');
@@ -32,6 +33,10 @@ export async function GET(request: Request) {
       conditions.push(eq(users.roleId, parseInt(roleId)));
     }
 
+    if (status && status !== 'all') {
+      conditions.push(eq(users.status, status));
+    }
+
     if (startDate) {
       conditions.push(gte(users.createdAt, new Date(startDate)));
     }
@@ -47,7 +52,10 @@ export async function GET(request: Request) {
         username: users.username,
         roleId: users.roleId,
         avatar: users.avatar,
+        status: users.status,
+        lastLoginAt: users.lastLoginAt,
         createdAt: users.createdAt,
+        isSuperAdmin: users.isSuperAdmin,
         role: {
           id: roles.id,
           name: roles.name
@@ -92,7 +100,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { username, email, password, roleId } = body;
+    const { username, email, password, roleId, status = 'active' } = body;
 
     // 验证必填字段
     if (!username || !email || !password) {
@@ -137,6 +145,7 @@ export async function POST(request: Request) {
       email,
       password: hashedPassword,
       roleId,
+      status,
       avatar: `/avatars/default.jpg`
     });
 

@@ -40,7 +40,7 @@ export function errorResponse(
     message
   };
 
-  return NextResponse.json(response, { status: code === -1 ? 400 : 500 });
+  return NextResponse.json(response, { status: code === -1 ? 200 : 500 });
 }
 
 // 404 响应

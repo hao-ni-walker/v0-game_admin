@@ -111,7 +111,7 @@ export function useUserManagement() {
    * 更新用户
    */
   const updateUser = useCallback(
-    async (id: number, data: UserFormData): Promise<boolean> => {
+    async (id: number, data: Partial<UserFormData>): Promise<boolean> => {
       try {
         const res = await UserAPI.updateUser(id, data);
         if (res.code === 0) {

@@ -18,6 +18,8 @@ export const users = mysqlTable('users', {
   avatar: varchar('avatar', { length: 255 }).default('/avatars/default.jpg'),
   roleId: int('role_id').notNull(),
   isSuperAdmin: boolean('is_super_admin').default(false),
+  status: varchar('status', { length: 20 }).default('active'), // active, disabled
+  lastLoginAt: timestamp('last_login_at'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow()
 });

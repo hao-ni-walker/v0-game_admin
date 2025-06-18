@@ -93,6 +93,7 @@ async function initSuperAdminUser(roleId: number) {
       password: hashedPassword,
       avatar: '/avatars/admin.jpg',
       roleId: roleId,
+      status: 'active',
       isSuperAdmin: true,
     });
 

@@ -19,6 +19,7 @@ export function useUserFilters() {
       username: searchParams.get('username') || '',
       email: searchParams.get('email') || '',
       roleId: searchParams.get('roleId') || '',
+      status: (searchParams.get('status') as UserFilters['status']) || 'all',
       dateRange: undefined, // 日期范围暂不从URL同步，避免复杂性
       page: parseInt(searchParams.get('page') || '1'),
       limit: parseInt(searchParams.get('limit') || '10')
@@ -91,6 +92,7 @@ export function useUserFilters() {
       username: '',
       email: '',
       roleId: '',
+      status: 'all',
       dateRange: undefined,
       page: 1
     });
@@ -100,7 +102,11 @@ export function useUserFilters() {
    * 检查是否有激活的筛选条件
    */
   const hasActiveFilters = Boolean(
-    filters.username || filters.email || filters.roleId || filters.dateRange
+    filters.username ||
+      filters.email ||
+      filters.roleId ||
+      (filters.status && filters.status !== 'all') ||
+      filters.dateRange
   );
 
   return {

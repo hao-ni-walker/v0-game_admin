@@ -2,7 +2,10 @@ import { db } from '@/db';
 import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
-import { preventSuperAdminModification } from '@/lib/super-admin';
+import {
+  preventSuperAdminModification,
+  preventSuperAdminDisable
+} from '@/lib/super-admin';
 import { Logger } from '@/lib/logger';
 import { getCurrentUser } from '@/lib/auth';
 import {
@@ -38,15 +41,31 @@ export async function PUT(
       return notFoundResponse('用户不存在');
     }
 
-    await preventSuperAdminModification(id);
     const body = await request.json();
-    const { username, email, password, roleId } = body;
+    const { username, email, password, roleId, status } = body;
 
-    const updateData: any = {
-      username,
-      email,
-      roleId
-    };
+    // 检查是否尝试禁用超级管理员
+    if (status !== undefined) {
+      await preventSuperAdminDisable(id, status);
+    }
+
+    // 对于其他修改，仍然保护超级管理员（但状态修改已经单独检查）
+    if (
+      username !== undefined ||
+      email !== undefined ||
+      password ||
+      roleId !== undefined
+    ) {
+      await preventSuperAdminModification(id);
+    }
+
+    const updateData: any = {};
+
+    // 只更新提供的字段
+    if (username !== undefined) updateData.username = username;
+    if (email !== undefined) updateData.email = email;
+    if (roleId !== undefined) updateData.roleId = roleId;
+    if (status !== undefined) updateData.status = status;
 
     // 只有在提供新密码时才更新密码
     if (password) {
@@ -62,16 +81,20 @@ export async function PUT(
       targetUsername: originalUser[0].username,
       changedFields: {
         username:
-          originalUser[0].username !== username
+          username !== undefined && originalUser[0].username !== username
             ? { from: originalUser[0].username, to: username }
             : undefined,
         email:
-          originalUser[0].email !== email
+          email !== undefined && originalUser[0].email !== email
             ? { from: originalUser[0].email, to: email }
             : undefined,
         roleId:
-          originalUser[0].roleId !== roleId
+          roleId !== undefined && originalUser[0].roleId !== roleId
             ? { from: originalUser[0].roleId, to: roleId }
+            : undefined,
+        status:
+          status !== undefined && originalUser[0].status !== status
+            ? { from: originalUser[0].status, to: status }
             : undefined,
         passwordChanged: !!password
       },

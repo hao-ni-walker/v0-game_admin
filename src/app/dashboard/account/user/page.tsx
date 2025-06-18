@@ -118,6 +118,26 @@ export default function UserManagementPage() {
     }
   };
 
+  /**
+   * 启用用户
+   */
+  const handleEnableUser = async (user: User) => {
+    const success = await updateUser(user.id, { status: 'active' });
+    if (success) {
+      fetchUsers(filters);
+    }
+  };
+
+  /**
+   * 禁用用户
+   */
+  const handleDisableUser = async (user: User) => {
+    const success = await updateUser(user.id, { status: 'disabled' });
+    if (success) {
+      fetchUsers(filters);
+    }
+  };
+
   return (
     <PermissionGuard permissions={PERMISSIONS.USER.READ}>
       <PageContainer scrollable={false}>
@@ -142,6 +162,8 @@ export default function UserManagementPage() {
                 loading={loading}
                 onEdit={handleOpenEditDialog}
                 onDelete={handleDeleteUser}
+                onEnable={handleEnableUser}
+                onDisable={handleDisableUser}
                 emptyState={{
                   icon: <Users className='text-muted-foreground h-8 w-8' />,
                   title: hasActiveFilters ? '未找到匹配的用户' : '还没有用户',
