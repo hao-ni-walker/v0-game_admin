@@ -30,7 +30,7 @@ export function PageHeader({
         )}
       </div>
       {action && (
-        <Button onClick={action.onClick}>
+        <Button onClick={action.onClick} className='cursor-pointer'>
           {action.icon || <Plus className='mr-2 h-4 w-4' />}
           {action.label}
         </Button>

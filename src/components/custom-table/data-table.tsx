@@ -53,7 +53,7 @@ export function DataTable<T extends Record<string, any>>({
   return (
     <div className='min-h-0 flex-1 overflow-auto rounded-md border'>
       <Table>
-        <TableHeader>
+        <TableHeader className='sticky top-0 z-10'>
           <TableRow className='bg-muted/50'>
             {columns.map((column) => (
               <TableHead

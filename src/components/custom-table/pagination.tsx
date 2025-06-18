@@ -45,12 +45,16 @@ export function Pagination({
               value={String(limit)}
               onValueChange={(value) => onPageSizeChange(parseInt(value))}
             >
-              <SelectTrigger className='h-8 w-[80px]'>
+              <SelectTrigger className='h-8 w-[80px] cursor-pointer'>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {pageSizeOptions.map((pageSize) => (
-                  <SelectItem key={pageSize} value={String(pageSize)}>
+                  <SelectItem
+                    key={pageSize}
+                    value={String(pageSize)}
+                    className='cursor-pointer'
+                  >
                     {pageSize}
                   </SelectItem>
                 ))}
@@ -68,7 +72,7 @@ export function Pagination({
               size='sm'
               onClick={() => onPageChange(1)}
               disabled={page <= 1}
-              className='h-8 w-8 p-0'
+              className='h-8 w-8 cursor-pointer p-0'
             >
               «
             </Button>
@@ -77,7 +81,7 @@ export function Pagination({
               size='sm'
               onClick={() => onPageChange(page - 1)}
               disabled={page <= 1}
-              className='h-8 w-8 p-0'
+              className='h-8 w-8 cursor-pointer p-0'
             >
               ‹
             </Button>
@@ -86,7 +90,7 @@ export function Pagination({
               size='sm'
               onClick={() => onPageChange(page + 1)}
               disabled={page >= totalPages}
-              className='h-8 w-8 p-0'
+              className='h-8 w-8 cursor-pointer p-0'
             >
               ›
             </Button>
@@ -95,7 +99,7 @@ export function Pagination({
               size='sm'
               onClick={() => onPageChange(totalPages)}
               disabled={page >= totalPages}
-              className='h-8 w-8 p-0'
+              className='h-8 w-8 cursor-pointer p-0'
             >
               »
             </Button>

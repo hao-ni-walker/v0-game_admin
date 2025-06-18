@@ -45,7 +45,7 @@ interface ActionDropdownProps {
 export function ActionDropdown({
   actions,
   deleteAction,
-  triggerClassName = 'h-8 w-8 p-0'
+  triggerClassName = 'h-8 w-8 p-0 cursor-pointer'
 }: ActionDropdownProps) {
   return (
     <DropdownMenu>
@@ -59,7 +59,7 @@ export function ActionDropdown({
           <DropdownMenuItem
             key={action.key}
             onClick={action.onClick}
-            className={action.className}
+            className={`${action.className} cursor-pointer`}
             disabled={action.disabled}
           >
             {action.label}
@@ -69,7 +69,10 @@ export function ActionDropdown({
         {deleteAction && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <DropdownMenuItem
+                onSelect={(e) => e.preventDefault()}
+                className='cursor-pointer'
+              >
                 删除
               </DropdownMenuItem>
             </AlertDialogTrigger>
@@ -83,10 +86,12 @@ export function ActionDropdown({
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>取消</AlertDialogCancel>
+                <AlertDialogCancel className='cursor-pointer'>
+                  取消
+                </AlertDialogCancel>
                 <AlertDialogAction
                   onClick={deleteAction.onConfirm}
-                  className='hover:bg-destructive/90'
+                  className='hover:bg-destructive/90 cursor-pointer'
                 >
                   删除
                 </AlertDialogAction>
