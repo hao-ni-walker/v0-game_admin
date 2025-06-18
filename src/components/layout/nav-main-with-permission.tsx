@@ -21,7 +21,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem
 } from '@/components/ui/sidebar';
-import { navList } from '@/constants/router';
+import { businessNavList, systemNavList } from '@/constants/router';
 import { NavItem } from '@/types/nav';
 
 export function NavMainWithPermission() {
@@ -82,75 +82,85 @@ export function NavMainWithPermission() {
       .filter((item): item is NavItem => item !== null);
   };
 
-  const filteredNavList = filterMenuItems(navList);
+  // 渲染单个导航组的函数
+  const renderNavGroup = (navItems: NavItem[], groupLabel: string) => {
+    const filteredNavList = filterMenuItems(navItems);
 
-  // 如果没有任何可显示的菜单项，返回空
-  if (filteredNavList.length === 0) {
-    return null;
-  }
+    // 如果没有任何可显示的菜单项，返回null
+    if (filteredNavList.length === 0) {
+      return null;
+    }
+
+    return (
+      <SidebarGroup key={groupLabel}>
+        <SidebarGroupLabel>{groupLabel}</SidebarGroupLabel>
+        <SidebarMenu>
+          {filteredNavList.map((item) => {
+            const isItemActive = isActivePath(item.url);
+            const hasActiveSubItem = item.items
+              ? hasActiveChild(item.items)
+              : false;
+            const shouldOpen = isItemActive || hasActiveSubItem;
+
+            return (
+              <Collapsible key={item.title} asChild defaultOpen={shouldOpen}>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    tooltip={item.title}
+                    isActive={isItemActive}
+                  >
+                    {item.url === '#' ? (
+                      <div>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </div>
+                    ) : (
+                      <Link href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    )}
+                  </SidebarMenuButton>
+                  {item.items?.length ? (
+                    <>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuAction className='data-[state=open]:rotate-90'>
+                          <ChevronRight />
+                          <span className='sr-only'>Toggle</span>
+                        </SidebarMenuAction>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {item.items?.map((subItem) => (
+                            <SidebarMenuSubItem key={subItem.title}>
+                              <SidebarMenuSubButton
+                                asChild
+                                isActive={isActivePath(subItem.url)}
+                              >
+                                <Link href={subItem.url}>
+                                  <span>{subItem.title}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          ))}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </>
+                  ) : null}
+                </SidebarMenuItem>
+              </Collapsible>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarGroup>
+    );
+  };
 
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel>平台</SidebarGroupLabel>
-      <SidebarMenu>
-        {filteredNavList.map((item) => {
-          const isItemActive = isActivePath(item.url);
-          const hasActiveSubItem = item.items
-            ? hasActiveChild(item.items)
-            : false;
-          const shouldOpen = isItemActive || hasActiveSubItem;
-
-          return (
-            <Collapsible key={item.title} asChild defaultOpen={shouldOpen}>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  tooltip={item.title}
-                  isActive={isItemActive}
-                >
-                  {item.url === '#' ? (
-                    <div>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </div>
-                  ) : (
-                    <Link href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  )}
-                </SidebarMenuButton>
-                {item.items?.length ? (
-                  <>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuAction className='data-[state=open]:rotate-90'>
-                        <ChevronRight />
-                        <span className='sr-only'>Toggle</span>
-                      </SidebarMenuAction>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <SidebarMenuSub>
-                        {item.items?.map((subItem) => (
-                          <SidebarMenuSubItem key={subItem.title}>
-                            <SidebarMenuSubButton
-                              asChild
-                              isActive={isActivePath(subItem.url)}
-                            >
-                              <Link href={subItem.url}>
-                                <span>{subItem.title}</span>
-                              </Link>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </>
-                ) : null}
-              </SidebarMenuItem>
-            </Collapsible>
-          );
-        })}
-      </SidebarMenu>
-    </SidebarGroup>
+    <>
+      {renderNavGroup(businessNavList, '业务')}
+      {renderNavGroup(systemNavList, '系统')}
+    </>
   );
 }

@@ -6,7 +6,8 @@ import {
   ScrollText
 } from 'lucide-react';
 
-export const navList: NavItem[] = [
+// 业务导航列表
+export const businessNavList: NavItem[] = [
   {
     title: '工作台',
     url: '/dashboard/overview',
@@ -14,7 +15,11 @@ export const navList: NavItem[] = [
     isActive: false,
     shortcut: ['d', 'd'],
     items: []
-  },
+  }
+];
+
+// 系统导航列表
+export const systemNavList: NavItem[] = [
   {
     title: '账号管理',
     url: '#',
@@ -53,3 +58,6 @@ export const navList: NavItem[] = [
     ]
   }
 ];
+
+// 保持原有的navList导出以兼容现有代码
+export const navList: NavItem[] = [...businessNavList, ...systemNavList];
