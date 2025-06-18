@@ -1,27 +1,18 @@
-import { useEffect, useState } from 'react';
-import type { Session } from '@/lib/auth';
-import { AuthAPI } from '@/service/request';
+import { useEffect } from 'react';
+import { useAuthStore } from '@/stores/auth';
 
 export function useAuth() {
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { session, loading, initializeAuth, isInitialized } = useAuthStore();
 
   useEffect(() => {
-    async function getSession() {
-      try {
-        const res = await AuthAPI.getSession();
-        if (res.code === 0) {
-          setSession(res.data);
-        }
-      } catch (error) {
-        console.error('获取会话失败:', error);
-      } finally {
-        setLoading(false);
-      }
+    if (!isInitialized) {
+      initializeAuth();
     }
+  }, [initializeAuth, isInitialized]);
 
-    getSession();
-  }, []);
-
-  return { session, loading };
+  return {
+    session,
+    loading,
+    isAuthenticated: !!session?.user
+  };
 }
