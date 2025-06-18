@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { UserFilters } from '../types';
 import { DEFAULT_FILTERS } from '../constants';
@@ -10,11 +10,17 @@ import { DEFAULT_FILTERS } from '../constants';
 export function useUserFilters() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const isUpdatingFromSearch = useRef(false);
 
   const [filters, setFilters] = useState<UserFilters>(DEFAULT_FILTERS);
 
   // 从 URL 初始化筛选条件
   useEffect(() => {
+    if (isUpdatingFromSearch.current) {
+      isUpdatingFromSearch.current = false;
+      return;
+    }
+
     const urlFilters: UserFilters = {
       username: searchParams.get('username') || '',
       email: searchParams.get('email') || '',
@@ -43,6 +49,9 @@ export function useUserFilters() {
 
       setFilters(updatedFilters);
 
+      // 标记正在从搜索更新，避免URL同步时重复触发
+      isUpdatingFromSearch.current = true;
+
       // 更新 URL
       const params = new URLSearchParams();
       Object.entries(updatedFilters).forEach(([key, value]) => {
@@ -67,6 +76,9 @@ export function useUserFilters() {
     (newFilters: Partial<UserFilters>) => {
       const updatedFilters = { ...filters, ...newFilters };
       setFilters(updatedFilters);
+
+      // 标记正在从搜索更新，避免URL同步时重复触发
+      isUpdatingFromSearch.current = true;
 
       // 更新 URL
       const params = new URLSearchParams();

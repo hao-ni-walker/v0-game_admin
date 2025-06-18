@@ -55,7 +55,6 @@ export function RoleFilters({
   // 本地表单状态
   const [formData, setFormData] = useState<RoleFilters>({
     name: '',
-    description: '',
     status: 'all',
     dateRange: undefined,
     page: 1,
@@ -69,7 +68,6 @@ export function RoleFilters({
   useEffect(() => {
     setFormData({
       name: filters.name || '',
-      description: filters.description || '',
       status: filters.status || 'all',
       dateRange: filters.dateRange,
       page: filters.page || 1,
@@ -103,7 +101,6 @@ export function RoleFilters({
   const handleReset = () => {
     const resetData = {
       name: '',
-      description: '',
       status: 'all' as const,
       dateRange: undefined,
       page: 1,
@@ -128,7 +125,6 @@ export function RoleFilters({
    */
   const hasActiveFilters = Boolean(
     formData.name ||
-      formData.description ||
       (formData.status && formData.status !== 'all') ||
       formData.dateRange
   );
@@ -193,7 +189,7 @@ export function RoleFilters({
   const renderAdvancedFilters = () => (
     <Card className='border-dashed'>
       <CardContent className=''>
-        <div className='grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4'>
+        <div className='grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3'>
           {/* 角色名称 */}
           <div className='space-y-1.5'>
             <Label
@@ -207,24 +203,6 @@ export function RoleFilters({
               placeholder='请输入角色名称'
               value={formData.name || ''}
               onChange={(e) => updateFormField('name', e.target.value)}
-              onKeyDown={handleKeyPress}
-              className='h-9 w-full'
-            />
-          </div>
-
-          {/* 角色描述 */}
-          <div className='space-y-1.5'>
-            <Label
-              htmlFor='description'
-              className='text-muted-foreground text-xs font-medium'
-            >
-              角色描述
-            </Label>
-            <Input
-              id='description'
-              placeholder='请输入角色描述'
-              value={formData.description || ''}
-              onChange={(e) => updateFormField('description', e.target.value)}
               onKeyDown={handleKeyPress}
               className='h-9 w-full'
             />

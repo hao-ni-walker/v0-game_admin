@@ -22,9 +22,14 @@ import {
 } from './components';
 
 export default function PermissionManagementPage() {
-  // 自定义hooks
-  const { parseFiltersFromUrl, updatePagination, searchFilters, clearFilters } =
-    usePermissionFilters();
+  // 使用自定义 hooks
+  const {
+    filters,
+    searchFilters,
+    updatePagination,
+    clearFilters,
+    hasActiveFilters
+  } = usePermissionFilters();
   const {
     permissions,
     loading,
@@ -39,28 +44,18 @@ export default function PermissionManagementPage() {
     closeDialog
   } = usePermissionManagement();
 
-  // 当前筛选条件
-  const [currentFilters, setCurrentFilters] = useState<PermissionFilters>(() =>
-    parseFiltersFromUrl()
-  );
-
-  // 监听URL变化，同步筛选条件
+  // 监听 filters 变化，获取权限数据
   useEffect(() => {
-    const filters = parseFiltersFromUrl();
-    setCurrentFilters(filters);
     fetchPermissions(filters);
-  }, [parseFiltersFromUrl, fetchPermissions]);
+  }, [filters, fetchPermissions]);
 
   // 业务处理函数
   const handleSearch = (newFilters: Partial<PermissionFilters>) => {
-    const updatedFilters = { ...currentFilters, ...newFilters };
-    setCurrentFilters(updatedFilters);
     searchFilters(newFilters);
   };
 
   const handleReset = () => {
     clearFilters();
-    setCurrentFilters(parseFiltersFromUrl());
   };
 
   const handleFormSubmit = async (data: PermissionFormData) => {
@@ -75,7 +70,6 @@ export default function PermissionManagementPage() {
     if (success) {
       closeDialog();
       // 重新获取数据
-      const filters = parseFiltersFromUrl();
       fetchPermissions(filters);
     }
   };
@@ -84,7 +78,6 @@ export default function PermissionManagementPage() {
     const success = await deletePermission(permission.id);
     if (success) {
       // 重新获取数据
-      const filters = parseFiltersFromUrl();
       fetchPermissions(filters);
     }
   };
@@ -98,7 +91,7 @@ export default function PermissionManagementPage() {
 
           {/* 搜索和筛选 */}
           <PermissionFiltersComponent
-            filters={currentFilters}
+            filters={filters}
             onSearch={handleSearch}
             onReset={handleReset}
             loading={loading}

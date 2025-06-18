@@ -48,7 +48,6 @@ export function PermissionFilters({
   const [formData, setFormData] = useState<PermissionFilters>({
     name: '',
     code: '',
-    description: '',
     dateRange: undefined,
     page: 1,
     limit: 10
@@ -62,7 +61,6 @@ export function PermissionFilters({
     setFormData({
       name: filters.name || '',
       code: filters.code || '',
-      description: filters.description || '',
       dateRange: filters.dateRange,
       page: filters.page || 1,
       limit: filters.limit || 10
@@ -96,7 +94,6 @@ export function PermissionFilters({
     const resetData = {
       name: '',
       code: '',
-      description: '',
       dateRange: undefined,
       page: 1,
       limit: 10
@@ -119,7 +116,7 @@ export function PermissionFilters({
    * 检查是否有激活的筛选条件
    */
   const hasActiveFilters = Boolean(
-    formData.name || formData.code || formData.description || formData.dateRange
+    formData.name || formData.code || formData.dateRange
   );
 
   /**
@@ -182,7 +179,7 @@ export function PermissionFilters({
   const renderAdvancedFilters = () => (
     <Card className='border-dashed'>
       <CardContent className=''>
-        <div className='grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4'>
+        <div className='grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3'>
           {/* 权限名称 */}
           <div className='space-y-1.5'>
             <Label
@@ -216,24 +213,6 @@ export function PermissionFilters({
               onChange={(e) => updateFormField('code', e.target.value)}
               onKeyDown={handleKeyPress}
               className='h-9 w-full font-mono'
-            />
-          </div>
-
-          {/* 权限描述 */}
-          <div className='space-y-1.5'>
-            <Label
-              htmlFor='description'
-              className='text-muted-foreground text-xs font-medium'
-            >
-              权限描述
-            </Label>
-            <Input
-              id='description'
-              placeholder='请输入权限描述'
-              value={formData.description || ''}
-              onChange={(e) => updateFormField('description', e.target.value)}
-              onKeyDown={handleKeyPress}
-              className='h-9 w-full'
             />
           </div>
 

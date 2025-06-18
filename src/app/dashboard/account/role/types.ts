@@ -20,7 +20,6 @@ export interface Permission {
 
 export interface RoleFilters {
   name?: string;
-  description?: string;
   status?: 'all' | 'normal' | 'super';
   dateRange?: { from: Date; to: Date } | undefined;
   page?: number;

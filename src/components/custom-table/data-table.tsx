@@ -85,7 +85,7 @@ export function DataTable<T extends Record<string, any>>({
             {data.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={columns.length} className='text-center'>
-                  <div className='flex flex-col items-center justify-center space-y-4'>
+                  <div className='flex min-h-[200px] flex-col items-center justify-center space-y-4'>
                     <div className='bg-muted/50 rounded-full p-4'>
                       {emptyState?.icon || (
                         <Database className='text-muted-foreground h-8 w-8' />

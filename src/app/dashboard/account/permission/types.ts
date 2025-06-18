@@ -10,7 +10,6 @@ export interface Permission {
 export interface PermissionFilters {
   name?: string;
   code?: string;
-  description?: string;
   dateRange?: { from: Date; to: Date } | undefined;
   page?: number;
   limit?: number;

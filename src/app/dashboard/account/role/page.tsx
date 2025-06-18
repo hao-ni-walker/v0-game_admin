@@ -19,13 +19,14 @@ import { DEFAULT_PAGINATION, PAGE_SIZE_OPTIONS } from './constants';
 import type { Role } from './types';
 
 export default function RoleManagementPage() {
-  const [filters, setFilters] = useState(
-    useRoleFilters().parseFiltersFromUrl()
-  );
-
-  const { updatePagination, searchFilters, parseFiltersFromUrl } =
-    useRoleFilters();
-
+  // 使用自定义 hooks
+  const {
+    filters,
+    searchFilters,
+    updatePagination,
+    clearFilters,
+    hasActiveFilters
+  } = useRoleFilters();
   const {
     roles,
     loading,
@@ -45,15 +46,10 @@ export default function RoleManagementPage() {
     setPermissionDialogState
   } = useRoleManagement();
 
-  // 同步URL参数到状态
-  useEffect(() => {
-    setFilters(parseFiltersFromUrl());
-  }, [parseFiltersFromUrl]);
-
-  // 获取数据
+  // 监听 filters 变化，获取角色数据
   useEffect(() => {
     fetchRoles(filters);
-  }, [fetchRoles, filters]);
+  }, [filters, fetchRoles]);
 
   // 处理搜索
   const handleSearch = (newFilters: Partial<typeof filters>) => {
@@ -62,23 +58,16 @@ export default function RoleManagementPage() {
 
   // 处理重置
   const handleReset = () => {
-    searchFilters({
-      name: '',
-      description: '',
-      status: 'all',
-      dateRange: undefined,
-      page: 1,
-      limit: 10
-    });
+    clearFilters();
   };
 
   // 处理分页
   const handlePageChange = (page: number) => {
-    updatePagination(page);
+    updatePagination({ page });
   };
 
   const handlePageSizeChange = (limit: number) => {
-    updatePagination(1, limit);
+    updatePagination({ limit, page: 1 });
   };
 
   // 处理删除
