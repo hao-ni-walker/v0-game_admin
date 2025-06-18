@@ -29,14 +29,14 @@ function findParentNav(
 export const getBreadcrumbs = (pathname: string): BreadcrumbItem[] => {
   const paths = pathname.split('/').filter(Boolean);
   const breadcrumbs: BreadcrumbItem[] = [];
-  const addedPaths = new Set<string>();
+  const addedTitles = new Set<string>();
 
   // 始终添加工作台作为第一个面包屑项
   breadcrumbs.push({
     title: '工作台',
     link: '/dashboard/overview'
   });
-  addedPaths.add('/dashboard/overview');
+  addedTitles.add('工作台');
 
   let currentPath = '';
   paths.forEach((path) => {
@@ -45,24 +45,26 @@ export const getBreadcrumbs = (pathname: string): BreadcrumbItem[] => {
     const matchedNav = findNavItem(navList, currentPath);
     if (matchedNav) {
       const parentNav = findParentNav(navList, currentPath);
-      if (
-        parentNav &&
-        parentNav.url !== '#' &&
-        !addedPaths.has(parentNav.url)
-      ) {
+      if (parentNav && !addedTitles.has(parentNav.title)) {
+        // 如果父级导航的URL是'#'，使用第一个有权限的子项作为链接
+        let parentLink = parentNav.url;
+        if (parentNav.url === '#' && parentNav.items?.length) {
+          parentLink = parentNav.items[0].url;
+        }
+
         breadcrumbs.push({
           title: parentNav.title,
-          link: parentNav.url
+          link: parentLink
         });
-        addedPaths.add(parentNav.url);
+        addedTitles.add(parentNav.title);
       }
 
-      if (!addedPaths.has(matchedNav.url)) {
+      if (!addedTitles.has(matchedNav.title)) {
         breadcrumbs.push({
           title: matchedNav.title,
           link: matchedNav.url
         });
-        addedPaths.add(matchedNav.url);
+        addedTitles.add(matchedNav.title);
       }
     }
   });

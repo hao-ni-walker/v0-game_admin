@@ -22,7 +22,7 @@ export function Breadcrumbs() {
     <Breadcrumb>
       <BreadcrumbList>
         {items.map((item: { link: string; title: string }, index: number) => (
-          <Fragment key={item.link}>
+          <Fragment key={`${item.title}-${index}`}>
             {index !== items.length - 1 ? (
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
