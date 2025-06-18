@@ -93,7 +93,7 @@ export function UserTable({
         ...col,
         render: (value: string) =>
           value ? (
-            <span className='text-sm'>{formatDateTime(value)}</span>
+            <span className='font-mono text-sm'>{formatDateTime(value)}</span>
           ) : (
             <span className='text-muted-foreground text-sm'>
               {MESSAGES.EMPTY.LAST_LOGIN}
@@ -105,7 +105,9 @@ export function UserTable({
     if (col.key === 'createdAt') {
       return {
         ...col,
-        render: (value: string) => formatDateTime(value)
+        render: (value: string) => (
+          <span className='font-mono text-sm'>{formatDateTime(value)}</span>
+        )
       };
     }
 
