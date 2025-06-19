@@ -114,10 +114,10 @@ export default function RoleManagementPage() {
 
   // 更新权限选择
   const handlePermissionsChange = (permissionIds: number[]) => {
-    setPermissionDialogState({
-      ...permissionDialogState,
+    setPermissionDialogState((prev) => ({
+      ...prev,
       selectedPermissions: permissionIds
-    });
+    }));
   };
 
   return (

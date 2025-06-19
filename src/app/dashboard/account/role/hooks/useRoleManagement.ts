@@ -168,7 +168,31 @@ export function useRoleManagement() {
       try {
         const res = await RoleAPI.getRolePermissions(roleId);
         if (res.code === 0) {
-          return res.data || [];
+          const permissions = res.data || [];
+
+          // 检查返回的数据格式
+          if (Array.isArray(permissions) && permissions.length > 0) {
+            const firstItem = permissions[0];
+
+            if (typeof firstItem === 'object' && firstItem.id !== undefined) {
+              // 后端返回的是权限对象数组，需要提取ID
+              return permissions.map((perm: any) => perm.id);
+            } else if (
+              typeof firstItem === 'number' ||
+              typeof firstItem === 'string'
+            ) {
+              // 后端返回的是ID数组，确保转换为数字
+              return permissions
+                .map((id: any) => {
+                  const numberId =
+                    typeof id === 'string' ? parseInt(id, 10) : Number(id);
+                  return isNaN(numberId) ? 0 : numberId;
+                })
+                .filter((id) => id > 0);
+            }
+          }
+
+          return [];
         } else {
           toast.error(res.message || MESSAGES.ERROR.FETCH_PERMISSIONS);
           return [];
