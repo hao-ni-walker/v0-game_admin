@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Calendar, Filter, X, RotateCcw } from 'lucide-react';
+import { Search, Calendar, Filter, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,12 +22,7 @@ import {
   PopoverTrigger
 } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Card, CardContent } from '@/components/ui/card';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger
-} from '@/components/ui/collapsible';
+import { AdvancedFilterContainer } from '@/components/common';
 
 import type { RoleFilters } from '../types';
 import { ROLE_STATUS_OPTIONS } from '../constants';
@@ -61,8 +57,8 @@ export function RoleFilters({
     limit: 10
   });
 
-  // 展开/收起筛选面板
-  const [isExpanded, setIsExpanded] = useState(false);
+  // 控制高级筛选弹窗
+  const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
 
   // 同步外部 filters 到本地表单状态
   useEffect(() => {
@@ -156,18 +152,18 @@ export function RoleFilters({
         查询
       </Button>
 
-      {/* 高级筛选切换 */}
-      <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-        <CollapsibleTrigger asChild>
-          <Button variant='outline' className='shrink-0 cursor-pointer'>
-            <Filter className='mr-2 h-4 w-4' />
-            高级筛选
-            {hasActiveFilters && (
-              <span className='bg-primary ml-2 h-2 w-2 rounded-full' />
-            )}
-          </Button>
-        </CollapsibleTrigger>
-      </Collapsible>
+      {/* 高级筛选按钮 */}
+      <Button
+        variant='outline'
+        onClick={() => setIsAdvancedFilterOpen(true)}
+        className='shrink-0 cursor-pointer'
+      >
+        <Filter className='mr-2 h-4 w-4' />
+        高级筛选
+        {hasActiveFilters && (
+          <span className='bg-primary ml-2 h-2 w-2 rounded-full' />
+        )}
+      </Button>
 
       {/* 重置按钮 */}
       {hasActiveFilters && (
@@ -184,127 +180,100 @@ export function RoleFilters({
   );
 
   /**
-   * 渲染高级筛选面板
+   * 渲染高级筛选表单内容
    */
-  const renderAdvancedFilters = () => (
-    <Card className='border-dashed'>
-      <CardContent className=''>
-        <div className='grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3'>
-          {/* 角色名称 */}
-          <div className='space-y-1.5'>
-            <Label
-              htmlFor='name'
-              className='text-muted-foreground text-xs font-medium'
-            >
-              角色名称
-            </Label>
-            <Input
-              id='name'
-              placeholder='请输入角色名称'
-              value={formData.name || ''}
-              onChange={(e) => updateFormField('name', e.target.value)}
-              onKeyDown={handleKeyPress}
-              className='h-9 w-full'
-            />
-          </div>
-
-          {/* 角色类型 */}
-          <div className='space-y-1.5'>
-            <Label className='text-muted-foreground text-xs font-medium'>
-              角色类型
-            </Label>
-            <Select
-              value={formData.status || 'all'}
-              onValueChange={(value) => updateFormField('status', value)}
-            >
-              <SelectTrigger className='h-9 w-full cursor-pointer'>
-                <SelectValue placeholder='请选择角色类型' />
-              </SelectTrigger>
-              <SelectContent>
-                {ROLE_STATUS_OPTIONS.map((status) => (
-                  <SelectItem
-                    key={status.value}
-                    value={status.value}
-                    className='cursor-pointer'
-                  >
-                    {status.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* 创建时间 */}
-          <div className='space-y-1.5'>
-            <Label className='text-muted-foreground text-xs font-medium'>
-              创建时间
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant='outline'
-                  className='h-9 w-full cursor-pointer justify-start px-3 text-left font-normal'
-                >
-                  <Calendar className='mr-2 h-3 w-3 flex-shrink-0' />
-                  <span className='truncate'>
-                    {formData.dateRange &&
-                    formData.dateRange.from &&
-                    formData.dateRange.to
-                      ? `${format(formData.dateRange.from, 'MM/dd', { locale: zhCN })} - ${format(formData.dateRange.to, 'MM/dd', { locale: zhCN })}`
-                      : '选择时间范围'}
-                  </span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className='w-auto p-0' align='start'>
-                <CalendarComponent
-                  mode='range'
-                  selected={formData.dateRange}
-                  onSelect={(dateRange) =>
-                    updateFormField('dateRange', dateRange)
-                  }
-                  numberOfMonths={2}
-                  locale={zhCN}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
+  const renderAdvancedFilterForm = () => (
+    <div className='grid gap-4'>
+      {/* 第一行：角色名称 */}
+      <div className='grid grid-cols-1 gap-4'>
+        <div className='space-y-2'>
+          <Label>角色名称</Label>
+          <Input
+            placeholder='请输入角色名称'
+            value={formData.name || ''}
+            onChange={(e) => updateFormField('name', e.target.value)}
+            onKeyDown={handleKeyPress}
+          />
         </div>
+      </div>
 
-        {/* 操作按钮 */}
-        <div className='mt-4 flex items-center justify-end gap-2'>
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={handleReset}
-            disabled={!hasActiveFilters}
-            className='cursor-pointer'
+      {/* 第二行：角色状态 */}
+      <div className='grid grid-cols-1 gap-4'>
+        <div className='space-y-2'>
+          <Label>角色状态</Label>
+          <Select
+            value={formData.status || 'all'}
+            onValueChange={(value) => updateFormField('status', value)}
           >
-            <X className='mr-1 h-3 w-3' />
-            重置
-          </Button>
-          <Button
-            size='sm'
-            onClick={handleSearch}
-            disabled={loading}
-            className='cursor-pointer'
-          >
-            <Search className='mr-1 h-3 w-3' />
-            查询
-          </Button>
+            <SelectTrigger className='w-full'>
+              <SelectValue placeholder='选择角色状态' />
+            </SelectTrigger>
+            <SelectContent>
+              {ROLE_STATUS_OPTIONS.map((status) => (
+                <SelectItem key={status.value} value={status.value}>
+                  {status.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* 第三行：创建时间范围 */}
+      <div className='grid grid-cols-1 gap-4'>
+        <div className='space-y-2'>
+          <Label>创建时间</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant='outline'
+                className={cn(
+                  'w-full justify-start text-left font-normal',
+                  !formData.dateRange && 'text-muted-foreground'
+                )}
+              >
+                <Calendar className='mr-2 h-4 w-4' />
+                {formData.dateRange &&
+                formData.dateRange.from &&
+                formData.dateRange.to
+                  ? `${format(formData.dateRange.from, 'yyyy-MM-dd')} - ${format(formData.dateRange.to, 'yyyy-MM-dd')}`
+                  : '选择时间范围'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className='w-auto p-0' align='start'>
+              <CalendarComponent
+                mode='range'
+                selected={formData.dateRange}
+                onSelect={(dateRange) =>
+                  updateFormField('dateRange', dateRange)
+                }
+                numberOfMonths={2}
+                locale={zhCN}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+    </div>
   );
 
   return (
-    <div className='space-y-3'>
+    <div className='space-y-4 overflow-x-auto'>
       {/* 快速搜索栏 */}
       {renderQuickSearch()}
 
-      {/* 高级筛选面板 */}
-      <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-        <CollapsibleContent>{renderAdvancedFilters()}</CollapsibleContent>
-      </Collapsible>
+      {/* 高级筛选弹窗 */}
+      <AdvancedFilterContainer
+        open={isAdvancedFilterOpen}
+        onClose={() => setIsAdvancedFilterOpen(false)}
+        title='角色筛选'
+        hasActiveFilters={hasActiveFilters}
+        onSearch={handleSearch}
+        onReset={handleReset}
+        loading={loading}
+      >
+        {renderAdvancedFilterForm()}
+      </AdvancedFilterContainer>
     </div>
   );
 }
