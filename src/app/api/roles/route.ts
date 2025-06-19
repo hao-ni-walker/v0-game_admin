@@ -51,6 +51,7 @@ export async function GET(request: Request) {
         id: roles.id,
         name: roles.name,
         description: roles.description,
+        isSuper: roles.isSuper,
         createdAt: roles.createdAt,
         updatedAt: roles.updatedAt,
         userCount: sql<number>`count(${users.id})`.as('userCount')
@@ -61,6 +62,7 @@ export async function GET(request: Request) {
         roles.id,
         roles.name,
         roles.description,
+        roles.isSuper,
         roles.createdAt,
         roles.updatedAt
       );

@@ -5,8 +5,10 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
+  DialogClose
 } from '@/components/ui/dialog';
+import { X } from 'lucide-react';
 import { PermissionForm } from './PermissionForm';
 import type { PermissionDialogState, PermissionFormData } from '../types';
 
@@ -47,15 +49,21 @@ export function PermissionDialogs({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className='max-w-md'>
-        <DialogHeader>
+      <DialogContent className='flex max-w-md flex-col p-0'>
+        <DialogHeader className='relative shrink-0 border-b px-6 py-4'>
           <DialogTitle>{getDialogTitle()}</DialogTitle>
+          <DialogClose className='ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 cursor-pointer rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none'>
+            <X className='h-4 w-4' />
+            <span className='sr-only'>关闭</span>
+          </DialogClose>
         </DialogHeader>
-        <PermissionForm
-          initialData={permission || undefined}
-          onSubmit={handleSubmit}
-          onCancel={onClose}
-        />
+        <div className='px-6 py-4'>
+          <PermissionForm
+            initialData={permission || undefined}
+            onSubmit={handleSubmit}
+            onCancel={onClose}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );

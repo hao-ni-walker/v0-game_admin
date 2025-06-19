@@ -7,8 +7,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter
+  DialogFooter,
+  DialogClose
 } from '@/components/ui/dialog';
+import { X } from 'lucide-react';
 import { RoleForm } from './RoleForm';
 import type { RoleDialogState, RoleFormData, Role } from '../types';
 import { MESSAGES } from '../constants';
@@ -96,25 +98,35 @@ export function RoleDialogs({
 
   return (
     <Dialog open={dialogState.open} onOpenChange={onClose}>
-      <DialogContent className='sm:max-w-[425px]'>
-        <DialogHeader>
+      <DialogContent className='flex max-w-[425px] flex-col p-0'>
+        <DialogHeader className='relative shrink-0 border-b px-6 py-4'>
           <DialogTitle>{title}</DialogTitle>
+          <DialogClose className='ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 cursor-pointer rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none'>
+            <X className='h-4 w-4' />
+            <span className='sr-only'>关闭</span>
+          </DialogClose>
         </DialogHeader>
 
-        <div className='py-4'>
+        <div className='px-6 py-4'>
           <RoleForm data={formData} onChange={setFormData} errors={errors} />
         </div>
 
-        <DialogFooter>
+        <DialogFooter className='border-t px-6 py-4'>
           <Button
             type='button'
             variant='outline'
             onClick={onClose}
             disabled={loading}
+            className='cursor-pointer'
           >
             取消
           </Button>
-          <Button type='button' onClick={handleSubmit} disabled={loading}>
+          <Button
+            type='button'
+            onClick={handleSubmit}
+            disabled={loading}
+            className='cursor-pointer'
+          >
             {loading ? '处理中...' : submitText}
           </Button>
         </DialogFooter>
