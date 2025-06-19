@@ -212,6 +212,12 @@ export function useRoleManagement() {
 
   // 打开编辑对话框
   const openEditDialog = useCallback((role: Role) => {
+    // 超级管理员角色不能编辑
+    if (role.isSuper) {
+      toast.error(MESSAGES.INFO.SUPER_ADMIN_PROTECTED);
+      return;
+    }
+
     setDialogState({
       type: 'edit',
       role,
@@ -222,6 +228,12 @@ export function useRoleManagement() {
   // 打开权限分配对话框
   const openPermissionDialog = useCallback(
     async (role: Role) => {
+      // 超级管理员角色不能进行权限分配
+      if (role.isSuper) {
+        toast.error(MESSAGES.INFO.SUPER_ADMIN_PROTECTED);
+        return;
+      }
+
       const [permissions, rolePermissions] = await Promise.all([
         fetchAllPermissions(),
         fetchRolePermissions(role.id)

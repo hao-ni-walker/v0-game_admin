@@ -36,6 +36,7 @@ export interface PaginationInfo {
 export interface RoleFormData {
   name: string;
   description?: string;
+  isSuper?: boolean;
 }
 
 export interface RoleManagementState {

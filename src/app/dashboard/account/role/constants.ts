@@ -125,5 +125,9 @@ export const MESSAGES = {
   },
   CONFIRM: {
     DELETE: (name: string) => `确定要删除角色 "${name}" 吗？此操作不可撤销。`
+  },
+  INFO: {
+    SUPER_ADMIN_PROTECTED:
+      '超级管理员角色受系统保护，不能进行编辑、权限分配或删除操作'
   }
 } as const;

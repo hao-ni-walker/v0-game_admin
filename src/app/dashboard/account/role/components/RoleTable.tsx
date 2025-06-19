@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Edit, Users, Settings } from 'lucide-react';
+import { Edit, Users, Settings, Crown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   DataTable,
@@ -34,6 +34,26 @@ export function RoleTable({
       return {
         ...col,
         render: (value: any, record: Role, index: number) => index + 1
+      };
+    }
+
+    if (col.key === 'name') {
+      return {
+        ...col,
+        className: 'font-medium',
+        render: (value: any, record: Role) => {
+          return record.isSuper ? (
+            <Badge
+              variant='outline'
+              className='border-amber-200 bg-amber-50 px-1.5 py-0.5 text-xs text-amber-700'
+            >
+              <Crown className='mr-1 h-3 w-3' />
+              超级管理员
+            </Badge>
+          ) : (
+            <span>{value}</span>
+          );
+        }
       };
     }
 
@@ -77,10 +97,13 @@ export function RoleTable({
             }
           ];
 
-          const deleteAction: DeleteAction = {
-            description: MESSAGES.CONFIRM.DELETE(record.name),
-            onConfirm: () => onDelete(record)
-          };
+          // 超级管理员不能被删除
+          const deleteAction: DeleteAction | undefined = record.isSuper
+            ? undefined
+            : {
+                description: MESSAGES.CONFIRM.DELETE(record.name),
+                onConfirm: () => onDelete(record)
+              };
 
           return (
             <ActionDropdown actions={actions} deleteAction={deleteAction} />
