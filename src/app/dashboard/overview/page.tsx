@@ -11,8 +11,7 @@ import {
 import {
   ChartConfig,
   ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent
+  ChartTooltip
 } from '@/components/ui/chart';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -129,7 +128,7 @@ export default function DashboardOverview() {
 
       // 根据timeRange过滤数据
       const now = new Date();
-      let filterDate = new Date();
+      const filterDate = new Date();
 
       if (timeRange === '3d') {
         filterDate.setDate(now.getDate() - 3);
