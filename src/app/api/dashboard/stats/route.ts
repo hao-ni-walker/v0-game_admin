@@ -76,9 +76,9 @@ export async function GET() {
       .groupBy(systemLogs.level)
       .orderBy(desc(count()));
 
-    // 获取最近7天的用户注册数量（简化版）
+    // 获取最近30天的用户注册数量（简化版）
     const userTrend = [];
-    for (let i = 6; i >= 0; i--) {
+    for (let i = 29; i >= 0; i--) {
       const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
       const startOfTargetDay = new Date(
         date.getFullYear(),

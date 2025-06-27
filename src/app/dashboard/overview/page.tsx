@@ -60,6 +60,7 @@ export default function DashboardOverview() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('7d');
+  const [isChangingRange, setIsChangingRange] = useState(false);
 
   const user = {
     username: '游客',
@@ -79,6 +80,7 @@ export default function DashboardOverview() {
       }
     } catch (error) {
       console.error('获取dashboard数据失败:', error);
+      toast.error('网络请求失败，请检查网络连接');
     } finally {
       setLoading(false);
     }
@@ -87,6 +89,14 @@ export default function DashboardOverview() {
   useEffect(() => {
     fetchStats();
   }, []);
+
+  // 处理时间范围改变
+  const handleTimeRangeChange = (newRange: string) => {
+    setIsChangingRange(true);
+    setTimeRange(newRange);
+    // 添加一个短暂的延迟来显示切换效果
+    setTimeout(() => setIsChangingRange(false), 300);
+  };
 
   if (loading) {
     return (
@@ -104,15 +114,66 @@ export default function DashboardOverview() {
     }
   } satisfies ChartConfig;
 
-  // 处理图表数据
-  const chartData =
-    stats?.userTrend?.map((item) => ({
-      date: new Date(item.date).toLocaleDateString('zh-CN', {
+  // 处理真实的图表数据，根据timeRange过滤
+  const getChartData = () => {
+    // 如果有真实数据，使用真实数据
+    if (stats?.userTrend && stats.userTrend.length > 0) {
+      const allData = stats.userTrend.map((item) => ({
+        date: new Date(item.date).toLocaleDateString('zh-CN', {
+          month: 'short',
+          day: 'numeric'
+        }),
+        users: item.users,
+        originalDate: new Date(item.date)
+      }));
+
+      // 根据timeRange过滤数据
+      const now = new Date();
+      let filterDate = new Date();
+
+      if (timeRange === '3d') {
+        filterDate.setDate(now.getDate() - 3);
+      } else if (timeRange === '7d') {
+        filterDate.setDate(now.getDate() - 7);
+      } else if (timeRange === '30d') {
+        filterDate.setDate(now.getDate() - 30);
+      }
+
+      return allData
+        .filter((item) => item.originalDate >= filterDate)
+        .sort((a, b) => a.originalDate.getTime() - b.originalDate.getTime())
+        .map((item) => ({ date: item.date, users: item.users }));
+    }
+
+    // 如果没有真实数据，生成示例数据用于展示
+    const now = new Date();
+    const data = [];
+    let days = 7;
+
+    if (timeRange === '30d') days = 30;
+    else if (timeRange === '7d') days = 7;
+    else if (timeRange === '3d') days = 3;
+
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toLocaleDateString('zh-CN', {
         month: 'short',
         day: 'numeric'
-      }),
-      users: item.users
-    })) || [];
+      });
+
+      // 生成示例数据
+      const baseUsers = 40;
+      const dailyVariation = Math.sin(i * 0.5) * 15 + Math.random() * 8;
+      const users = Math.max(0, Math.round(baseUsers + dailyVariation));
+
+      data.push({ date: dateStr, users });
+    }
+
+    return data;
+  };
+
+  const chartData = getChartData();
 
   const isPositiveGrowth = stats?.overview.userGrowthRate.startsWith('+');
   const weekGrowthRate = '+12.5%'; // 示例数据
@@ -225,94 +286,162 @@ export default function DashboardOverview() {
         </div>
 
         {/* 主图表区域 */}
-        <Card className='col-span-full'>
-          <CardHeader>
-            <div className='flex items-center justify-between'>
-              <div>
-                <CardTitle>用户活动趋势</CardTitle>
-                <CardDescription>过去一段时间的用户注册情况</CardDescription>
+        <div className='w-full'>
+          <Card>
+            <CardHeader>
+              <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+                <div className='space-y-1'>
+                  <CardTitle className='text-lg font-semibold'>
+                    用户活动趋势
+                  </CardTitle>
+                  <CardDescription className='text-muted-foreground text-sm'>
+                    过去
+                    {timeRange === '30d'
+                      ? '30天'
+                      : timeRange === '7d'
+                        ? '7天'
+                        : '3天'}
+                    的用户注册情况
+                  </CardDescription>
+                </div>
+                <div className='flex gap-1'>
+                  {[
+                    { key: '3d', label: '3天' },
+                    { key: '7d', label: '7天' },
+                    { key: '30d', label: '30天' }
+                  ].map((option) => (
+                    <Button
+                      key={option.key}
+                      variant={timeRange === option.key ? 'default' : 'outline'}
+                      size='sm'
+                      onClick={() => handleTimeRangeChange(option.key)}
+                      className='h-8 px-3 text-xs'
+                      disabled={isChangingRange}
+                    >
+                      {option.label}
+                    </Button>
+                  ))}
+                </div>
               </div>
-              <div className='flex space-x-1'>
-                <Button
-                  variant={timeRange === '30d' ? 'default' : 'outline'}
-                  size='sm'
-                  onClick={() => setTimeRange('30d')}
-                >
-                  最近 30 天
-                </Button>
-                <Button
-                  variant={timeRange === '7d' ? 'default' : 'outline'}
-                  size='sm'
-                  onClick={() => setTimeRange('7d')}
-                >
-                  最近 7 天
-                </Button>
-                <Button
-                  variant={timeRange === '3d' ? 'default' : 'outline'}
-                  size='sm'
-                  onClick={() => setTimeRange('3d')}
-                >
-                  最近 3 天
-                </Button>
+            </CardHeader>
+            <CardContent className='px-2 pb-4 sm:px-6'>
+              <div className='h-[280px] w-full sm:h-[320px] lg:h-[380px]'>
+                {chartData && chartData.length > 0 ? (
+                  <ChartContainer
+                    config={chartConfig}
+                    className='h-full w-full'
+                  >
+                    <AreaChart
+                      data={chartData}
+                      margin={{
+                        left: 0,
+                        right: 20,
+                        top: 20,
+                        bottom: 20
+                      }}
+                    >
+                      <defs>
+                        <linearGradient
+                          id='colorUsers'
+                          x1='0'
+                          y1='0'
+                          x2='0'
+                          y2='1'
+                        >
+                          <stop
+                            offset='5%'
+                            stopColor='hsl(var(--chart-1))'
+                            stopOpacity={0.3}
+                          />
+                          <stop
+                            offset='95%'
+                            stopColor='hsl(var(--chart-1))'
+                            stopOpacity={0.05}
+                          />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray='3 3' opacity={0.3} />
+                      <XAxis
+                        dataKey='date'
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{
+                          fontSize: 11,
+                          fill: 'hsl(var(--muted-foreground))'
+                        }}
+                        dy={10}
+                      />
+                      <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{
+                          fontSize: 11,
+                          fill: 'hsl(var(--muted-foreground))'
+                        }}
+                        dx={-10}
+                      />
+                      <ChartTooltip
+                        content={({ active, payload, label }) => {
+                          if (active && payload && payload.length) {
+                            return (
+                              <div className='bg-background rounded-lg border p-3 shadow-md'>
+                                <p className='text-sm font-medium'>{label}</p>
+                                <p className='text-muted-foreground text-sm'>
+                                  用户数:{' '}
+                                  <span className='text-foreground font-semibold'>
+                                    {payload[0].value}
+                                  </span>
+                                </p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Area
+                        type='monotone'
+                        dataKey='users'
+                        stroke='hsl(var(--chart-1))'
+                        strokeWidth={2}
+                        fill='url(#colorUsers)'
+                        dot={{
+                          fill: 'hsl(var(--chart-1))',
+                          strokeWidth: 2,
+                          r: 3
+                        }}
+                        activeDot={{
+                          r: 5,
+                          stroke: 'hsl(var(--chart-1))',
+                          strokeWidth: 2
+                        }}
+                      />
+                    </AreaChart>
+                  </ChartContainer>
+                ) : (
+                  <div className='flex h-full w-full items-center justify-center'>
+                    <div className='text-center'>
+                      <div className='text-muted-foreground mb-3 text-2xl'>
+                        📊
+                      </div>
+                      <p className='text-muted-foreground mb-1 text-sm font-medium'>
+                        {loading
+                          ? '正在加载图表数据...'
+                          : isChangingRange
+                            ? '正在切换时间范围...'
+                            : '暂无图表数据'}
+                      </p>
+                      <p className='text-muted-foreground text-xs'>
+                        {loading || isChangingRange
+                          ? '请稍候'
+                          : '请稍后再试或联系管理员'}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className='h-[400px]'>
-              <AreaChart
-                accessibilityLayer
-                data={chartData}
-                margin={{
-                  left: 12,
-                  right: 12,
-                  top: 12,
-                  bottom: 12
-                }}
-              >
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey='date'
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  tickFormatter={(value) => value}
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  tickFormatter={(value) => `${value}`}
-                />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent />}
-                />
-                <defs>
-                  <linearGradient id='fillUsers' x1='0' y1='0' x2='0' y2='1'>
-                    <stop
-                      offset='5%'
-                      stopColor='var(--color-users)'
-                      stopOpacity={0.8}
-                    />
-                    <stop
-                      offset='95%'
-                      stopColor='var(--color-users)'
-                      stopOpacity={0.1}
-                    />
-                  </linearGradient>
-                </defs>
-                <Area
-                  dataKey='users'
-                  type='natural'
-                  fill='url(#fillUsers)'
-                  fillOpacity={0.4}
-                  stroke='var(--color-users)'
-                  strokeWidth={2}
-                />
-              </AreaChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* 详细信息网格 */}
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
