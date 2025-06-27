@@ -236,7 +236,7 @@ export function PermissionFilters({
   );
 
   return (
-    <div className='space-y-4 overflow-x-auto'>
+    <div className='space-y-4'>
       {/* 快速搜索栏 */}
       {renderQuickSearch()}
 

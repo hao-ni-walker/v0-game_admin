@@ -98,15 +98,13 @@ export default function PermissionManagementPage() {
           />
 
           {/* 数据表格 */}
-          <div className='flex min-h-0 flex-col overflow-hidden'>
-            <div className='flex-1 overflow-auto'>
-              <PermissionTable
-                permissions={permissions}
-                loading={loading}
-                onEdit={openEditDialog}
-                onDelete={handleDeletePermission}
-              />
-            </div>
+          <div className='flex min-h-0 flex-col'>
+            <PermissionTable
+              permissions={permissions}
+              loading={loading}
+              onEdit={openEditDialog}
+              onDelete={handleDeletePermission}
+            />
 
             {/* 分页控件 */}
             <Pagination

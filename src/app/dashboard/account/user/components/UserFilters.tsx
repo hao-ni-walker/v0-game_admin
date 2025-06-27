@@ -299,7 +299,7 @@ export function UserFilters({
   );
 
   return (
-    <div className='space-y-4 overflow-x-auto'>
+    <div className='space-y-4'>
       {/* 快速搜索栏 */}
       {renderQuickSearch()}
 
