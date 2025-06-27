@@ -23,8 +23,8 @@ export function LoginForm({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    email: 'admin@example.com',
-    password: 'Admin@123456'
+    email: process.env.NODE_ENV === 'development' ? 'admin@example.com' : '',
+    password: process.env.NODE_ENV === 'development' ? 'Admin@123456' : ''
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
