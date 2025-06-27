@@ -4,6 +4,34 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/)。
 
+### [0.0.10](https://github.com/guizimo/n-admin/compare/v0.0.9...v0.0.10) (2025-06-27)
+
+
+### ✨ 新增功能
+
+* 优化分页组件布局，增强移动端和PC端体验 ([ba282f1](https://github.com/guizimo/n-admin/commit/ba282f17dd06871109b0b36de1447f4f434c70c2))
+* 优化数据表组件和页面布局 ([183356a](https://github.com/guizimo/n-admin/commit/183356a9caef5c6c3c4ff5fa6a006d5750514839))
+* 优化数据表组件的空状态展示 ([f4771b7](https://github.com/guizimo/n-admin/commit/f4771b7746967c9a1f88bb97d7d0228ea27a5783))
+* 优化权限和角色管理页面，移除不必要的筛选字段 ([d21d4c6](https://github.com/guizimo/n-admin/commit/d21d4c61209cfdcb1c06439934f2753d7e6c6d57))
+* 优化角色管理页面和权限选择逻辑 ([99f4789](https://github.com/guizimo/n-admin/commit/99f47896c75c0d970862a5ad9b3fa8f1d8e1f967))
+* 优化面包屑组件和导航逻辑 ([b170200](https://github.com/guizimo/n-admin/commit/b170200bac6d1c0d8dad252b6af94786e534c9c8))
+* 更新侧边栏内容和样式 ([d5e2427](https://github.com/guizimo/n-admin/commit/d5e24277bb8b86f985d822e25a3daae530e54dbe))
+* 更新布局元数据，修改标题和描述 ([b622932](https://github.com/guizimo/n-admin/commit/b622932e3c05ffb9fcdfcf3c49fce6fe0452da87))
+* 更新数据库连接配置，支持自签名证书 ([93f3eec](https://github.com/guizimo/n-admin/commit/93f3eecab0630d9af910ca3f5c3935dbd82eedbb))
+* 更新权限管理代码，调整权限标识符 ([b7e7ae9](https://github.com/guizimo/n-admin/commit/b7e7ae98080fc25bb32d532dd1544ba5a8306476)), closes [#1](https://github.com/guizimo/n-admin/issues/1)
+* 更新用户管理功能，添加用户状态管理 ([1ad914c](https://github.com/guizimo/n-admin/commit/1ad914c67cba78dfde98bd7aa04dfaf66712be84))
+* 更新用户管理页面，优化用户表格和空状态展示 ([c63c000](https://github.com/guizimo/n-admin/commit/c63c000600d8ab4d7a3335353562aca5bc8d90ff))
+* 更新用户管理页面，重构组件和优化状态管理 ([88c1f73](https://github.com/guizimo/n-admin/commit/88c1f73ac445ad118becf0313c7175b84182ba77))
+* 更新角色和权限对话框组件，优化布局和交互体验 ([127b3c9](https://github.com/guizimo/n-admin/commit/127b3c9760171f11760b51005977515c04601ead))
+* 更新配置文件，优化 ESLint 规则和忽略文件 ([d60df2d](https://github.com/guizimo/n-admin/commit/d60df2d78ae11ad602ba070c792fd188f549b7a5))
+* 添加 Zustand 状态管理库并重构认证相关代码 ([ea19861](https://github.com/guizimo/n-admin/commit/ea19861458857a833677463dc9298a7579c0bd0b)), closes [#2](https://github.com/guizimo/n-admin/issues/2)
+* 添加超级管理员角色保护机制，优化角色管理功能 ([85f48f4](https://github.com/guizimo/n-admin/commit/85f48f439e198016782e2537aec4d7ef1def2bf8))
+* 添加高级筛选功能，优化用户、角色、权限和日志管理页面 ([0f1da4b](https://github.com/guizimo/n-admin/commit/0f1da4b7f282ace113e045fd294337a12e23b66c))
+* 重构导航组件，优化导航列表管理 ([a50ee63](https://github.com/guizimo/n-admin/commit/a50ee6331d8f721c0af7b0947837dbbb13a7ada8))
+* 重构日志管理页面，优化组件结构和状态管理 ([6ba1848](https://github.com/guizimo/n-admin/commit/6ba1848b7703c8292021d0a09c6f96ca0bd01a97))
+* 重构权限管理组件和优化认证状态管理 ([84dfd09](https://github.com/guizimo/n-admin/commit/84dfd094c4dbd9a28e1b5f1c5ff93708d5d24a74))
+* 重构权限管理页面，优化组件结构和状态管理 ([d05cb98](https://github.com/guizimo/n-admin/commit/d05cb986b68ecd15b22642d958a014df9dfe3c45))
+
 ### [0.0.9](https://github.com/guizimo/n-admin/compare/v0.0.8...v0.0.9) (2025-06-16)
 
 
