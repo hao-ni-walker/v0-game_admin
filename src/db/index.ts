@@ -9,7 +9,12 @@ const pool = mysql.createPool({
   user: process.env.DATABASE_USERNAME || 'root',
   password: process.env.DATABASE_PASSWORD || 'root',
   database: process.env.DATABASE_NAME || 'n_admin',
-  ssl: process.env.NODE_ENV === 'production' ? {} : undefined,
+  ssl:
+    process.env.NODE_ENV === 'production'
+      ? {
+          rejectUnauthorized: false // 👈 允许使用自签名证书
+        }
+      : undefined,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
