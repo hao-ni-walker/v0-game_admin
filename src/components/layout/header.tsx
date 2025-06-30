@@ -1,7 +1,9 @@
+'use client';
 import React from 'react';
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Breadcrumbs } from './breadcrumbs';
+import { ModeToggle } from './mode-toggle';
 
 export default function Header() {
   return (
@@ -10,6 +12,9 @@ export default function Header() {
         <SidebarTrigger className='-ml-1' />
         <Separator orientation='vertical' className='mr-2 h-4' />
         <Breadcrumbs />
+      </div>
+      <div className='ml-auto flex items-center gap-2 px-4'>
+        <ModeToggle />
       </div>
     </header>
   );

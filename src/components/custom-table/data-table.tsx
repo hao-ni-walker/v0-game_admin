@@ -110,7 +110,7 @@ export function DataTable<T extends Record<string, any>>({
               data.map((record, index) => (
                 <TableRow
                   key={getRowKey(record, index)}
-                  className='hover:bg-muted/50 border-b border-gray-200'
+                  className='hover:bg-muted/50'
                 >
                   {columns.map((column) => (
                     <TableCell key={column.key} className={column.className}>
