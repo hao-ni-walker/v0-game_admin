@@ -1,7 +1,7 @@
 <div align="center">
   <img src="public/logo.png" alt="N-Admin Logo" width="120" height="120">
   
-  # N-Admin
+  # N Admin
   
   基于 Next.js 15 构建的现代化后台管理系统。
   

@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { auth } from '@/lib/auth';
 import Providers from '@/contexts/providers';
+import { siteConfig } from '@/config/site';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -17,8 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'N Admin',
-  description: '现代化的后台管理系统'
+  title: siteConfig.name,
+  description: siteConfig.description
 };
 
 export default async function RootLayout({

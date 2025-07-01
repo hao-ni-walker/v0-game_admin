@@ -12,6 +12,7 @@ import {
   Code2
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { siteConfig } from '@/config/site';
 
 export default function Home() {
   // 滚动监听组件
@@ -49,7 +50,7 @@ export default function Home() {
                 </div>
               </div>
               <span className='from-foreground to-foreground/80 bg-gradient-to-r bg-clip-text text-lg font-bold text-transparent'>
-                N Admin
+                {siteConfig.name}
               </span>
             </div>
 
@@ -137,7 +138,7 @@ export default function Home() {
         <div className='mx-auto max-w-7xl'>
           <div className='mb-16 text-center'>
             <h2 className='mb-4 text-3xl font-bold sm:text-4xl'>
-              为什么选择 N Admin？
+              为什么选择 {siteConfig.name}？
             </h2>
             <p className='text-muted-foreground mx-auto max-w-2xl text-xl'>
               集成最新技术栈，提供完整的解决方案，让你专注于业务逻辑
@@ -268,7 +269,7 @@ export default function Home() {
                   height={24}
                   className='dark:invert'
                 />
-                <span className='font-semibold'>N Admin</span>
+                <span className='font-semibold'>{siteConfig.name}</span>
               </div>
               <p className='text-muted-foreground text-sm'>
                 © 2025 All rights reserved.

@@ -3,10 +3,11 @@ import Header from '@/components/layout/header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
+import { siteConfig } from '@/config/site';
 
 export const metadata: Metadata = {
-  title: 'N Admin',
-  description: 'Basic dashboard with Next.js and Shadcn'
+  title: siteConfig.name,
+  description: siteConfig.description,
 };
 
 export default async function DashboardLayout({

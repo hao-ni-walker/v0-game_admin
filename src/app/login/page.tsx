@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { LoginForm } from './components/login-form';
+import { siteConfig } from '@/config/site';
 
 export default function Page() {
   return (
@@ -31,15 +32,16 @@ export default function Page() {
               </div>
               <div>
                 <h1 className='from-foreground to-foreground/80 bg-gradient-to-r bg-clip-text text-2xl font-bold text-transparent'>
-                  N Admin
+                  {siteConfig.name}
                 </h1>
                 <p className='text-muted-foreground text-sm'>
-                  现代化后台管理系统
+                  {siteConfig.description}
                 </p>
               </div>
             </div>
             <p className='text-muted-foreground mx-auto max-w-sm text-sm leading-relaxed'>
-              欢迎使用 N Admin 管理系统，请使用您的凭据登录以访问管理面板
+              欢迎使用 {siteConfig.name}{' '}
+              管理系统，请使用您的凭据登录以访问管理面板
             </p>
           </div>
 
