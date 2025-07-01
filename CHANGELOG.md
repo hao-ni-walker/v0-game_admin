@@ -4,6 +4,16 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/)。
 
+### [0.0.12](https://github.com/guizimo/n-admin/compare/v0.0.11...v0.0.12) (2025-07-01)
+
+
+### ✨ 新增功能
+
+* 优化登录流程，增强认证状态管理 ([5f39909](https://github.com/guizimo/n-admin/commit/5f39909cd7953caddef4c2ea32d7872c5b33af48))
+* 删除权限种子数据文件，清理不再使用的代码 ([21628cb](https://github.com/guizimo/n-admin/commit/21628cb999340262ee3e1a00f5152b2e2fbf5d38))
+* 更新应用配置和布局，增强可维护性 ([769f9c6](https://github.com/guizimo/n-admin/commit/769f9c60bdd0c302a1be964d569844e3e4108de4))
+* 添加超级管理员配置，优化初始化逻辑 ([88535b3](https://github.com/guizimo/n-admin/commit/88535b3c20dc25a6433621310e3039c6f65403cd))
+
 ### [0.0.11](https://github.com/guizimo/n-admin/compare/v0.0.10...v0.0.11) (2025-07-01)
 
 
