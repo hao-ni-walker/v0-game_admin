@@ -15,12 +15,15 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AuthAPI } from '@/service/request';
+import { useAuthStore } from '@/stores/auth';
+import { resetGlobalInitFlag } from '@/hooks/use-auth';
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<'div'>) {
   const router = useRouter();
+  const { forceReInitialize } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: process.env.NODE_ENV === 'development' ? 'admin@example.com' : '',
@@ -41,8 +44,15 @@ export function LoginForm({
       const res = await AuthAPI.login(formData);
       if (res.code === 0) {
         toast.success('登录成功');
+
+        // 重置全局初始化标志，确保跳转后会重新初始化
+        resetGlobalInitFlag();
+
+        // 立即强制重新初始化认证状态（获取最新的会话和权限信息）
+        await forceReInitialize();
+
+        // 跳转到dashboard
         router.push('/dashboard');
-        router.refresh();
       } else {
         toast.error(res.message || '登录失败');
       }

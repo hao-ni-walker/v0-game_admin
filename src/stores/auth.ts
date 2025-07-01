@@ -26,6 +26,9 @@ interface AuthState {
   initializeAuth: () => Promise<void>;
   fetchSession: () => Promise<void>;
   fetchPermissions: () => Promise<void>;
+  resetFlags: (forceReset?: boolean) => void;
+  triggerGlobalInitialization: () => Promise<void>;
+  forceReInitialize: () => Promise<void>;
   logout: () => void;
 
   // 权限检查方法
@@ -36,6 +39,8 @@ interface AuthState {
 
 let isSessionFetching = false;
 let isPermissionsFetching = false;
+let hasEverInitialized = false; // 全局标志，记录是否已经初始化过
+let hasGloballyHydrated = false; // 全局水合状态
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -51,32 +56,24 @@ export const useAuthStore = create<AuthState>()(
       // 初始化认证状态（页面加载时调用）
       initializeAuth: async () => {
         const state = get();
-        if (state.isInitialized) return;
 
-        // 如果有持久化的 session，只需要验证并获取最新权限
-        if (state.session?.user) {
-          set({ isInitialized: true });
-          try {
-            // 验证 session 有效性并获取最新权限
-            await get().fetchPermissions();
-          } catch (error) {
-            console.error('验证会话失败:', error);
-            // 如果验证失败，清空session并重新获取
-            await get().fetchSession();
-            await get().fetchPermissions();
-          }
+        if (state.isInitialized || hasEverInitialized) {
           return;
         }
 
         set({ loading: true, isInitialized: true });
+        hasEverInitialized = true;
 
         try {
-          // 先获取 session，再获取 permissions
+          // 重新验证 session 有效性
           await get().fetchSession();
+          // 获取最新的权限信息
           await get().fetchPermissions();
         } catch (error) {
           console.error('初始化认证失败:', error);
           set({ error: '初始化失败' });
+          // 如果初始化失败，重置标志位允许重试
+          hasEverInitialized = false;
         } finally {
           set({ loading: false });
         }
@@ -138,6 +135,42 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      // 重置请求标志位（仅在页面刷新时重置初始化状态）
+      resetFlags: (forceReset = false) => {
+        isSessionFetching = false;
+        isPermissionsFetching = false;
+        // 只在强制重置时（页面刷新）才重置初始化状态
+        if (forceReset) {
+          set({ isInitialized: false });
+          hasEverInitialized = false; // 重置全局标志
+          hasGloballyHydrated = false; // 重置全局水合状态
+        }
+      },
+
+      // 全局初始化入口（只调用一次）
+      triggerGlobalInitialization: async () => {
+        if (hasGloballyHydrated) return;
+
+        // 手动触发水合
+        useAuthStore.persist.rehydrate();
+        hasGloballyHydrated = true;
+
+        // 重置标志位并开始初始化
+        get().resetFlags(true);
+        await get().initializeAuth();
+      },
+
+      // 强制重新初始化（用于登录成功后）
+      forceReInitialize: async () => {
+        // 重置所有标志位
+        hasGloballyHydrated = false;
+        hasEverInitialized = false;
+        set({ isInitialized: false });
+
+        // 重新初始化
+        await get().triggerGlobalInitialization();
+      },
+
       // 退出登录
       logout: () => {
         set({
@@ -150,6 +183,8 @@ export const useAuthStore = create<AuthState>()(
         });
         isSessionFetching = false;
         isPermissionsFetching = false;
+        hasEverInitialized = false; // 重置全局标志，允许重新登录后初始化
+        hasGloballyHydrated = false; // 重置全局水合状态
       },
 
       // 权限检查方法
@@ -174,8 +209,8 @@ export const useAuthStore = create<AuthState>()(
       // 只持久化核心数据，避免临时状态
       partialize: (state) => ({
         session: state.session,
-        permissions: state.permissions,
-        isInitialized: state.isInitialized
+        permissions: state.permissions
+        // 不持久化 isInitialized，确保每次刷新都会重新初始化
       }),
       // 重要：跳过服务端渲染的水合
       skipHydration: true
