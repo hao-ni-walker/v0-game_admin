@@ -3,6 +3,7 @@ import { users, roles, rolePermissions, permissions } from "../src/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import * as dotenv from "dotenv";
+import { surperAdmin } from "../src/config/surper-admin";
 
 dotenv.config();
 
@@ -80,16 +81,16 @@ async function initSuperAdminRole() {
 async function initSuperAdminUser(roleId: number) {
   console.log('开始初始化超级管理员账号...');
   
-  const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123456';
+  const adminPassword = surperAdmin.password;
   const saltRounds = Number(process.env.SALT_ROUNDS || 12);
   const hashedPassword = await bcrypt.hash(adminPassword, saltRounds);
 
-  const adminExists = await db.select().from(users).where(eq(users.email, 'admin@example.com'));
+  const adminExists = await db.select().from(users).where(eq(users.email, surperAdmin.email));
 
   if (adminExists.length === 0) {
     await db.insert(users).values({
-      email: 'admin@example.com',
-      username: 'Administrator',
+      email: surperAdmin.email,
+      username: surperAdmin.username,
       password: hashedPassword,
       avatar: '/avatars/admin.jpg',
       roleId: roleId,
@@ -98,8 +99,8 @@ async function initSuperAdminUser(roleId: number) {
     });
 
     console.log('超级管理员账号创建成功！');
-    console.log('邮箱: admin@example.com');
-    console.log('用户名: Administrator');
+    console.log('邮箱: ' + surperAdmin.email);
+    console.log('用户名: ' + surperAdmin.username);
     console.log('请使用环境变量中配置的密码登录');
   } else {
     console.log('超级管理员账号已存在');
