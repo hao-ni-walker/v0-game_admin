@@ -3,7 +3,11 @@ import {
   CircleUserRound,
   SquareTerminal,
   Settings,
-  ScrollText
+  ScrollText,
+  Cog,
+  Users,
+  Shield,
+  Key
 } from 'lucide-react';
 
 // 业务导航列表
@@ -13,8 +17,14 @@ export const businessNavList: NavItem[] = [
     url: '/dashboard/overview',
     icon: SquareTerminal,
     isActive: false,
-    shortcut: ['d', 'd'],
-    items: []
+    description: '工作台',
+    items: [],
+    searchConfig: {
+      keywords: 'dashboard overview home 仪表板 首页 工作台',
+      searchShortcut: ['d'],
+      searchSection: '导航',
+      searchPriority: 1
+    }
   }
 ];
 
@@ -29,17 +39,38 @@ export const systemNavList: NavItem[] = [
       {
         title: '用户管理',
         url: '/dashboard/account/user',
-        shortcut: ['m', 'm']
+        description: '用户管理',
+        icon: Users,
+        searchConfig: {
+          keywords: 'users management 用户 管理 user',
+          searchShortcut: ['u'],
+          searchSection: '账户管理',
+          searchPriority: 2
+        }
       },
       {
         title: '角色管理',
-        shortcut: ['l', 'l'],
-        url: '/dashboard/account/role'
+        url: '/dashboard/account/role',
+        description: '角色管理',
+        icon: Shield,
+        searchConfig: {
+          keywords: 'roles permissions 角色 权限 role',
+          searchShortcut: ['r'],
+          searchSection: '账户管理',
+          searchPriority: 3
+        }
       },
       {
         title: '权限管理',
-        shortcut: ['l', 'l'],
-        url: '/dashboard/account/permission'
+        url: '/dashboard/account/permission',
+        description: '权限管理',
+        icon: Key,
+        searchConfig: {
+          keywords: 'permissions settings 权限 设置 permission',
+          searchShortcut: ['p'],
+          searchSection: '账户管理',
+          searchPriority: 4
+        }
       }
     ]
   },
@@ -52,8 +83,14 @@ export const systemNavList: NavItem[] = [
       {
         title: '日志管理',
         url: '/dashboard/system/logs',
-        shortcut: ['l', 'o'],
-        icon: ScrollText
+        icon: ScrollText,
+        description: '系统日志审计',
+        searchConfig: {
+          keywords: 'system logs audit 系统日志 审计 log',
+          searchShortcut: ['l'],
+          searchSection: '系统管理',
+          searchPriority: 5
+        }
       }
     ]
   }

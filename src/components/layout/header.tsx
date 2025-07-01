@@ -4,6 +4,7 @@ import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Breadcrumbs } from './breadcrumbs';
 import { ModeToggle } from './mode-toggle';
+import SearchInput from './search-input';
 
 export default function Header() {
   return (
@@ -14,6 +15,9 @@ export default function Header() {
         <Breadcrumbs />
       </div>
       <div className='ml-auto flex items-center gap-2 px-4'>
+        <div className='hidden md:flex'>
+          <SearchInput />
+        </div>
         <ModeToggle />
       </div>
     </header>

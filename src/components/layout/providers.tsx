@@ -2,6 +2,7 @@
 import React from 'react';
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
+import { KBarComponent } from './kbar';
 
 export default function Providers({
   session,
@@ -11,7 +12,7 @@ export default function Providers({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <KBarComponent>
       <ThemeProvider
         attribute='class'
         defaultTheme='system'
@@ -20,6 +21,6 @@ export default function Providers({
       >
         <SessionProvider session={session}>{children}</SessionProvider>
       </ThemeProvider>
-    </>
+    </KBarComponent>
   );
 }
