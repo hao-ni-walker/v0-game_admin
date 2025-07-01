@@ -2,6 +2,7 @@
 export { default as Header } from './header';
 export { default as Providers } from './providers';
 export { default as SearchInput } from './search-input';
+export { default as SearchButton } from './search-button';
 export { ModeToggle } from './mode-toggle';
 export { Breadcrumbs } from './breadcrumbs';
 export { KBarComponent, searchActions, useSearchActions } from './kbar';
