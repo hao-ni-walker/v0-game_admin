@@ -4,6 +4,25 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/)。
 
+### [0.0.11](https://github.com/guizimo/n-admin/compare/v0.0.10...v0.0.11) (2025-07-01)
+
+
+### 🐛 Bug 修复
+
+* 优化数据过滤逻辑，使用常量替代变量 ([8fefe41](https://github.com/guizimo/n-admin/commit/8fefe410401897c5b18c565ff4d338383bd9525a))
+
+
+### ✨ 新增功能
+
+* 优化日志记录方式，简化用户认证模块的日志管理 ([221953b](https://github.com/guizimo/n-admin/commit/221953bfe2cd2d7db63f20deba55d7b492bfd6af))
+* 优化过滤器组件布局，移除多余的溢出样式 ([0ded3c3](https://github.com/guizimo/n-admin/commit/0ded3c3c5c801433632c33d96f49d3bfaef1ed1e))
+* 优化面包屑组件和头部布局，增强移动端体验 ([cf3babe](https://github.com/guizimo/n-admin/commit/cf3babe6ee3ee9833a164bfaad90ec45cd331eb7))
+* 更新布局和组件，增强用户体验 ([25bc5f5](https://github.com/guizimo/n-admin/commit/25bc5f586b6b31f903948e74b98cc8deb509d72e))
+* 更新用户注册趋势统计，支持最近30天数据展示 ([2020ab8](https://github.com/guizimo/n-admin/commit/2020ab831cb6f69a2996f19bca88fbdf289c1309))
+* 更新登录表单，支持开发环境下的默认凭据 ([c004c1f](https://github.com/guizimo/n-admin/commit/c004c1fac2b7efd95cbb9e6a895ed4509f834f44))
+* 更新组件导入路径，优化代码结构 ([8386dd2](https://github.com/guizimo/n-admin/commit/8386dd2ad7ee9d68e4498bfa0091358349993d0f))
+* 添加 KBar 组件和搜索功能，优化导航体验 ([fafb288](https://github.com/guizimo/n-admin/commit/fafb288716284be5fdb26ae1d2e58f2f13c643cf))
+
 ### [0.0.10](https://github.com/guizimo/n-admin/compare/v0.0.9...v0.0.10) (2025-06-27)
 
 
