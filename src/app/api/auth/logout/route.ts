@@ -1,6 +1,6 @@
 import { successResponse } from '@/service/response';
 import { verify } from 'jsonwebtoken';
-import { Logger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: Request) {
   try {
@@ -23,8 +23,7 @@ export async function POST(request: Request) {
     }
 
     // 记录登出日志
-    const logger = new Logger('用户认证', userId);
-    await logger.info('用户登出', '用户退出系统', {
+    await logger.info('用户认证', '用户登出', '用户退出系统', {
       userId,
       username,
       logoutTime: new Date().toISOString(),
@@ -34,8 +33,7 @@ export async function POST(request: Request) {
     return successResponse('退出成功');
   } catch (error) {
     // 记录登出错误日志
-    const logger = new Logger('用户认证');
-    await logger.error('用户登出', '登出过程发生错误', {
+    await logger.error('用户认证', '用户登出', '登出过程发生错误', {
       error: error instanceof Error ? error.message : String(error),
       timestamp: new Date().toISOString()
     });

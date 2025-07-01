@@ -50,6 +50,11 @@ export async function createLog(data: LogData) {
 }
 
 /**
+ * Logger实例缓存
+ */
+const loggerCache = new Map<string, Logger>();
+
+/**
  * 日志记录器类
  */
 export class Logger {
@@ -107,7 +112,97 @@ export class Logger {
 }
 
 /**
- * 快捷日志记录函数
+ * Logger工厂 - 创建或获取缓存的Logger实例
+ */
+export function getLogger(module: string, userId?: number): Logger {
+  const cacheKey = `${module}_${userId || 'anonymous'}`;
+
+  if (!loggerCache.has(cacheKey)) {
+    loggerCache.set(cacheKey, new Logger(module, userId));
+  }
+
+  return loggerCache.get(cacheKey)!;
+}
+
+/**
+ * 快捷日志记录函数 - 扩展版，支持自定义模块
+ */
+export const logger = {
+  /**
+   * 直接记录日志，无需创建Logger实例
+   */
+  info: (
+    module: string,
+    action: string,
+    message: string,
+    details?: Record<string, any>,
+    userId?: number
+  ) =>
+    createLog({
+      level: 'info',
+      action,
+      module,
+      message,
+      details,
+      userId
+    }),
+
+  warn: (
+    module: string,
+    action: string,
+    message: string,
+    details?: Record<string, any>,
+    userId?: number
+  ) =>
+    createLog({
+      level: 'warn',
+      action,
+      module,
+      message,
+      details,
+      userId
+    }),
+
+  error: (
+    module: string,
+    action: string,
+    message: string,
+    details?: Record<string, any>,
+    userId?: number
+  ) =>
+    createLog({
+      level: 'error',
+      action,
+      module,
+      message,
+      details,
+      userId
+    }),
+
+  debug: (
+    module: string,
+    action: string,
+    message: string,
+    details?: Record<string, any>,
+    userId?: number
+  ) =>
+    createLog({
+      level: 'debug',
+      action,
+      module,
+      message,
+      details,
+      userId
+    }),
+
+  /**
+   * 获取模块专用的logger实例
+   */
+  for: (module: string, userId?: number) => getLogger(module, userId)
+};
+
+/**
+ * 快捷日志记录函数 - 保持向后兼容
  */
 export const log = {
   info: (
