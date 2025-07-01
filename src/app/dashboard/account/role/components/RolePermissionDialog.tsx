@@ -16,7 +16,7 @@ import { X, Shield, CheckCircle2, Settings } from 'lucide-react';
 import {
   PermissionTree,
   type Permission as TreePermission
-} from '@/components/common/permission-tree';
+} from '@/components/shared/permission-tree';
 import type { PermissionDialogState } from '../types';
 import { MESSAGES } from '../constants';
 

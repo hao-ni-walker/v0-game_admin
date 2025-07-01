@@ -4,7 +4,7 @@ import React from 'react';
 import { RefreshCw } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { PageHeader } from '@/components/custom-table';
+import { PageHeader } from '@/components/table/page-header';
 
 import type { LogFilters } from '../types';
 

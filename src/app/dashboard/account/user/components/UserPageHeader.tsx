@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
-import { PageHeader } from '@/components/custom-table';
+import { PageHeader } from '@/components/table/page-header';
 
 interface UserPageHeaderProps {
   /** 新增用户回调 */

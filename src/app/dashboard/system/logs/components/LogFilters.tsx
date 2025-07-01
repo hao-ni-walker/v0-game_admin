@@ -22,7 +22,7 @@ import {
   PopoverTrigger
 } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { AdvancedFilterContainer } from '@/components/common';
+import { AdvancedFilterContainer } from '@/components/shared/advanced-filter-container';
 
 import type { LogFilters } from '../types';
 import { LOG_LEVEL_OPTIONS } from '../constants';

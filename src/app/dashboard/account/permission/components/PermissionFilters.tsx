@@ -15,7 +15,7 @@ import {
   PopoverTrigger
 } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { AdvancedFilterContainer } from '@/components/common';
+import { AdvancedFilterContainer } from '@/components/shared/advanced-filter-container';
 
 import type { PermissionFilters } from '../types';
 

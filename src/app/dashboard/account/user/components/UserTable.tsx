@@ -1,13 +1,13 @@
 import React from 'react';
 import { Edit, UserCheck, UserX, Crown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { DataTable } from '@/components/table/data-table';
 import {
-  DataTable,
   ActionDropdown,
-  formatDateTime,
   type ActionItem,
   type DeleteAction
-} from '@/components/custom-table';
+} from '@/components/table/action-dropdown';
+import { formatDateTime } from '@/components/table/utils';
 import { User } from '../types';
 import { TABLE_COLUMNS, MESSAGES, STATUS_MAP } from '../constants';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
-import { PageHeader } from '@/components/custom-table';
+import { PageHeader } from '@/components/table/page-header';
 
 interface PermissionPageHeaderProps {
   /** 新增权限回调 */

@@ -4,12 +4,12 @@ import React from 'react';
 import { Eye, Info, AlertTriangle, AlertCircle, Bug } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
+import { DataTable } from '@/components/table/data-table';
 import {
-  DataTable,
   ActionDropdown,
-  formatDateTime,
   type ActionItem
-} from '@/components/custom-table';
+} from '@/components/table/action-dropdown';
+import { formatDateTime } from '@/components/table/utils';
 
 import type { LogItem } from '../types';
 import { LOG_LEVEL_COLORS } from '../constants';

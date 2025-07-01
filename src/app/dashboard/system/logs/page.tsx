@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 
 import { PermissionGuard } from '@/components/auth/permission-guard';
 import { PERMISSIONS } from '@/lib/permissions';
-import { Pagination } from '@/components/custom-table';
+import { Pagination } from '@/components/table/pagination';
 import PageContainer from '@/components/layout/page-container';
 
 import {

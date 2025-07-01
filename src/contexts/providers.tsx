@@ -2,7 +2,7 @@
 import React from 'react';
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
-import { KBarComponent } from './kbar';
+import { KBarComponent } from './kbar-provider';
 
 export default function Providers({
   session,

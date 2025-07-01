@@ -4,7 +4,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/sonner';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { auth } from '@/lib/auth';
-import Providers from '@/components/layout/providers';
+import Providers from '@/contexts/providers';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
