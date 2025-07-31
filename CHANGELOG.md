@@ -4,6 +4,18 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/)。
 
+### [0.0.13](https://github.com/guizimo/n-admin/compare/v0.0.12...v0.0.13) (2025-07-31)
+
+
+### ✨ 新增功能
+
+* 为权限、角色、用户和日志管理页面添加分页功能 ([f696096](https://github.com/guizimo/n-admin/commit/f696096a16e934d8984d88eb27c978475dc2a54b)), closes [#4](https://github.com/guizimo/n-admin/issues/4)
+
+
+### 🐛 Bug 修复
+
+* 修复表头组件的 z-index 设置 ([b0ca504](https://github.com/guizimo/n-admin/commit/b0ca504c716042322c3e956a116c332337e6e8c6)), closes [#3](https://github.com/guizimo/n-admin/issues/3)
+
 ### [0.0.12](https://github.com/guizimo/n-admin/compare/v0.0.11...v0.0.12) (2025-07-01)
 
 
