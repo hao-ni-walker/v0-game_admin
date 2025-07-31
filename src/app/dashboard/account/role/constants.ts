@@ -1,4 +1,10 @@
-import { FilterField } from '@/components/custom-table';
+interface FilterField {
+  key: string;
+  type: string;
+  label: string;
+  placeholder: string;
+  width: string;
+}
 
 /**
  * 默认分页配置
