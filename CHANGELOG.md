@@ -4,6 +4,13 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/)。
 
+## [0.1.0](https://github.com/guizimo/n-admin/compare/v0.0.13...v0.1.0) (2025-07-31)
+
+
+### ✨ 新增功能
+
+* 更新权限、角色和用户模块的 FilterField 接口定义 ([acb3e8b](https://github.com/guizimo/n-admin/commit/acb3e8be06a9432fad417abc22ef3060f793d026))
+
 ### [0.0.13](https://github.com/guizimo/n-admin/compare/v0.0.12...v0.0.13) (2025-07-31)
 
 
