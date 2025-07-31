@@ -64,7 +64,7 @@ export function DataTable<T extends Record<string, any>>({
     <div className='bg-background relative h-full overflow-hidden rounded-md border'>
       <div className='h-full overflow-auto'>
         <Table className='h-full'>
-          <TableHeader className='bg-background sticky top-0 z-10'>
+          <TableHeader className='bg-background sticky top-0'>
             <TableRow className='bg-muted/50 hover:bg-muted/50'>
               {columns.map((column) => (
                 <TableHead
