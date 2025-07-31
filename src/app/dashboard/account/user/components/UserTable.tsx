@@ -8,7 +8,7 @@ import {
   type DeleteAction
 } from '@/components/table/action-dropdown';
 import { formatDateTime } from '@/components/table/utils';
-import { User } from '../types';
+import { User, PaginationInfo } from '../types';
 import { TABLE_COLUMNS, MESSAGES, STATUS_MAP } from '../constants';
 
 interface EmptyStateProps {
@@ -23,6 +23,8 @@ interface UserTableProps {
   users: User[];
   /** 加载状态 */
   loading: boolean;
+  /** 分页信息 */
+  pagination: PaginationInfo;
   /** 编辑用户回调 */
   onEdit: (user: User) => void;
   /** 删除用户回调 */
@@ -42,6 +44,7 @@ interface UserTableProps {
 export function UserTable({
   users,
   loading,
+  pagination,
   onEdit,
   onDelete,
   onEnable,
@@ -53,7 +56,10 @@ export function UserTable({
     if (col.key === 'index') {
       return {
         ...col,
-        render: (value: any, record: User, index: number) => index + 1
+        render: (value: any, record: User, index: number) => {
+          // 计算全局序号：(当前页 - 1) * 每页大小 + 当前索引 + 1
+          return (pagination.page - 1) * pagination.limit + index + 1;
+        }
       };
     }
 

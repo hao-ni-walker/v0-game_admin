@@ -11,7 +11,7 @@ import {
 } from '@/components/table/action-dropdown';
 import { formatDateTime } from '@/components/table/utils';
 
-import type { LogItem } from '../types';
+import type { LogItem, PaginationInfo } from '../types';
 import { LOG_LEVEL_COLORS } from '../constants';
 
 interface LogTableProps {
@@ -19,6 +19,8 @@ interface LogTableProps {
   data: LogItem[];
   /** 加载状态 */
   loading?: boolean;
+  /** 分页信息 */
+  pagination: PaginationInfo;
   /** 查看详情操作 */
   onView: (log: LogItem) => void;
 }
@@ -30,16 +32,24 @@ const levelIcons = {
   debug: Bug
 };
 
-export function LogTable({ data, loading = false, onView }: LogTableProps) {
+export function LogTable({
+  data,
+  loading = false,
+  pagination,
+  onView
+}: LogTableProps) {
   // 定义表格列
   const columns = [
     {
       key: 'index',
       title: 'ID',
       className: 'text-center w-[60px] font-mono text-sm',
-      render: (value: string, record: LogItem, index: number) => (
-        <span className='font-mono text-sm'>{index + 1}</span>
-      )
+      render: (value: string, record: LogItem, index: number) => {
+        // 计算全局序号：(当前页 - 1) * 每页大小 + 当前索引 + 1
+        const globalIndex =
+          (pagination.page - 1) * pagination.limit + index + 1;
+        return <span className='font-mono text-sm'>{globalIndex}</span>;
+      }
     },
     {
       key: 'level',

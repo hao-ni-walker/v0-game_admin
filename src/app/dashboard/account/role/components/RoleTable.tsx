@@ -11,11 +11,12 @@ import {
 } from '@/components/table/action-dropdown';
 import { formatDateTime } from '@/components/table/utils';
 import { TABLE_COLUMNS, MESSAGES } from '../constants';
-import type { Role } from '../types';
+import type { Role, PaginationInfo } from '../types';
 
 interface RoleTableProps {
   data: Role[];
   loading: boolean;
+  pagination: PaginationInfo;
   onEdit: (role: Role) => void;
   onPermission: (role: Role) => void;
   onDelete: (role: Role) => void;
@@ -24,6 +25,7 @@ interface RoleTableProps {
 export function RoleTable({
   data,
   loading,
+  pagination,
   onEdit,
   onPermission,
   onDelete
@@ -33,7 +35,10 @@ export function RoleTable({
     if (col.key === 'index') {
       return {
         ...col,
-        render: (value: any, record: Role, index: number) => index + 1
+        render: (value: any, record: Role, index: number) => {
+          // 计算全局序号：(当前页 - 1) * 每页大小 + 当前索引 + 1
+          return (pagination.page - 1) * pagination.limit + index + 1;
+        }
       };
     }
 

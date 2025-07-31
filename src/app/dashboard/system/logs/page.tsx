@@ -88,7 +88,12 @@ export default function LogsPage() {
 
           {/* 数据表格 */}
           <div className='flex min-h-0 flex-col'>
-            <LogTable data={logs} loading={loading} onView={openDetailDialog} />
+            <LogTable
+              data={logs}
+              loading={loading}
+              pagination={pagination}
+              onView={openDetailDialog}
+            />
 
             {/* 分页控件 */}
             <Pagination

@@ -102,6 +102,7 @@ export default function PermissionManagementPage() {
             <PermissionTable
               permissions={permissions}
               loading={loading}
+              pagination={pagination}
               onEdit={openEditDialog}
               onDelete={handleDeletePermission}
             />

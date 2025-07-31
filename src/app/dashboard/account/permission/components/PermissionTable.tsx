@@ -8,7 +8,7 @@ import {
   type DeleteAction
 } from '@/components/table/action-dropdown';
 import { formatDateTime } from '@/components/table/utils';
-import { Permission } from '../types';
+import { Permission, PaginationInfo } from '../types';
 import { TABLE_COLUMNS, MESSAGES } from '../constants';
 
 interface EmptyStateProps {
@@ -23,6 +23,8 @@ interface PermissionTableProps {
   permissions: Permission[];
   /** 加载状态 */
   loading: boolean;
+  /** 分页信息 */
+  pagination: PaginationInfo;
   /** 编辑权限回调 */
   onEdit: (permission: Permission) => void;
   /** 删除权限回调 */
@@ -38,6 +40,7 @@ interface PermissionTableProps {
 export function PermissionTable({
   permissions,
   loading,
+  pagination,
   onEdit,
   onDelete,
   emptyState
@@ -47,7 +50,10 @@ export function PermissionTable({
     if (col.key === 'index') {
       return {
         ...col,
-        render: (value: any, record: Permission, index: number) => index + 1
+        render: (value: any, record: Permission, index: number) => {
+          // 计算全局序号：(当前页 - 1) * 每页大小 + 当前索引 + 1
+          return (pagination.page - 1) * pagination.limit + index + 1;
+        }
       };
     }
 

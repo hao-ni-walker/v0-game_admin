@@ -140,6 +140,7 @@ export default function RoleManagementPage() {
             <RoleTable
               data={roles}
               loading={loading}
+              pagination={pagination}
               onEdit={openEditDialog}
               onPermission={openPermissionDialog}
               onDelete={handleDelete}

@@ -160,6 +160,7 @@ export default function UserManagementPage() {
               <UserTable
                 users={users}
                 loading={loading}
+                pagination={pagination}
                 onEdit={handleOpenEditDialog}
                 onDelete={handleDeleteUser}
                 onEnable={handleEnableUser}
