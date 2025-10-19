@@ -38,7 +38,7 @@ export const businessNavList: NavItem[] = [
     isActive: false,
     items: [
       {
-        title: '游戏列',
+        title: '游戏列表',
         url: '/dashboard/games',
         icon: List,
         description: '游戏列表',

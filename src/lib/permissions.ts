@@ -35,9 +35,4 @@ export const PERMISSIONS = {
 /**
  * 路由权限映射
  */
-export const ROUTE_PERMISSIONS = {
-  '/dashboard/account/user': [PERMISSIONS.USER.READ],
-  '/dashboard/account/role': [PERMISSIONS.ROLE.READ],
-  '/dashboard/account/permission': [PERMISSIONS.PERMISSION.READ],
-  '/dashboard/system/logs': [PERMISSIONS.LOG.READ]
-} as const;
+export const ROUTE_PERMISSIONS = {} as const;

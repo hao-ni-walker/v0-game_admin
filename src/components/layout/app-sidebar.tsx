@@ -19,18 +19,8 @@ import {
 import { siteConfig } from '@/config/site';
 
 const data = {
-  navSecondary: [
-    {
-      title: '支持',
-      url: 'https://github.com/guizimo',
-      icon: LifeBuoy
-    },
-    {
-      title: '反馈',
-      url: 'https://github.com/guizimo/n-admin/issues',
-      icon: Send
-    }
-  ]
+  // 去除“支持/反馈”按钮：保持结构但传空数组，NavSecondary 将不渲染任何按钮
+  navSecondary: []
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
