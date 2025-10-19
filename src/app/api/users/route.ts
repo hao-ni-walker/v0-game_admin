@@ -1,10 +1,9 @@
-import { db } from '@/db';
-import { roles, users } from '@/db/schema';
 import bcrypt from 'bcryptjs';
-import { eq, like, and, gte, lte, sql } from 'drizzle-orm';
 import { Logger } from '@/lib/logger';
 import { getCurrentUser } from '@/lib/auth';
 import { successResponse, errorResponse } from '@/service/response';
+// 使用仓储
+import { getRepositories } from '@/repository';
 
 export async function GET(request: Request) {
   try {
@@ -18,75 +17,24 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
 
-    // 构建查询条件
-    const conditions = [];
+    const repos = await getRepositories();
 
-    if (username) {
-      conditions.push(like(users.username, `%${username}%`));
-    }
-
-    if (email) {
-      conditions.push(like(users.email, `%${email}%`));
-    }
-
-    if (roleId) {
-      conditions.push(eq(users.roleId, parseInt(roleId)));
-    }
-
-    if (status && status !== 'all') {
-      conditions.push(eq(users.status, status));
-    }
-
-    if (startDate) {
-      conditions.push(gte(users.createdAt, new Date(startDate)));
-    }
-
-    if (endDate) {
-      conditions.push(lte(users.createdAt, new Date(endDate)));
-    }
-
-    const baseQuery = db
-      .select({
-        id: users.id,
-        email: users.email,
-        username: users.username,
-        roleId: users.roleId,
-        avatar: users.avatar,
-        status: users.status,
-        lastLoginAt: users.lastLoginAt,
-        createdAt: users.createdAt,
-        isSuperAdmin: users.isSuperAdmin,
-        role: {
-          id: roles.id,
-          name: roles.name
-        }
-      })
-      .from(users)
-      .leftJoin(roles, eq(users.roleId, roles.id));
-
-    // 计算总数
-    const countQuery = db
-      .select({ count: sql`count(*)` })
-      .from(users)
-      .leftJoin(roles, eq(users.roleId, roles.id));
-
-    const [userList, totalResult] = await Promise.all([
-      conditions.length > 0
-        ? baseQuery
-            .where(and(...conditions))
-            .limit(limit)
-            .offset((page - 1) * limit)
-        : baseQuery.limit(limit).offset((page - 1) * limit),
-      conditions.length > 0 ? countQuery.where(and(...conditions)) : countQuery
-    ]);
-
-    const total = totalResult[0]?.count || 0;
-
-    return successResponse(userList, {
+    const result = await repos.users.list({
+      username: username || undefined,
+      email: email || undefined,
+      roleId: roleId ? parseInt(roleId) : undefined,
+      status: (status as any) || undefined,
+      startDate: startDate || undefined,
+      endDate: endDate || undefined,
       page,
-      limit,
-      total: Number(total),
-      totalPages: Math.ceil(Number(total) / limit)
+      limit
+    });
+
+    return successResponse(result.data, {
+      page: result.page,
+      limit: result.limit,
+      total: result.total,
+      totalPages: result.totalPages
     });
   } catch (error) {
     console.error('获取用户列表失败:', error);
@@ -117,14 +65,11 @@ export async function POST(request: Request) {
       return errorResponse('请填写所有必填字段');
     }
 
-    // 检查用户名或邮箱是否已存在
-    const existingUser = await db
-      .select()
-      .from(users)
-      .where(eq(users.username, username))
-      .limit(1);
+    const repos = await getRepositories();
 
-    if (existingUser.length > 0) {
+    // 检查用户名是否已存在
+    const existingUser = await repos.users.findByUsername(username);
+    if (existingUser) {
       await logger.warn('创建用户', '创建用户失败：用户名已存在', {
         username,
         email,
@@ -140,7 +85,7 @@ export async function POST(request: Request) {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // 创建用户
-    await db.insert(users).values({
+    await repos.users.create({
       username,
       email,
       password: hashedPassword,

@@ -1,7 +1,6 @@
-import { db } from '@/db';
-import { systemLogs } from '@/db/schema';
 import { headers } from 'next/headers';
 import { v4 as uuidv4 } from 'uuid';
+import { getRepositories } from '@/repository';
 
 export type LogLevel = 'info' | 'warn' | 'error' | 'debug';
 
@@ -32,17 +31,18 @@ export async function createLog(data: LogData) {
 
     const requestId = uuidv4();
 
-    await db.insert(systemLogs).values({
+    const repos = await getRepositories();
+    await repos.logs.append({
       level: data.level,
       action: data.action,
       module: data.module,
       message: data.message,
-      details: data.details || null,
-      userId: data.userId || null,
+      details: data.details || undefined,
+      userId: data.userId,
       userAgent,
       ip,
       requestId,
-      duration: data.duration || null
+      duration: data.duration
     });
   } catch (error) {
     console.error('Failed to create log:', error);

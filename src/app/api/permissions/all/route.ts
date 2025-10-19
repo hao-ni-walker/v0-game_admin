@@ -1,22 +1,22 @@
-import { db } from '@/db';
-import { permissions } from '@/db/schema';
 import { errorResponse, successResponse } from '@/service/response';
+import { getRepositories } from '@/repository';
 
 export async function GET() {
   try {
-    // 获取所有权限数据，按sortOrder排序
-    const allPermissions = await db
-      .select({
-        id: permissions.id,
-        name: permissions.name,
-        code: permissions.code,
-        description: permissions.description,
-        parentId: permissions.parentId,
-        sortOrder: permissions.sortOrder
-      })
-      .from(permissions)
-      .orderBy(permissions.sortOrder);
-
+    const repos = await getRepositories();
+    // 读取所有权限（较大上限），再按 sortOrder 排序
+    const res = await repos.permissions.list({ page: 1, limit: 10000 });
+    const allPermissions = res.data
+      .slice()
+      .sort((a, b) => (Number(a.sortOrder || 0) - Number(b.sortOrder || 0)))
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        code: p.code,
+        description: p.description,
+        parentId: p.parentId,
+        sortOrder: p.sortOrder
+      }));
     return successResponse(allPermissions);
   } catch (error) {
     console.error('获取权限列表失败:', error);

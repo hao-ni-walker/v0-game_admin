@@ -1,0 +1,21 @@
+[
+  {
+    "id": 1,
+    "createdAt": "2025-10-19T09:53:03.985Z",
+    "level": "warn",
+    "action": "用户登录",
+    "module": "用户认证",
+    "message": "登录失败：密码错误",
+    "details": {
+      "reason": "密码错误",
+      "email": "admin@example.com",
+      "userId": 1,
+      "username": "admin",
+      "timestamp": "2025-10-19T09:53:03.984Z"
+    },
+    "userId": 1,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "requestId": "a9a2dce9-48a4-4260-a6d5-73c49be1e967"
+  }
+]

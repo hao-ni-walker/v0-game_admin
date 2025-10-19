@@ -1,9 +1,7 @@
-import { db } from '@/db';
-import { rolePermissions, permissions, roles } from '@/db/schema';
-import { eq } from 'drizzle-orm';
 import { Logger } from '@/lib/logger';
 import { getCurrentUser } from '@/lib/auth';
 import { errorResponse, successResponse } from '@/service/response';
+import { getRepositories } from '@/repository';
 
 // 获取角色的权限列表
 export async function GET(
@@ -12,17 +10,25 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const roleId = parseInt(id);
 
-    const rolePermissionList = await db
-      .select({
-        id: permissions.id,
-        name: permissions.name,
-        code: permissions.code,
-        description: permissions.description
-      })
-      .from(rolePermissions)
-      .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
-      .where(eq(rolePermissions.roleId, parseInt(id)));
+    const repos = await getRepositories();
+
+    // 读取该角色的权限关联
+    const rolePerms = await repos.rolePermissions.listByRole(roleId);
+    const permIds = rolePerms.map((rp) => rp.permissionId);
+
+    // 一次性读取全部权限（小数据可接受），再筛选
+    const allPerms = await repos.permissions.list({ page: 1, limit: 10000 });
+
+    const rolePermissionList = allPerms.data
+      .filter((p) => permIds.includes(p.id))
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        code: p.code,
+        description: p.description
+      }));
 
     return successResponse(rolePermissionList);
   } catch (error) {
@@ -44,14 +50,11 @@ export async function PUT(
     const { permissionIds } = await request.json();
     const roleId = parseInt(id);
 
-    // 获取角色信息
-    const targetRole = await db
-      .select()
-      .from(roles)
-      .where(eq(roles.id, roleId))
-      .limit(1);
+    const repos = await getRepositories();
 
-    if (!targetRole.length) {
+    // 获取角色信息
+    const targetRole = await repos.roles.getById(roleId);
+    if (!targetRole) {
       await logger.warn('分配权限', '权限分配失败：角色不存在', {
         targetRoleId: roleId,
         operatorId: currentUser?.id,
@@ -61,58 +64,30 @@ export async function PUT(
     }
 
     // 获取原有权限用于对比
-    const originalPermissions = await db
-      .select({
-        permissionId: rolePermissions.permissionId,
-        permissionCode: permissions.code
-      })
-      .from(rolePermissions)
-      .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
-      .where(eq(rolePermissions.roleId, roleId));
+    const original = await repos.rolePermissions.listByRole(roleId);
+    const originalPermissionIds = original.map((p) => p.permissionId);
 
-    const originalPermissionIds = originalPermissions.map(
-      (p) => p.permissionId
-    );
+    // 计算需要新增与移除的集合（幂等）
+    const incoming = Array.isArray(permissionIds) ? permissionIds : [];
+    const toAdd = incoming.filter((pid: number) => !originalPermissionIds.includes(pid));
+    const toRemove = originalPermissionIds.filter((pid) => !incoming.includes(pid));
 
-    // 获取新权限信息
-    const newPermissions =
-      permissionIds.length > 0
-        ? await db
-            .select({ id: permissions.id, code: permissions.code })
-            .from(permissions)
-            .where(eq(permissions.id, permissionIds[0])) // 这里简化处理，实际应该用IN查询
-        : [];
-
-    // 开启事务
-    await db.transaction(async (tx) => {
-      // 删除原有权限
-      await tx
-        .delete(rolePermissions)
-        .where(eq(rolePermissions.roleId, roleId));
-
-      // 添加新权限
-      if (permissionIds.length > 0) {
-        await tx.insert(rolePermissions).values(
-          permissionIds.map((permissionId: number) => ({
-            roleId,
-            permissionId
-          }))
-        );
-      }
-    });
+    // 执行增删
+    for (const pid of toRemove) {
+      await repos.rolePermissions.remove(roleId, pid);
+    }
+    for (const pid of toAdd) {
+      await repos.rolePermissions.add(roleId, pid);
+    }
 
     // 记录权限分配日志
     await logger.info('分配权限', '角色权限分配成功', {
       targetRoleId: roleId,
-      targetRoleName: targetRole[0].name,
+      targetRoleName: targetRole.name,
       originalPermissions: originalPermissionIds,
-      newPermissions: permissionIds,
-      addedPermissions: permissionIds.filter(
-        (id: number) => !originalPermissionIds.includes(id)
-      ),
-      removedPermissions: originalPermissionIds.filter(
-        (id) => !permissionIds.includes(id)
-      ),
+      newPermissions: incoming,
+      addedPermissions: toAdd,
+      removedPermissions: toRemove,
       operatorId: currentUser?.id,
       operatorName: currentUser?.username,
       timestamp: new Date().toISOString()

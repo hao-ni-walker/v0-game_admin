@@ -1,8 +1,6 @@
 import { NextRequest } from 'next/server';
-import { db } from '@/db';
-import { systemLogs, users } from '@/db/schema';
-import { desc, eq, like, and, gte, lte, count } from 'drizzle-orm';
 import { getUserFromRequest } from '@/lib/server-permissions';
+import { getRepositories } from '@/repository';
 import {
   successResponse,
   errorResponse,
@@ -27,72 +25,24 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate');
     const search = searchParams.get('search');
 
-    // 构建查询条件
-    const conditions = [];
+    const repos = await getRepositories();
 
-    if (level) {
-      conditions.push(eq(systemLogs.level, level));
-    }
-
-    if (module) {
-      conditions.push(eq(systemLogs.module, module));
-    }
-
-    if (action) {
-      conditions.push(like(systemLogs.action, `%${action}%`));
-    }
-
-    if (search) {
-      conditions.push(like(systemLogs.message, `%${search}%`));
-    }
-
-    if (startDate) {
-      conditions.push(gte(systemLogs.createdAt, new Date(startDate)));
-    }
-
-    if (endDate) {
-      conditions.push(lte(systemLogs.createdAt, new Date(endDate)));
-    }
-
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-    // 获取总数
-    const [totalResult] = await db
-      .select({ count: count() })
-      .from(systemLogs)
-      .where(whereClause);
-
-    const total = totalResult.count;
-
-    // 获取日志列表
-    const logs = await db
-      .select({
-        id: systemLogs.id,
-        level: systemLogs.level,
-        action: systemLogs.action,
-        module: systemLogs.module,
-        message: systemLogs.message,
-        details: systemLogs.details,
-        userId: systemLogs.userId,
-        username: users.username,
-        userAgent: systemLogs.userAgent,
-        ip: systemLogs.ip,
-        requestId: systemLogs.requestId,
-        duration: systemLogs.duration,
-        createdAt: systemLogs.createdAt
-      })
-      .from(systemLogs)
-      .leftJoin(users, eq(systemLogs.userId, users.id))
-      .where(whereClause)
-      .orderBy(desc(systemLogs.createdAt))
-      .limit(limit)
-      .offset((page - 1) * limit);
-
-    return successResponse(logs, {
+    const result = await repos.logs.list({
+      level: (level as any) || undefined,
+      module: module || undefined,
+      action: action || undefined,
+      search: search || undefined,
+      startDate: startDate || undefined,
+      endDate: endDate || undefined,
       page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit)
+      limit
+    });
+
+    return successResponse(result.data, {
+      page: result.page,
+      limit: result.limit,
+      total: result.total,
+      totalPages: result.totalPages
     });
   } catch (error) {
     console.error('获取日志失败:', error);
@@ -115,7 +65,8 @@ export async function DELETE(request: NextRequest) {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
 
-    await db.delete(systemLogs).where(lte(systemLogs.createdAt, cutoffDate));
+    const repos = await getRepositories();
+    await repos.logs.removeBefore(cutoffDate.toISOString());
 
     return successResponse({
       message: `成功删除 ${days} 天前的日志`

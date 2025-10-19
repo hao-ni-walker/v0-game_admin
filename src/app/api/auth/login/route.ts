@@ -1,7 +1,4 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { users } from '@/db/schema';
-import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import { logger } from '@/lib/logger';
@@ -10,18 +7,16 @@ import {
   errorResponse,
   unauthorizedResponse
 } from '@/service/response';
+import { getRepositories } from '@/repository';
 
 export async function POST(request: Request) {
   try {
     const { email, password } = await request.json();
 
-    const user = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email))
-      .limit(1);
+    const repos = await getRepositories();
+    const user = await repos.users.findByEmail(email);
 
-    if (!user.length) {
+    if (!user) {
       // 记录登录失败日志 - 用户不存在
       await logger.warn('用户认证', '用户登录', '登录失败：用户不存在', {
         reason: '用户不存在',
@@ -33,7 +28,7 @@ export async function POST(request: Request) {
     }
 
     // 检查用户是否被禁用
-    if (user[0].status === 'disabled') {
+    if (user.status === 'disabled') {
       await logger.warn(
         '用户认证',
         '用户登录',
@@ -41,17 +36,17 @@ export async function POST(request: Request) {
         {
           reason: '用户已被禁用',
           email: email,
-          userId: user[0].id,
-          username: user[0].username,
+          userId: user.id,
+          username: user.username,
           timestamp: new Date().toISOString()
         },
-        user[0].id
+        user.id
       );
 
       return unauthorizedResponse('该账户已被禁用，请联系管理员');
     }
 
-    const isValid = await bcrypt.compare(password, user[0].password);
+    const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
       // 记录登录失败日志 - 密码错误
       await logger.warn(
@@ -61,30 +56,27 @@ export async function POST(request: Request) {
         {
           reason: '密码错误',
           email: email,
-          userId: user[0].id,
-          username: user[0].username,
+          userId: user.id,
+          username: user.username,
           timestamp: new Date().toISOString()
         },
-        user[0].id
+        user.id
       );
 
       return unauthorizedResponse('邮箱或密码错误');
     }
 
-    // 更新最后登录时间
-    await db
-      .update(users)
-      .set({ lastLoginAt: new Date() })
-      .where(eq(users.id, user[0].id));
+    // 更新最后登录时间（JSON 仓储）
+    await repos.users.update(user.id, { lastLoginAt: new Date().toISOString() });
 
     const token = sign(
       {
-        id: user[0].id,
-        email: user[0].email,
-        username: user[0].username,
-        roleId: user[0].roleId,
-        avatar: user[0].avatar,
-        isSurperAdmin: user[0].isSuperAdmin
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        roleId: user.roleId,
+        avatar: user.avatar,
+        isSurperAdmin: user.isSuperAdmin
       },
       process.env.JWT_SECRET || 'secret',
       { expiresIn: '1d' }
@@ -96,19 +88,19 @@ export async function POST(request: Request) {
       '用户登录',
       '用户登录成功',
       {
-        userId: user[0].id,
-        username: user[0].username,
-        email: user[0].email,
-        roleId: user[0].roleId,
+        userId: user.id,
+        username: user.username,
+        email: user.email,
+        roleId: user.roleId,
         loginTime: new Date().toISOString(),
         tokenExpiry: '24小时'
       },
-      user[0].id
+      user.id
     );
 
     const response = successResponse({
       message: '登录成功',
-      user: { id: user[0].id, email: user[0].email },
+      user: { id: user.id, email: user.email },
       token
     });
 

@@ -1,0 +1,10 @@
+[
+  {
+    "id": 1,
+    "name": "超级管理员",
+    "isSuper": true,
+    "description": "拥有所有权限",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+]

@@ -1,8 +1,7 @@
 import { cookies } from 'next/headers';
 import { verifyToken } from './auth';
-import { db } from '@/db';
-import { rolePermissions, permissions, users } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+// 使用仓储获取数据
+import { getRepositories } from '@/repository';
 
 /**
  * 从请求中获取用户ID (服务端专用)
@@ -37,35 +36,30 @@ export async function getUserPermissions(userId?: number): Promise<string[]> {
       userId = requestUserId;
     }
 
+    const repos = await getRepositories();
+
     // 获取用户信息
-    const user = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, userId))
-      .limit(1);
-
-    if (!user.length) {
-      return [];
-    }
-
-    const userInfo = user[0];
+    const user = await repos.users.getById(userId);
+    if (!user) return [];
 
     // 如果是超级管理员，返回所有权限
-    if (userInfo.isSuperAdmin) {
-      const allPermissions = await db.select().from(permissions);
-      return allPermissions.map((p) => p.code);
+    if (user.isSuperAdmin) {
+      const all = await repos.permissions.list({ page: 1, limit: 1000 });
+      return all.data.map((p) => p.code);
     }
 
-    // 获取角色权限
-    const userPermissions = await db
-      .select({
-        code: permissions.code
-      })
-      .from(rolePermissions)
-      .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
-      .where(eq(rolePermissions.roleId, userInfo.roleId));
+    // 获取角色权限 codes
+    const rolePerms = await repos.rolePermissions.listByRole(user.roleId);
+    if (!rolePerms.length) return [];
 
-    return userPermissions.map((p) => p.code);
+    // 将 permissionId 转换为 code
+    const permSet = new Set<number>(rolePerms.map((rp) => rp.permissionId));
+    // 简化：一次性取较大页码
+    const allPerms = await repos.permissions.list({ page: 1, limit: 5000 });
+    const codes = allPerms.data
+      .filter((p) => permSet.has(p.id))
+      .map((p) => p.code);
+    return codes;
   } catch (error) {
     console.error('获取用户权限失败:', error);
     return [];

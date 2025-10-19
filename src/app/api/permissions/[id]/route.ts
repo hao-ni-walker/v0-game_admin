@@ -1,7 +1,5 @@
-import { db } from '@/db';
-import { permissions } from '@/db/schema';
 import { errorResponse, successResponse } from '@/service/response';
-import { eq } from 'drizzle-orm';
+import { getRepositories } from '@/repository';
 
 export async function PUT(
   request: Request,
@@ -12,10 +10,8 @@ export async function PUT(
     const body = await request.json();
     const { name, code, description } = body;
 
-    await db
-      .update(permissions)
-      .set({ name, code, description })
-      .where(eq(permissions.id, parseInt(id)));
+    const repos = await getRepositories();
+    await repos.permissions.update(parseInt(id), { name, code, description });
 
     return successResponse('权限更新成功');
   } catch (error) {
@@ -29,9 +25,8 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-
-    await db.delete(permissions).where(eq(permissions.id, parseInt(id)));
-
+    const repos = await getRepositories();
+    await repos.permissions.delete(parseInt(id));
     return successResponse('权限删除成功');
   } catch (error) {
     return errorResponse('删除权限失败');

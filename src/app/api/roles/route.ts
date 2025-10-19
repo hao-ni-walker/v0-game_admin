@@ -1,9 +1,7 @@
-import { db } from '@/db';
-import { roles, users } from '@/db/schema';
-import { like, and, gte, lte, count, eq, sql } from 'drizzle-orm';
 import { Logger } from '@/lib/logger';
 import { getCurrentUser } from '@/lib/auth';
 import { successResponse, errorResponse } from '@/service/response';
+import { getRepositories } from '@/repository';
 
 export async function GET(request: Request) {
   try {
@@ -19,69 +17,21 @@ export async function GET(request: Request) {
     const validLimit = Math.min(Math.max(1, limit), 100); // 限制最大100条
     const offset = (validPage - 1) * validLimit;
 
-    // 构建查询条件
-    const conditions = [];
+    const repos = await getRepositories();
 
-    if (name) {
-      conditions.push(like(roles.name, `%${name}%`));
-    }
-
-    if (startDate) {
-      conditions.push(gte(roles.createdAt, new Date(startDate)));
-    }
-
-    if (endDate) {
-      conditions.push(lte(roles.createdAt, new Date(endDate)));
-    }
-
-    // 构建基础查询
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-    // 获取总数
-    const [totalResult] = await db
-      .select({ count: count() })
-      .from(roles)
-      .where(whereClause);
-
-    const total = totalResult.count;
-
-    // 获取分页数据（包含用户数量）
-    const baseQuery = db
-      .select({
-        id: roles.id,
-        name: roles.name,
-        description: roles.description,
-        isSuper: roles.isSuper,
-        createdAt: roles.createdAt,
-        updatedAt: roles.updatedAt,
-        userCount: sql<number>`count(${users.id})`.as('userCount')
-      })
-      .from(roles)
-      .leftJoin(users, eq(roles.id, users.roleId))
-      .groupBy(
-        roles.id,
-        roles.name,
-        roles.description,
-        roles.isSuper,
-        roles.createdAt,
-        roles.updatedAt
-      );
-
-    const query = whereClause ? baseQuery.where(whereClause) : baseQuery;
-
-    const roleList = await query
-      .limit(validLimit)
-      .offset(offset)
-      .orderBy(roles.createdAt);
-
-    // 计算分页信息
-    const totalPages = Math.ceil(total / validLimit);
-
-    return successResponse(roleList, {
+    const result = await repos.roles.list({
+      name: name || undefined,
+      startDate: startDate || undefined,
+      endDate: endDate || undefined,
       page: validPage,
-      limit: validLimit,
-      total,
-      totalPages
+      limit: validLimit
+    });
+
+    return successResponse(result.data, {
+      page: result.page,
+      limit: result.limit,
+      total: result.total,
+      totalPages: result.totalPages
     });
   } catch (error) {
     console.error('获取角色列表失败:', error);
@@ -106,14 +56,11 @@ export async function POST(request: Request) {
       return errorResponse('角色名称不能为空');
     }
 
-    // 检查角色名是否已存在
-    const existingRole = await db
-      .select()
-      .from(roles)
-      .where(eq(roles.name, name))
-      .limit(1);
+    const repos = await getRepositories();
 
-    if (existingRole.length > 0) {
+    // 检查角色名是否已存在
+    const existingRole = await repos.roles.findByName(name);
+    if (existingRole) {
       await logger.warn('创建角色', '创建角色失败：角色名已存在', {
         roleName: name,
         operatorId: currentUser?.id,
@@ -122,7 +69,7 @@ export async function POST(request: Request) {
       return errorResponse('角色名已存在');
     }
 
-    await db.insert(roles).values({
+    await repos.roles.create({
       name,
       description
     });

@@ -1,11 +1,11 @@
-import { db } from '@/db';
-import { users, roles, permissions, systemLogs } from '@/db/schema';
-import { count, sql, desc, gte } from 'drizzle-orm';
 import { successResponse, errorResponse } from '@/service/response';
+import { getRepositories } from '@/repository';
 
 export async function GET() {
   try {
-    // 获取当前时间的各个时间点
+    const repos = await getRepositories();
+
+    // 获取当前时间点
     const now = new Date();
     const startOfDay = new Date(
       now.getFullYear(),
@@ -14,70 +14,52 @@ export async function GET() {
     );
     const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    // 获取基本统计
+    // 快速统计计数（分页 total）
     const [
-      totalUsers,
-      todayUsers,
-      weekUsers,
-      totalRoles,
-      totalPermissions,
-      totalLogs,
-      todayLogs,
-      weekLogs
+      usersTotalRes,
+      usersTodayRes,
+      usersWeekRes,
+      rolesTotalRes,
+      permissionsTotalRes,
+      logsTotalRes,
+      logsTodayRes,
+      logsWeekRes
     ] = await Promise.all([
-      db.select({ count: count() }).from(users),
-      db
-        .select({ count: count() })
-        .from(users)
-        .where(gte(users.createdAt, startOfDay)),
-      db
-        .select({ count: count() })
-        .from(users)
-        .where(gte(users.createdAt, startOfWeek)),
-      db.select({ count: count() }).from(roles),
-      db.select({ count: count() }).from(permissions),
-      db.select({ count: count() }).from(systemLogs),
-      db
-        .select({ count: count() })
-        .from(systemLogs)
-        .where(gte(systemLogs.createdAt, startOfDay)),
-      db
-        .select({ count: count() })
-        .from(systemLogs)
-        .where(gte(systemLogs.createdAt, startOfWeek))
+      repos.users.list({ page: 1, limit: 1 }),
+      repos.users.list({ startDate: startOfDay.toISOString(), page: 1, limit: 1 }),
+      repos.users.list({ startDate: startOfWeek.toISOString(), page: 1, limit: 1 }),
+      repos.roles.list({ page: 1, limit: 1 }),
+      repos.permissions.list({ page: 1, limit: 1 }),
+      repos.logs.list({ page: 1, limit: 1 }),
+      repos.logs.list({ startDate: startOfDay.toISOString(), page: 1, limit: 1 }),
+      repos.logs.list({ startDate: startOfWeek.toISOString(), page: 1, limit: 1 })
     ]);
 
-    // 获取错误日志数量
-    const [errorLogs] = await db
-      .select({ count: count() })
-      .from(systemLogs)
-      .where(sql`level = 'error'`);
+    // 获取最近用户（按 createdAt 降序，取前 5）
+    const usersAll = await repos.users.list({ page: 1, limit: 100000 });
+    const recentUsers = usersAll.data
+      .slice()
+      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+      .slice(0, 5)
+      .map(u => ({
+        id: u.id,
+        username: u.username,
+        email: u.email,
+        avatar: u.avatar,
+        createdAt: u.createdAt
+      }));
 
-    // 获取最近用户活动
-    const recentUsers = await db
-      .select({
-        id: users.id,
-        username: users.username,
-        email: users.email,
-        avatar: users.avatar,
-        createdAt: users.createdAt
-      })
-      .from(users)
-      .orderBy(desc(users.createdAt))
-      .limit(5);
+    // 日志级别分布
+    const logsAll = await repos.logs.list({ page: 1, limit: 100000 });
+    const levelMap = new Map<string, number>();
+    for (const l of logsAll.data) {
+      const key = String(l.level || 'info');
+      levelMap.set(key, (levelMap.get(key) || 0) + 1);
+    }
+    const logLevelStats = Array.from(levelMap.entries()).map(([level, count]) => ({ level, count }));
 
-    // 获取日志级别分布
-    const logLevelStats = await db
-      .select({
-        level: systemLogs.level,
-        count: count()
-      })
-      .from(systemLogs)
-      .groupBy(systemLogs.level)
-      .orderBy(desc(count()));
-
-    // 获取最近30天的用户注册数量（简化版）
-    const userTrend = [];
+    // 最近30天的用户注册数量（简化版）
+    const userTrend: { date: string; users: number }[] = [];
     for (let i = 29; i >= 0; i--) {
       const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
       const startOfTargetDay = new Date(
@@ -85,36 +67,35 @@ export async function GET() {
         date.getMonth(),
         date.getDate()
       );
-
-      const [dayUsers] = await db
-        .select({ count: count() })
-        .from(users)
-        .where(gte(users.createdAt, startOfTargetDay));
-
+      const dayRes = await repos.users.list({
+        startDate: startOfTargetDay.toISOString(),
+        page: 1,
+        limit: 1
+      });
       userTrend.push({
         date: date.toISOString().split('T')[0],
-        users: dayUsers.count || 0
+        users: dayRes.total || 0
       });
     }
 
     // 计算增长率（简化版）
     const userGrowthRate =
-      weekUsers[0].count > 0
-        ? `+${((todayUsers[0].count / weekUsers[0].count) * 100).toFixed(1)}%`
+      (usersWeekRes.total || 0) > 0
+        ? `+${(((usersTodayRes.total || 0) / (usersWeekRes.total || 1)) * 100).toFixed(1)}%`
         : '+0%';
 
     return successResponse({
       overview: {
-        totalUsers: totalUsers[0].count || 0,
-        todayUsers: todayUsers[0].count || 0,
-        weekUsers: weekUsers[0].count || 0,
+        totalUsers: usersTotalRes.total || 0,
+        todayUsers: usersTodayRes.total || 0,
+        weekUsers: usersWeekRes.total || 0,
         userGrowthRate,
-        totalRoles: totalRoles[0].count || 0,
-        totalPermissions: totalPermissions[0].count || 0,
-        totalLogs: totalLogs[0].count || 0,
-        todayLogs: todayLogs[0].count || 0,
-        weekLogs: weekLogs[0].count || 0,
-        errorLogs: errorLogs.count || 0
+        totalRoles: rolesTotalRes.total || 0,
+        totalPermissions: permissionsTotalRes.total || 0,
+        totalLogs: logsTotalRes.total || 0,
+        todayLogs: logsTodayRes.total || 0,
+        weekLogs: logsWeekRes.total || 0,
+        errorLogs: logsAll.data.filter(l => l.level === 'error').length
       },
       recentUsers,
       logLevelStats,

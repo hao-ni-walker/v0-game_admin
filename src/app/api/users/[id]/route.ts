@@ -1,7 +1,5 @@
-import { db } from '@/db';
-import { users } from '@/db/schema';
-import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
+import { getRepositories } from '@/repository';
 import {
   preventSuperAdminModification,
   preventSuperAdminDisable
@@ -25,14 +23,11 @@ export async function PUT(
     const { id: idStr } = await params;
     const id = parseInt(idStr);
 
+    const repos = await getRepositories();
     // 获取原用户信息
-    const originalUser = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, id))
-      .limit(1);
+    const original = await repos.users.getById(id);
 
-    if (!originalUser.length) {
+    if (!original) {
       await logger.warn('更新用户', '更新用户失败：用户不存在', {
         targetUserId: id,
         operatorId: currentUser?.id,
@@ -73,28 +68,29 @@ export async function PUT(
       updateData.password = await bcrypt.hash(password, saltRounds);
     }
 
-    await db.update(users).set(updateData).where(eq(users.id, id));
+    const repos2 = await getRepositories();
+    await repos2.users.update(id, updateData);
 
     // 记录更新日志
     await logger.info('更新用户', '用户信息更新成功', {
       targetUserId: id,
-      targetUsername: originalUser[0].username,
+      targetUsername: original.username,
       changedFields: {
         username:
-          username !== undefined && originalUser[0].username !== username
-            ? { from: originalUser[0].username, to: username }
+          username !== undefined && original.username !== username
+            ? { from: original.username, to: username }
             : undefined,
         email:
-          email !== undefined && originalUser[0].email !== email
-            ? { from: originalUser[0].email, to: email }
+          email !== undefined && original.email !== email
+            ? { from: original.email, to: email }
             : undefined,
         roleId:
-          roleId !== undefined && originalUser[0].roleId !== roleId
-            ? { from: originalUser[0].roleId, to: roleId }
+          roleId !== undefined && original.roleId !== roleId
+            ? { from: original.roleId, to: roleId }
             : undefined,
         status:
-          status !== undefined && originalUser[0].status !== status
-            ? { from: originalUser[0].status, to: status }
+          status !== undefined && original.status !== status
+            ? { from: original.status, to: status }
             : undefined,
         passwordChanged: !!password
       },
@@ -127,14 +123,11 @@ export async function DELETE(
     const { id: idStr } = await params;
     const id = parseInt(idStr);
 
+    const repos = await getRepositories();
     // 获取要删除的用户信息
-    const targetUser = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, id))
-      .limit(1);
+    const targetUser = await repos.users.getById(id);
 
-    if (!targetUser.length) {
+    if (!targetUser) {
       await logger.warn('删除用户', '删除用户失败：用户不存在', {
         targetUserId: id,
         operatorId: currentUser?.id,
@@ -144,13 +137,14 @@ export async function DELETE(
     }
 
     await preventSuperAdminModification(id);
-    await db.delete(users).where(eq(users.id, id));
+    const repos2 = await getRepositories();
+    await repos2.users.delete(id);
 
     // 记录删除日志
     await logger.warn('删除用户', '用户删除成功', {
       deletedUserId: id,
-      deletedUsername: targetUser[0].username,
-      deletedEmail: targetUser[0].email,
+      deletedUsername: targetUser.username,
+      deletedEmail: targetUser.email,
       operatorId: currentUser?.id,
       operatorName: currentUser?.username,
       timestamp: new Date().toISOString()

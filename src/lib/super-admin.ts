@@ -1,23 +1,15 @@
-import { db } from '@/db';
-import { users, roles } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { getRepositories } from '@/repository';
 
 export async function isSuperAdmin(userId: number) {
-  const user = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
-  return (user.length && user[0]?.isSuperAdmin) ?? false;
+  const repos = await getRepositories();
+  const user = await repos.users.getById(userId);
+  return Boolean(user?.isSuperAdmin);
 }
 
 export async function preventSuperAdminModification(userId: number) {
-  const user = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
-  if (user.length && user[0]?.isSuperAdmin) {
+  const repos = await getRepositories();
+  const user = await repos.users.getById(userId);
+  if (user?.isSuperAdmin) {
     throw new Error('超级管理员不能被修改或删除');
   }
 }
@@ -27,24 +19,18 @@ export async function preventSuperAdminDisable(
   newStatus: string
 ) {
   if (newStatus === 'disabled') {
-    const user = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, userId))
-      .limit(1);
-    if (user.length && user[0]?.isSuperAdmin) {
+    const repos = await getRepositories();
+    const user = await repos.users.getById(userId);
+    if (user?.isSuperAdmin) {
       throw new Error('超级管理员不能被禁用');
     }
   }
 }
 
 export async function preventSuperRoleModification(roleId: number) {
-  const role = await db
-    .select()
-    .from(roles)
-    .where(eq(roles.id, roleId))
-    .limit(1);
-  if (role.length && role[0]?.isSuper) {
+  const repos = await getRepositories();
+  const role = await repos.roles.getById(roleId);
+  if (role?.isSuper) {
     throw new Error('超级管理员角色不能被修改或删除');
   }
 }

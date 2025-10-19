@@ -1,7 +1,7 @@
-import { db } from '@/db';
-import { roles } from '@/db/schema';
+import { getRepositories } from '@/repository';
+
 import { preventSuperRoleModification } from '@/lib/super-admin';
-import { eq } from 'drizzle-orm';
+
 import { Logger } from '@/lib/logger';
 import { getCurrentUser } from '@/lib/auth';
 import { errorResponse, successResponse } from '@/service/response';
@@ -18,13 +18,10 @@ export async function PUT(
     const id = parseInt(idStr);
 
     // 获取原角色信息
-    const originalRole = await db
-      .select()
-      .from(roles)
-      .where(eq(roles.id, id))
-      .limit(1);
+    const repos = await getRepositories();
+    const originalRole = await repos.roles.getById(id);
 
-    if (!originalRole.length) {
+    if (!originalRole) {
       await logger.warn('更新角色', '更新角色失败：角色不存在', {
         targetRoleId: id,
         operatorId: currentUser?.id,
@@ -37,20 +34,20 @@ export async function PUT(
     const body = await request.json();
     const { name, description } = body;
 
-    await db.update(roles).set({ name, description }).where(eq(roles.id, id));
+    await (await getRepositories()).roles.update(id, { name, description });
 
     // 记录更新日志
     await logger.info('更新角色', '角色信息更新成功', {
       targetRoleId: id,
-      targetRoleName: originalRole[0].name,
+      targetRoleName: originalRole.name,
       changedFields: {
         name:
-          originalRole[0].name !== name
-            ? { from: originalRole[0].name, to: name }
+          originalRole.name !== name
+            ? { from: originalRole.name, to: name }
             : undefined,
         description:
-          originalRole[0].description !== description
-            ? { from: originalRole[0].description, to: description }
+          originalRole.description !== description
+            ? { from: originalRole.description, to: description }
             : undefined
       },
       operatorId: currentUser?.id,
@@ -83,13 +80,10 @@ export async function DELETE(
     const id = parseInt(idStr);
 
     // 获取要删除的角色信息
-    const targetRole = await db
-      .select()
-      .from(roles)
-      .where(eq(roles.id, id))
-      .limit(1);
+    const repos2 = await getRepositories();
+    const targetRole = await repos2.roles.getById(id);
 
-    if (!targetRole.length) {
+    if (!targetRole) {
       await logger.warn('删除角色', '删除角色失败：角色不存在', {
         targetRoleId: id,
         operatorId: currentUser?.id,
@@ -99,13 +93,13 @@ export async function DELETE(
     }
 
     await preventSuperRoleModification(id);
-    await db.delete(roles).where(eq(roles.id, id));
+    await (await getRepositories()).roles.delete(id);
 
     // 记录删除日志
     await logger.warn('删除角色', '角色删除成功', {
       deletedRoleId: id,
-      deletedRoleName: targetRole[0].name,
-      deletedRoleDescription: targetRole[0].description,
+      deletedRoleName: targetRole.name,
+      deletedRoleDescription: targetRole.description,
       operatorId: currentUser?.id,
       operatorName: currentUser?.username,
       timestamp: new Date().toISOString()
