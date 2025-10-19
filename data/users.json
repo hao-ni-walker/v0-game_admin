@@ -8,8 +8,8 @@
     "roleId": 1,
     "isSuperAdmin": true,
     "status": "active",
-    "lastLoginAt": null,
+    "lastLoginAt": "2025-10-19T10:35:30.590Z",
     "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z"
+    "updatedAt": "2025-10-19T10:35:30.590Z"
   }
 ]

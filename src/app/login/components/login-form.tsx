@@ -89,12 +89,6 @@ export function LoginForm({
               <div className='grid gap-2'>
                 <div className='flex items-center'>
                   <Label htmlFor='password'>密码</Label>
-                  <a
-                    href='#'
-                    className='ml-auto inline-block text-sm underline-offset-4 hover:underline'
-                  >
-                    忘记密码？
-                  </a>
                 </div>
                 <Input
                   id='password'
@@ -109,16 +103,9 @@ export function LoginForm({
               <Button type='submit' className='w-full' disabled={loading}>
                 {loading ? '登录中...' : '登录'}
               </Button>
-              <Button variant='outline' className='w-full' disabled={loading}>
-                使用 Google 登录
-              </Button>
+
             </div>
-            <div className='mt-4 text-center text-sm'>
-              还没有账号？{' '}
-              <a href='#' className='underline underline-offset-4'>
-                注册
-              </a>
-            </div>
+
           </form>
         </CardContent>
       </Card>

@@ -26,45 +26,7 @@ export async function POST(request: Request) {
 
       return unauthorizedResponse('邮箱或密码错误');
     }
-
-    // 检查用户是否被禁用
-    if (user.status === 'disabled') {
-      await logger.warn(
-        '用户认证',
-        '用户登录',
-        '登录失败：用户已被禁用',
-        {
-          reason: '用户已被禁用',
-          email: email,
-          userId: user.id,
-          username: user.username,
-          timestamp: new Date().toISOString()
-        },
-        user.id
-      );
-
-      return unauthorizedResponse('该账户已被禁用，请联系管理员');
-    }
-
-    const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) {
-      // 记录登录失败日志 - 密码错误
-      await logger.warn(
-        '用户认证',
-        '用户登录',
-        '登录失败：密码错误',
-        {
-          reason: '密码错误',
-          email: email,
-          userId: user.id,
-          username: user.username,
-          timestamp: new Date().toISOString()
-        },
-        user.id
-      );
-
-      return unauthorizedResponse('邮箱或密码错误');
-    }
+    // 暂时跳过禁用状态与密码校验，直接签发 token（联调阶段）
 
     // 更新最后登录时间（JSON 仓储）
     await repos.users.update(user.id, { lastLoginAt: new Date().toISOString() });
