@@ -7,7 +7,12 @@ import {
   Cog,
   Users,
   Shield,
-  Key
+  Key,
+  Gamepad2,
+  List,
+  BarChart3,
+  LineChart,
+  Megaphone
 } from 'lucide-react';
 
 // 业务导航列表
@@ -25,6 +30,98 @@ export const businessNavList: NavItem[] = [
       searchSection: '导航',
       searchPriority: 1
     }
+  },
+  {
+    title: '游戏管理',
+    url: '#',
+    icon: Gamepad2,
+    isActive: false,
+    items: [
+      {
+        title: '游戏列',
+        url: '/dashboard/games',
+        icon: List,
+        description: '游戏列表',
+        searchConfig: {
+          keywords: 'game games 游戏 列表',
+          searchShortcut: ['g'],
+          searchSection: '游戏管理',
+          searchPriority: 2
+        }
+      }
+    ]
+  },
+  {
+    title: '玩家管理',
+    url: '#',
+    icon: Users,
+    isActive: false,
+    items: [
+      {
+        title: '玩家列表',
+        url: '/dashboard/players',
+        icon: Users,
+        description: '玩家列表',
+        searchConfig: {
+          keywords: 'player players 玩家 列表',
+          searchShortcut: ['p'],
+          searchSection: '玩家管理',
+          searchPriority: 3
+        }
+      }
+    ]
+  },
+  {
+    title: '数据分析',
+    url: '#',
+    icon: BarChart3,
+    isActive: false,
+    items: [
+      {
+        title: '游戏流水',
+        url: '/dashboard/analytics/flows',
+        icon: LineChart,
+        description: '游戏流水',
+        searchConfig: {
+          keywords: 'analytics flows 流水 数据 分析',
+          searchShortcut: ['f'],
+          searchSection: '数据分析',
+          searchPriority: 4
+        }
+      },
+      {
+        title: '运营报表',
+        url: '/dashboard/analytics/reports',
+        icon: BarChart3,
+        description: '运营报表',
+        searchConfig: {
+          keywords: 'analytics reports 报表 数据 分析',
+          searchShortcut: ['r'],
+          searchSection: '数据分析',
+          searchPriority: 5
+        }
+      }
+    ]
+  },
+  {
+    title: '活动管理',
+    url: '#',
+    icon: Megaphone,
+    isActive: false,
+    items: [
+      {
+        title: '活动列表',
+        url: '/dashboard/campaigns',
+        icon: List,
+        description: '活动列表',
+        searchConfig: {
+          keywords: 'campaign 活动 列表',
+          searchShortcut: ['c'],
+          searchSection: '活动管理',
+          searchPriority: 6
+        }
+      }
+    ]
   }
 ];
 

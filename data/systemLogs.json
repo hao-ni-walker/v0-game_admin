@@ -37,5 +37,25 @@
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
     "ip": "::1",
     "requestId": "8a1f403d-9bee-464e-8a9f-166e1bd493a5"
+  },
+  {
+    "id": 3,
+    "createdAt": "2025-10-19T10:49:33.994Z",
+    "level": "info",
+    "action": "用户登录",
+    "module": "用户认证",
+    "message": "用户登录成功",
+    "details": {
+      "userId": 1,
+      "username": "admin",
+      "email": "admin@example.com",
+      "roleId": 1,
+      "loginTime": "2025-10-19T10:49:33.993Z",
+      "tokenExpiry": "24小时"
+    },
+    "userId": 1,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) CodeBuddy/1.100.0 Chrome/132.0.6834.210 Electron/34.5.1 Safari/537.36",
+    "ip": "::1",
+    "requestId": "863865be-b6e4-4907-912e-36e301fa7457"
   }
 ]
