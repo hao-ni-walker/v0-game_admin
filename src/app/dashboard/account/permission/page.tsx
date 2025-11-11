@@ -1,8 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { PermissionGuard } from '@/components/auth/permission-guard';
-import { PERMISSIONS } from '@/lib/permissions';
+import { useEffect } from 'react';
 import { Pagination } from '@/components/table/pagination';
 import PageContainer from '@/components/layout/page-container';
 
@@ -27,8 +25,7 @@ export default function PermissionManagementPage() {
     filters,
     searchFilters,
     updatePagination,
-    clearFilters,
-    hasActiveFilters
+    clearFilters
   } = usePermissionFilters();
   const {
     permissions,
@@ -83,47 +80,45 @@ export default function PermissionManagementPage() {
   };
 
   return (
-    <PermissionGuard permissions={PERMISSIONS.PERMISSION.READ}>
-      <PageContainer scrollable={false}>
-        <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
-          {/* 页面头部 */}
-          <PermissionPageHeader onCreatePermission={openCreateDialog} />
+    <PageContainer scrollable={false}>
+      <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
+        {/* 页面头部 */}
+        <PermissionPageHeader onCreatePermission={openCreateDialog} />
 
-          {/* 搜索和筛选 */}
-          <PermissionFiltersComponent
-            filters={filters}
-            onSearch={handleSearch}
-            onReset={handleReset}
+        {/* 搜索和筛选 */}
+        <PermissionFiltersComponent
+          filters={filters}
+          onSearch={handleSearch}
+          onReset={handleReset}
+          loading={loading}
+        />
+
+        {/* 数据表格 */}
+        <div className='flex min-h-0 flex-col'>
+          <PermissionTable
+            permissions={permissions}
             loading={loading}
+            pagination={pagination}
+            onEdit={openEditDialog}
+            onDelete={handleDeletePermission}
           />
 
-          {/* 数据表格 */}
-          <div className='flex min-h-0 flex-col'>
-            <PermissionTable
-              permissions={permissions}
-              loading={loading}
-              pagination={pagination}
-              onEdit={openEditDialog}
-              onDelete={handleDeletePermission}
-            />
-
-            {/* 分页控件 */}
-            <Pagination
-              pagination={pagination}
-              onPageChange={(page) => updatePagination(page)}
-              onPageSizeChange={(limit) => updatePagination(1, limit)}
-              pageSizeOptions={PAGE_SIZE_OPTIONS}
-            />
-          </div>
-
-          {/* 对话框 */}
-          <PermissionDialogs
-            dialogState={dialogState}
-            onClose={closeDialog}
-            onSubmit={handleFormSubmit}
+          {/* 分页控件 */}
+          <Pagination
+            pagination={pagination}
+            onPageChange={(page) => updatePagination(page)}
+            onPageSizeChange={(limit) => updatePagination(1, limit)}
+            pageSizeOptions={PAGE_SIZE_OPTIONS}
           />
         </div>
-      </PageContainer>
-    </PermissionGuard>
+
+        {/* 对话框 */}
+        <PermissionDialogs
+          dialogState={dialogState}
+          onClose={closeDialog}
+          onSubmit={handleFormSubmit}
+        />
+      </div>
+    </PageContainer>
   );
 }

@@ -1,8 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { PermissionGuard } from '@/components/auth/permission-guard';
-import { PERMISSIONS } from '@/lib/permissions';
+import { useEffect, useState } from 'react';
 import { Pagination } from '@/components/table/pagination';
 import PageContainer from '@/components/layout/page-container';
 import { Users, Plus } from 'lucide-react';
@@ -139,76 +137,68 @@ export default function UserManagementPage() {
   };
 
   return (
-    <PermissionGuard permissions={PERMISSIONS.USER.READ}>
-      <PageContainer scrollable={false}>
-        <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
-          {/* 页面头部 */}
-          <UserPageHeader onCreateUser={handleOpenCreateDialog} />
+    <PageContainer scrollable={false}>
+      <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
+        {/* 页面头部 */}
+        <UserPageHeader onCreateUser={handleOpenCreateDialog} />
 
-          {/* 搜索和筛选 */}
-          <UserFilters
-            filters={filters}
-            roles={roles}
-            onSearch={searchFilters}
-            onReset={clearFilters}
-            loading={loading}
-          />
+        {/* 搜索和筛选 */}
+        <UserFilters
+          filters={filters}
+          roles={roles}
+          onSearch={searchFilters}
+          onReset={clearFilters}
+          loading={loading}
+        />
 
-          {/* 数据表格和分页 */}
-          <div className='flex min-h-0 flex-1 flex-col'>
-            <div className='min-h-0'>
-              <UserTable
-                users={users}
-                loading={loading}
-                pagination={pagination}
-                onEdit={handleOpenEditDialog}
-                onDelete={handleDeleteUser}
-                onEnable={handleEnableUser}
-                onDisable={handleDisableUser}
-                emptyState={{
-                  icon: <Users className='text-muted-foreground h-8 w-8' />,
-                  title: hasActiveFilters ? '未找到匹配的用户' : '还没有用户',
-                  description: hasActiveFilters
-                    ? '请尝试调整筛选条件以查看更多结果'
-                    : '开始添加用户来管理您的系统',
-                  action: !hasActiveFilters ? (
-                    <PermissionGuard permissions={PERMISSIONS.USER.CREATE}>
-                      <Button
-                        onClick={handleOpenCreateDialog}
-                        size='sm'
-                        className='mt-2'
-                      >
-                        <Plus className='mr-2 h-4 w-4' />
-                        添加用户
-                      </Button>
-                    </PermissionGuard>
-                  ) : undefined
-                }}
-              />
-            </div>
-
-            {/* 分页控件 */}
-            <div className='flex-shrink-0 pt-4'>
-              <Pagination
-                pagination={pagination}
-                onPageChange={(page) => updatePagination({ page })}
-                onPageSizeChange={(limit) =>
-                  updatePagination({ limit, page: 1 })
-                }
-                pageSizeOptions={PAGE_SIZE_OPTIONS}
-              />
-            </div>
+        {/* 数据表格和分页 */}
+        <div className='flex min-h-0 flex-1 flex-col'>
+          <div className='min-h-0'>
+            <UserTable
+              users={users}
+              loading={loading}
+              pagination={pagination}
+              onEdit={handleOpenEditDialog}
+              onDelete={handleDeleteUser}
+              onEnable={handleEnableUser}
+              onDisable={handleDisableUser}
+              emptyState={{
+                icon: <Users className='text-muted-foreground h-8 w-8' />,
+                title: hasActiveFilters ? '未找到匹配的用户' : '还没有用户',
+                description: hasActiveFilters
+                  ? '请尝试调整筛选条件以查看更多结果'
+                  : '开始添加用户来管理您的系统',
+                action: !hasActiveFilters ? (
+                  <Button onClick={handleOpenCreateDialog} size='sm' className='mt-2'>
+                    <Plus className='mr-2 h-4 w-4' />
+                    添加用户
+                  </Button>
+                ) : undefined
+              }}
+            />
           </div>
 
-          {/* 用户对话框 */}
-          <UserDialogs
-            dialogState={dialogState}
-            onClose={handleCloseDialog}
-            onCreateUser={handleCreateUser}
-            onUpdateUser={handleUpdateUser}
-          />
+          {/* 分页控件 */}
+          <div className='flex-shrink-0 pt-4'>
+            <Pagination
+              pagination={pagination}
+              onPageChange={(page) => updatePagination({ page })}
+              onPageSizeChange={(limit) =>
+                updatePagination({ limit, page: 1 })
+              }
+              pageSizeOptions={PAGE_SIZE_OPTIONS}
+            />
+          </div>
         </div>
-      </PageContainer>
-    </PermissionGuard>
+
+        {/* 用户对话框 */}
+        <UserDialogs
+          dialogState={dialogState}
+          onClose={handleCloseDialog}
+          onCreateUser={handleCreateUser}
+          onUpdateUser={handleUpdateUser}
+        />
+      </div>
+    </PageContainer>
   );
 }

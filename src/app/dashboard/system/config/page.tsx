@@ -1,21 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Gamepad2, Plus } from 'lucide-react';
+import { Settings, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/table/pagination';
 import PageContainer from '@/components/layout/page-container';
 
 import {
-  GamePageHeader,
-  GameFilters,
-  GameTable
+  SystemConfigPageHeader,
+  SystemConfigFilters,
+  SystemConfigTable
 } from './components';
-import { useGameFilters, useGameManagement } from './hooks';
+import { useSystemConfigFilters, useSystemConfigManagement } from './hooks';
 import { PAGE_SIZE_OPTIONS } from './constants';
-import { Game, GameDialogState } from './types';
+import { SystemConfig, SystemConfigDialogState } from './types';
 
-export default function GamesPage() {
+export default function SystemConfigPage() {
   // 使用自定义hooks
   const {
     filters,
@@ -23,60 +23,59 @@ export default function GamesPage() {
     updatePagination,
     clearFilters,
     hasActiveFilters
-  } = useGameFilters();
+  } = useSystemConfigFilters();
 
   const {
-    games,
+    configs,
     loading,
     pagination,
-    fetchGames,
-    refreshGames,
-    deleteGame,
-    toggleGameStatus,
-    toggleFeatured
-  } = useGameManagement();
+    fetchConfigs,
+    refreshConfigs,
+    deleteConfig,
+    toggleDisabled
+  } = useSystemConfigManagement();
 
   // 对话框状态
-  const [dialogState, setDialogState] = useState<GameDialogState>({
+  const [dialogState, setDialogState] = useState<SystemConfigDialogState>({
     type: null,
-    game: null,
+    config: null,
     open: false
   });
 
   // 初始化和筛选条件变化时获取数据
   useEffect(() => {
-    fetchGames(filters);
-  }, [filters, fetchGames]);
+    fetchConfigs(filters);
+  }, [filters, fetchConfigs]);
 
   /**
-   * 打开创建游戏对话框
+   * 打开创建配置对话框
    */
   const handleOpenCreateDialog = () => {
     setDialogState({
       type: 'create',
-      game: null,
+      config: null,
       open: true
     });
   };
 
   /**
-   * 打开编辑游戏对话框
+   * 打开编辑配置对话框
    */
-  const handleOpenEditDialog = (game: Game) => {
+  const handleOpenEditDialog = (config: SystemConfig) => {
     setDialogState({
       type: 'edit',
-      game,
+      config,
       open: true
     });
   };
 
   /**
-   * 打开查看游戏详情对话框
+   * 打开查看配置详情对话框
    */
-  const handleOpenViewDialog = (game: Game) => {
+  const handleOpenViewDialog = (config: SystemConfig) => {
     setDialogState({
       type: 'view',
-      game,
+      config,
       open: true
     });
   };
@@ -87,38 +86,28 @@ export default function GamesPage() {
   const handleCloseDialog = () => {
     setDialogState({
       type: null,
-      game: null,
+      config: null,
       open: false
     });
   };
 
   /**
-   * 删除游戏
+   * 删除配置
    */
-  const handleDeleteGame = async (game: Game) => {
-    const success = await deleteGame(game.id);
+  const handleDeleteConfig = async (config: SystemConfig) => {
+    const success = await deleteConfig(config.id);
     if (success) {
-      fetchGames(filters);
+      fetchConfigs(filters);
     }
   };
 
   /**
-   * 切换游戏状态
+   * 切换禁用状态
    */
-  const handleToggleStatus = async (game: Game) => {
-    const success = await toggleGameStatus(game);
+  const handleToggleDisabled = async (config: SystemConfig) => {
+    const success = await toggleDisabled(config);
     if (success) {
-      fetchGames(filters);
-    }
-  };
-
-  /**
-   * 切换推荐状态
-   */
-  const handleToggleFeatured = async (game: Game) => {
-    const success = await toggleFeatured(game);
-    if (success) {
-      fetchGames(filters);
+      fetchConfigs(filters);
     }
   };
 
@@ -126,7 +115,7 @@ export default function GamesPage() {
    * 刷新数据
    */
   const handleRefresh = () => {
-    refreshGames(filters);
+    refreshConfigs(filters);
   };
 
   /**
@@ -161,14 +150,14 @@ export default function GamesPage() {
     <PageContainer scrollable={false}>
       <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
         {/* 页面头部 */}
-        <GamePageHeader
-          onCreateGame={handleOpenCreateDialog}
+        <SystemConfigPageHeader
+          onCreateConfig={handleOpenCreateDialog}
           onRefresh={handleRefresh}
           loading={loading}
         />
 
         {/* 搜索和筛选 */}
-        <GameFilters
+        <SystemConfigFilters
           filters={filters}
           onSearch={handleSearch}
           onReset={handleReset}
@@ -178,25 +167,24 @@ export default function GamesPage() {
         {/* 数据表格和分页 */}
         <div className='flex min-h-0 flex-1 flex-col'>
           <div className='min-h-0'>
-            <GameTable
-              games={games}
+            <SystemConfigTable
+              configs={configs}
               loading={loading}
               pagination={pagination}
               onEdit={handleOpenEditDialog}
               onView={handleOpenViewDialog}
-              onDelete={handleDeleteGame}
-              onToggleStatus={handleToggleStatus}
-              onToggleFeatured={handleToggleFeatured}
+              onDelete={handleDeleteConfig}
+              onToggleDisabled={handleToggleDisabled}
               emptyState={{
-                icon: <Gamepad2 className='h-8 w-8 text-muted-foreground' />,
-                title: hasActiveFilters ? '未找到匹配的游戏' : '还没有游戏',
+                icon: <Settings className='h-8 w-8 text-muted-foreground' />,
+                title: hasActiveFilters ? '未找到匹配的配置' : '还没有配置项',
                 description: hasActiveFilters
                   ? '请尝试调整筛选条件以查看更多结果'
-                  : '开始添加游戏来管理您的游戏库',
+                  : '开始添加系统配置来管理应用',
                 action: !hasActiveFilters ? (
                   <Button onClick={handleOpenCreateDialog} size='sm' className='mt-2'>
                     <Plus className='mr-2 h-4 w-4' />
-                    添加游戏
+                    新增配置
                   </Button>
                 ) : undefined
               }}
@@ -217,8 +205,8 @@ export default function GamesPage() {
           </div>
         </div>
 
-        {/* TODO: 游戏对话框（创建/编辑/查看） */}
-        {/* 可以后续添加 GameDialogs 组件 */}
+        {/* TODO: 系统配置对话框（创建/编辑/查看） */}
+        {/* 可以后续添加 SystemConfigDialogs 组件 */}
       </div>
     </PageContainer>
   );

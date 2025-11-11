@@ -1,21 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Gamepad2, Plus } from 'lucide-react';
+import { Image as ImageIcon, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/table/pagination';
 import PageContainer from '@/components/layout/page-container';
 
 import {
-  GamePageHeader,
-  GameFilters,
-  GameTable
+  BannerPageHeader,
+  BannerFilters,
+  BannerTable
 } from './components';
-import { useGameFilters, useGameManagement } from './hooks';
+import { useBannerFilters, useBannerManagement } from './hooks';
 import { PAGE_SIZE_OPTIONS } from './constants';
-import { Game, GameDialogState } from './types';
+import { Banner, BannerDialogState } from './types';
 
-export default function GamesPage() {
+export default function HomeBannersPage() {
   // 使用自定义hooks
   const {
     filters,
@@ -23,60 +23,61 @@ export default function GamesPage() {
     updatePagination,
     clearFilters,
     hasActiveFilters
-  } = useGameFilters();
+  } = useBannerFilters();
 
   const {
-    games,
+    banners,
     loading,
     pagination,
-    fetchGames,
-    refreshGames,
-    deleteGame,
-    toggleGameStatus,
-    toggleFeatured
-  } = useGameManagement();
+    fetchBanners,
+    refreshBanners,
+    deleteBanner,
+    toggleBannerStatus,
+    disableBanner,
+    restoreBanner
+  } = useBannerManagement();
 
   // 对话框状态
-  const [dialogState, setDialogState] = useState<GameDialogState>({
+  const [dialogState, setDialogState] = useState<BannerDialogState>({
     type: null,
-    game: null,
+    banner: null,
     open: false
   });
 
   // 初始化和筛选条件变化时获取数据
   useEffect(() => {
-    fetchGames(filters);
-  }, [filters, fetchGames]);
+    fetchBanners(filters);
+  }, [filters, fetchBanners]);
 
   /**
-   * 打开创建游戏对话框
+   * 打开创建轮播图对话框
    */
   const handleOpenCreateDialog = () => {
     setDialogState({
       type: 'create',
-      game: null,
+      banner: null,
       open: true
     });
   };
 
   /**
-   * 打开编辑游戏对话框
+   * 打开编辑轮播图对话框
    */
-  const handleOpenEditDialog = (game: Game) => {
+  const handleOpenEditDialog = (banner: Banner) => {
     setDialogState({
       type: 'edit',
-      game,
+      banner,
       open: true
     });
   };
 
   /**
-   * 打开查看游戏详情对话框
+   * 打开查看轮播图详情对话框
    */
-  const handleOpenViewDialog = (game: Game) => {
+  const handleOpenViewDialog = (banner: Banner) => {
     setDialogState({
       type: 'view',
-      game,
+      banner,
       open: true
     });
   };
@@ -87,38 +88,48 @@ export default function GamesPage() {
   const handleCloseDialog = () => {
     setDialogState({
       type: null,
-      game: null,
+      banner: null,
       open: false
     });
   };
 
   /**
-   * 删除游戏
+   * 删除轮播图
    */
-  const handleDeleteGame = async (game: Game) => {
-    const success = await deleteGame(game.id);
+  const handleDeleteBanner = async (banner: Banner) => {
+    const success = await deleteBanner(banner.id);
     if (success) {
-      fetchGames(filters);
+      fetchBanners(filters);
     }
   };
 
   /**
-   * 切换游戏状态
+   * 切换轮播图状态
    */
-  const handleToggleStatus = async (game: Game) => {
-    const success = await toggleGameStatus(game);
+  const handleToggleStatus = async (banner: Banner) => {
+    const success = await toggleBannerStatus(banner);
     if (success) {
-      fetchGames(filters);
+      fetchBanners(filters);
     }
   };
 
   /**
-   * 切换推荐状态
+   * 禁用轮播图
    */
-  const handleToggleFeatured = async (game: Game) => {
-    const success = await toggleFeatured(game);
+  const handleDisableBanner = async (banner: Banner) => {
+    const success = await disableBanner(banner);
     if (success) {
-      fetchGames(filters);
+      fetchBanners(filters);
+    }
+  };
+
+  /**
+   * 恢复轮播图
+   */
+  const handleRestoreBanner = async (banner: Banner) => {
+    const success = await restoreBanner(banner);
+    if (success) {
+      fetchBanners(filters);
     }
   };
 
@@ -126,7 +137,7 @@ export default function GamesPage() {
    * 刷新数据
    */
   const handleRefresh = () => {
-    refreshGames(filters);
+    refreshBanners(filters);
   };
 
   /**
@@ -161,14 +172,14 @@ export default function GamesPage() {
     <PageContainer scrollable={false}>
       <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
         {/* 页面头部 */}
-        <GamePageHeader
-          onCreateGame={handleOpenCreateDialog}
+        <BannerPageHeader
+          onCreateBanner={handleOpenCreateDialog}
           onRefresh={handleRefresh}
           loading={loading}
         />
 
         {/* 搜索和筛选 */}
-        <GameFilters
+        <BannerFilters
           filters={filters}
           onSearch={handleSearch}
           onReset={handleReset}
@@ -178,25 +189,26 @@ export default function GamesPage() {
         {/* 数据表格和分页 */}
         <div className='flex min-h-0 flex-1 flex-col'>
           <div className='min-h-0'>
-            <GameTable
-              games={games}
+            <BannerTable
+              banners={banners}
               loading={loading}
               pagination={pagination}
               onEdit={handleOpenEditDialog}
               onView={handleOpenViewDialog}
-              onDelete={handleDeleteGame}
+              onDelete={handleDeleteBanner}
               onToggleStatus={handleToggleStatus}
-              onToggleFeatured={handleToggleFeatured}
+              onDisable={handleDisableBanner}
+              onRestore={handleRestoreBanner}
               emptyState={{
-                icon: <Gamepad2 className='h-8 w-8 text-muted-foreground' />,
-                title: hasActiveFilters ? '未找到匹配的游戏' : '还没有游戏',
+                icon: <ImageIcon className='h-8 w-8 text-muted-foreground' />,
+                title: hasActiveFilters ? '未找到匹配的轮播图' : '还没有轮播图',
                 description: hasActiveFilters
                   ? '请尝试调整筛选条件以查看更多结果'
-                  : '开始添加游戏来管理您的游戏库',
+                  : '开始添加轮播图来管理网站广告',
                 action: !hasActiveFilters ? (
                   <Button onClick={handleOpenCreateDialog} size='sm' className='mt-2'>
                     <Plus className='mr-2 h-4 w-4' />
-                    添加游戏
+                    新增轮播图
                   </Button>
                 ) : undefined
               }}
@@ -217,8 +229,8 @@ export default function GamesPage() {
           </div>
         </div>
 
-        {/* TODO: 游戏对话框（创建/编辑/查看） */}
-        {/* 可以后续添加 GameDialogs 组件 */}
+        {/* TODO: 轮播图对话框（创建/编辑/查看） */}
+        {/* 可以后续添加 BannerDialogs 组件 */}
       </div>
     </PageContainer>
   );

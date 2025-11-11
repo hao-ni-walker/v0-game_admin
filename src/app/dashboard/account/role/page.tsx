@@ -1,8 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { PermissionGuard } from '@/components/auth/permission-guard';
-import { PERMISSIONS } from '@/lib/permissions';
+import { useEffect } from 'react';
 import { Pagination } from '@/components/table/pagination';
 import PageContainer from '@/components/layout/page-container';
 
@@ -15,7 +13,7 @@ import {
 } from './components';
 
 import { useRoleFilters, useRoleManagement } from './hooks';
-import { DEFAULT_PAGINATION, PAGE_SIZE_OPTIONS } from './constants';
+import { PAGE_SIZE_OPTIONS } from './constants';
 import type { Role } from './types';
 
 export default function RoleManagementPage() {
@@ -24,8 +22,7 @@ export default function RoleManagementPage() {
     filters,
     searchFilters,
     updatePagination,
-    clearFilters,
-    hasActiveFilters
+    clearFilters
   } = useRoleFilters();
   const {
     roles,
@@ -121,59 +118,57 @@ export default function RoleManagementPage() {
   };
 
   return (
-    <PermissionGuard permissions={PERMISSIONS.ROLE.READ}>
-      <PageContainer scrollable={false}>
-        <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
-          {/* 页面头部 */}
-          <RolePageHeader onCreateRole={openCreateDialog} />
+    <PageContainer scrollable={false}>
+      <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
+        {/* 页面头部 */}
+        <RolePageHeader onCreateRole={openCreateDialog} />
 
-          {/* 搜索和筛选 */}
-          <RoleFilters
-            filters={filters}
-            onSearch={handleSearch}
-            onReset={handleReset}
+        {/* 搜索和筛选 */}
+        <RoleFilters
+          filters={filters}
+          onSearch={handleSearch}
+          onReset={handleReset}
+          loading={loading}
+        />
+
+        {/* 数据表格 */}
+        <div className='flex min-h-0 flex-col'>
+          <RoleTable
+            data={roles}
             loading={loading}
+            pagination={pagination}
+            onEdit={openEditDialog}
+            onPermission={openPermissionDialog}
+            onDelete={handleDelete}
           />
 
-          {/* 数据表格 */}
-          <div className='flex min-h-0 flex-col'>
-            <RoleTable
-              data={roles}
-              loading={loading}
-              pagination={pagination}
-              onEdit={openEditDialog}
-              onPermission={openPermissionDialog}
-              onDelete={handleDelete}
-            />
-
-            {/* 分页控件 */}
-            <Pagination
-              pagination={pagination}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-              pageSizeOptions={PAGE_SIZE_OPTIONS}
-            />
-          </div>
-
-          {/* 创建/编辑对话框 */}
-          <RoleDialogs
-            dialogState={dialogState}
-            onClose={closeDialog}
-            onCreate={handleCreate}
-            onUpdate={handleUpdate}
-            loading={loading}
-          />
-
-          {/* 权限分配对话框 */}
-          <RolePermissionDialog
-            dialogState={permissionDialogState}
-            onClose={closePermissionDialog}
-            onPermissionsChange={handlePermissionsChange}
-            onSave={handlePermissionSave}
-            loading={loading}
+          {/* 分页控件 */}
+          <Pagination
+            pagination={pagination}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            pageSizeOptions={PAGE_SIZE_OPTIONS}
           />
         </div>
-      </PageContainer>
-    </PermissionGuard>
+
+        {/* 创建/编辑对话框 */}
+        <RoleDialogs
+          dialogState={dialogState}
+          onClose={closeDialog}
+          onCreate={handleCreate}
+          onUpdate={handleUpdate}
+          loading={loading}
+        />
+
+        {/* 权限分配对话框 */}
+        <RolePermissionDialog
+          dialogState={permissionDialogState}
+          onClose={closePermissionDialog}
+          onPermissionsChange={handlePermissionsChange}
+          onSave={handlePermissionSave}
+          loading={loading}
+        />
+      </div>
+    </PageContainer>
   );
 }

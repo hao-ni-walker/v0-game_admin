@@ -5,6 +5,26 @@ const nextConfig: NextConfig = {
   // 基础配置
   experimental: {
     optimizePackageImports: ['@radix-ui/react-icons', 'lucide-react']
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'placehold.co'
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.example.com'
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.xreddeercasino.com'
+      },
+      {
+        protocol: 'https',
+        hostname: '**.amazonaws.com'
+      }
+    ]
   }
 };
 

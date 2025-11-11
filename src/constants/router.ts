@@ -168,7 +168,7 @@ export const businessNavList: NavItem[] = [
     ]
   },
   {
-    title: '首页 Banner 管理',
+    title: 'Banner 管理',
     url: '#',
     icon: Image,
     isActive: false,
