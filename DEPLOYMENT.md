@@ -83,7 +83,7 @@ JWT_REFRESH_SECRET="your-jwt-refresh-secret-key"
 
 # 应用配置
 NEXT_PUBLIC_APP_NAME="N-Admin"
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NEXT_PUBLIC_APP_URL="http://localhost:3001"
 
 # 邮件配置（可选）
 EMAIL_FROM="noreply@yourdomain.com"

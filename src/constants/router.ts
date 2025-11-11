@@ -12,7 +12,11 @@ import {
   List,
   BarChart3,
   LineChart,
-  Megaphone
+  Megaphone,
+  Gift,
+  ClipboardList,
+  Image,
+  Receipt
 } from 'lucide-react';
 
 // 业务导航列表
@@ -122,6 +126,106 @@ export const businessNavList: NavItem[] = [
         }
       }
     ]
+  },
+  {
+    title: '礼包管理',
+    url: '#',
+    icon: Gift,
+    isActive: false,
+    items: [
+      {
+        title: '礼包列表',
+        url: '/dashboard/gift-packs',
+        icon: List,
+        description: '礼包列表',
+        searchConfig: {
+          keywords: 'gift pack 礼包 列表',
+          searchShortcut: ['l'],
+          searchSection: '礼包管理',
+          searchPriority: 7
+        }
+      }
+    ]
+  },
+  {
+    title: '通告管理',
+    url: '#',
+    icon: Megaphone,
+    isActive: false,
+    items: [
+      {
+        title: '通告列表',
+        url: '/dashboard/announcements',
+        icon: List,
+        description: '通告列表',
+        searchConfig: {
+          keywords: 'announcement 通告 公告 列表',
+          searchShortcut: ['n'],
+          searchSection: '通告管理',
+          searchPriority: 8
+        }
+      }
+    ]
+  },
+  {
+    title: '首页 Banner 管理',
+    url: '#',
+    icon: Image,
+    isActive: false,
+    items: [
+      {
+        title: 'Banner 列表',
+        url: '/dashboard/home-banners',
+        icon: Image,
+        description: '首页 Banner 列表',
+        searchConfig: {
+          keywords: 'home banner 首 页 轮播 列表',
+          searchShortcut: ['h'],
+          searchSection: '首页 Banner 管理',
+          searchPriority: 9
+        }
+      }
+    ]
+  },
+  {
+    title: '工单管理',
+    url: '#',
+    icon: ClipboardList,
+    isActive: false,
+    items: [
+      {
+        title: '工单列表',
+        url: '/dashboard/tickets',
+        icon: ClipboardList,
+        description: '工单列表',
+        searchConfig: {
+          keywords: 'ticket support 工单 列表',
+          searchShortcut: ['t'],
+          searchSection: '工单管理',
+          searchPriority: 10
+        }
+      }
+    ]
+  },
+  {
+    title: '订单管理',
+    url: '#',
+    icon: Receipt,
+    isActive: false,
+    items: [
+      {
+        title: '订单列表',
+        url: '/dashboard/orders',
+        icon: Receipt,
+        description: '订单列表',
+        searchConfig: {
+          keywords: 'order 订单 列表',
+          searchShortcut: ['o'],
+          searchSection: '订单管理',
+          searchPriority: 11
+        }
+      }
+    ]
   }
 ];
 
@@ -187,6 +291,18 @@ export const systemNavList: NavItem[] = [
           searchShortcut: ['l'],
           searchSection: '系统管理',
           searchPriority: 5
+        }
+      },
+      {
+        title: '系统参数配置',
+        url: '/dashboard/system/config',
+        icon: Cog,
+        description: '系统参数配置',
+        searchConfig: {
+          keywords: 'system config 参数 配置 设置',
+          searchShortcut: ['s'],
+          searchSection: '系统管理',
+          searchPriority: 6
         }
       }
     ]

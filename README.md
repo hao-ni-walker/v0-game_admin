@@ -61,7 +61,7 @@ pnpm init:admin
 pnpm dev
 ```
 
-访问 http://localhost:3000
+访问 http://localhost:3001
 
 **管理员账号:**
 
@@ -160,7 +160,7 @@ JWT_REFRESH_SECRET="your-refresh-secret"
 
 # 应用
 NEXT_PUBLIC_APP_NAME="N-Admin"
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NEXT_PUBLIC_APP_URL="http://localhost:3001"
 ```
 
 ## 贡献
