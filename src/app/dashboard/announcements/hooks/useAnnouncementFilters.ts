@@ -1,18 +1,18 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { NotificationFilters } from '../types';
+import { AnnouncementFilters } from '../types';
 import { DEFAULT_FILTERS } from '../constants';
 
 /**
- * 消息通知筛选逻辑 Hook
+ * 公告筛选逻辑 Hook
  * 负责管理筛选条件和 URL 同步
  */
-export function useNotificationFilters() {
+export function useAnnouncementFilters() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const isUpdatingFromSearch = useRef(false);
 
-  const [filters, setFilters] = useState<NotificationFilters>(DEFAULT_FILTERS);
+  const [filters, setFilters] = useState<AnnouncementFilters>(DEFAULT_FILTERS);
 
   // 从 URL 初始化筛选条件
   useEffect(() => {
@@ -21,21 +21,25 @@ export function useNotificationFilters() {
       return;
     }
 
-    const user_ids = searchParams.get('user_ids');
     const types = searchParams.get('types');
-    const priorities = searchParams.get('priorities');
-    const statuses = searchParams.get('statuses');
     
-    const urlFilters: NotificationFilters = {
+    const urlFilters: AnnouncementFilters = {
       keyword: searchParams.get('keyword') || '',
-      user_ids: user_ids ? user_ids.split(',').map(id => parseInt(id)) : [],
-      types: types ? types.split(',') : [],
-      priorities: priorities ? priorities.split(',') : [],
-      statuses: statuses ? statuses.split(',') : [],
-      is_read: searchParams.get('is_read') === 'true' ? true : searchParams.get('is_read') === 'false' ? false : undefined,
-      only_failed: searchParams.get('only_failed') === 'true' ? true : false,
-      sort_by: searchParams.get('sort_by') || 'created_at',
-      sort_dir: (searchParams.get('sort_dir') as 'asc' | 'desc') || 'desc',
+      types: types ? types.split(',').map(Number) : [],
+      status: searchParams.get('status') === 'all' ? 'all' : searchParams.get('status') === '1' ? 1 : searchParams.get('status') === '0' ? 0 : 'all',
+      disabled: searchParams.get('disabled') === 'true' ? true : searchParams.get('disabled') === 'false' ? false : false,
+      show_removed: searchParams.get('show_removed') === 'true',
+      active_only: searchParams.get('active_only') === 'true',
+      start_from: searchParams.get('start_from') || undefined,
+      start_to: searchParams.get('start_to') || undefined,
+      end_from: searchParams.get('end_from') || undefined,
+      end_to: searchParams.get('end_to') || undefined,
+      created_from: searchParams.get('created_from') || undefined,
+      created_to: searchParams.get('created_to') || undefined,
+      updated_from: searchParams.get('updated_from') || undefined,
+      updated_to: searchParams.get('updated_to') || undefined,
+      sort_by: searchParams.get('sort_by') || 'default',
+      sort_dir: (searchParams.get('sort_dir') as 'asc' | 'desc') || 'asc',
       page: parseInt(searchParams.get('page') || '1'),
       page_size: parseInt(searchParams.get('page_size') || '20')
     };
@@ -47,7 +51,7 @@ export function useNotificationFilters() {
    * 手动搜索（更新URL）
    */
   const searchFilters = useCallback(
-    (newFilters: Partial<NotificationFilters>) => {
+    (newFilters: Partial<AnnouncementFilters>) => {
       const updatedFilters = { ...filters, ...newFilters };
 
       // 如果是筛选条件变化（非分页），重置到第一页
@@ -65,7 +69,7 @@ export function useNotificationFilters() {
       // 更新 URL
       const params = new URLSearchParams();
       Object.entries(updatedFilters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '' && value !== false) {
+        if (value !== undefined && value !== null && value !== '' && value !== 'all' && value !== false) {
           if (Array.isArray(value)) {
             if (value.length > 0) {
               params.set(key, value.join(','));
@@ -85,7 +89,7 @@ export function useNotificationFilters() {
    * 更新分页（仅用于分页变化）
    */
   const updatePagination = useCallback(
-    (newFilters: Partial<NotificationFilters>) => {
+    (newFilters: Partial<AnnouncementFilters>) => {
       const updatedFilters = { ...filters, ...newFilters };
       setFilters(updatedFilters);
 
@@ -95,7 +99,7 @@ export function useNotificationFilters() {
       // 更新 URL
       const params = new URLSearchParams();
       Object.entries(updatedFilters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '' && value !== false) {
+        if (value !== undefined && value !== null && value !== '' && value !== 'all' && value !== false) {
           if (Array.isArray(value)) {
             if (value.length > 0) {
               params.set(key, value.join(','));
@@ -117,12 +121,19 @@ export function useNotificationFilters() {
   const clearFilters = useCallback(() => {
     searchFilters({
       keyword: '',
-      user_ids: [],
       types: [],
-      priorities: [],
-      statuses: [],
-      is_read: undefined,
-      only_failed: false,
+      status: 'all',
+      disabled: false,
+      show_removed: false,
+      active_only: false,
+      start_from: undefined,
+      start_to: undefined,
+      end_from: undefined,
+      end_to: undefined,
+      created_from: undefined,
+      created_to: undefined,
+      updated_from: undefined,
+      updated_to: undefined,
       page: 1
     });
   }, [searchFilters]);
@@ -132,12 +143,19 @@ export function useNotificationFilters() {
    */
   const hasActiveFilters = Boolean(
     filters.keyword ||
-      (filters.user_ids && filters.user_ids.length > 0) ||
       (filters.types && filters.types.length > 0) ||
-      (filters.priorities && filters.priorities.length > 0) ||
-      (filters.statuses && filters.statuses.length > 0) ||
-      filters.is_read !== undefined ||
-      filters.only_failed
+      (filters.status !== 'all') ||
+      filters.disabled ||
+      filters.show_removed ||
+      filters.active_only ||
+      filters.start_from ||
+      filters.start_to ||
+      filters.end_from ||
+      filters.end_to ||
+      filters.created_from ||
+      filters.created_to ||
+      filters.updated_from ||
+      filters.updated_to
   );
 
   return {

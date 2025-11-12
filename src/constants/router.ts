@@ -36,28 +36,8 @@ export const businessNavList: NavItem[] = [
       searchPriority: 1
     }
   },
-  {
-    title: '游戏管理',
-    url: '#',
-    icon: Gamepad2,
-    isActive: false,
-    items: [
-      {
-        title: '游戏列表',
-        url: '/dashboard/games',
-        icon: List,
-        description: '游戏列表',
-        searchConfig: {
-          keywords: 'game games 游戏 列表',
-          searchShortcut: ['g'],
-          searchSection: '游戏管理',
-          searchPriority: 2
-        }
-      }
-    ]
-  },
-  {
-    title: '玩家管理',
+    {
+    title: '游戏运营',
     url: '#',
     icon: Users,
     isActive: false,
@@ -72,6 +52,76 @@ export const businessNavList: NavItem[] = [
           searchShortcut: ['p'],
           searchSection: '玩家管理',
           searchPriority: 3
+        }
+      },      {
+        title: '订单列表',
+        url: '/dashboard/orders',
+        icon: Receipt,
+        description: '订单列表',
+        searchConfig: {
+          keywords: 'order 订单 列表',
+          searchShortcut: ['o'],
+          searchSection: '订单管理',
+          searchPriority: 11
+        }
+      },
+            {
+        title: '游戏列表',
+        url: '/dashboard/games',
+        icon: List,
+        description: '游戏列表',
+        searchConfig: {
+          keywords: 'game games 游戏 列表',
+          searchShortcut: ['g'],
+          searchSection: '游戏管理',
+          searchPriority: 2
+        }
+      },
+            {
+        title: '活动列表',
+        url: '/dashboard/campaigns',
+        icon: List,
+        description: '活动列表',
+        searchConfig: {
+          keywords: 'campaign 活动 列表',
+          searchShortcut: ['c'],
+          searchSection: '活动管理',
+          searchPriority: 6
+        }
+      },
+      {
+        title: '礼包列表',
+        url: '/dashboard/gift-packs',
+        icon: List,
+        description: '礼包列表',
+        searchConfig: {
+          keywords: 'gift pack 礼包 列表',
+          searchShortcut: ['l'],
+          searchSection: '礼包管理',
+          searchPriority: 7
+        }
+      },
+            {
+        title: '通告列表',
+        url: '/dashboard/announcements',
+        icon: List,
+        description: '通告列表',
+        searchConfig: {
+          keywords: 'announcement 通告 公告 列表',
+          searchShortcut: ['n'],
+          searchSection: '通告管理',
+          searchPriority: 8
+        }
+      },      {
+        title: 'Banner 列表',
+        url: '/dashboard/home-banners',
+        icon: Image,
+        description: 'Banner 列表',
+        searchConfig: {
+          keywords: 'home banner 首 页 轮播 列表',
+          searchShortcut: ['h'],
+          searchSection: '首页 Banner 管理',
+          searchPriority: 9
         }
       }
     ]
@@ -104,118 +154,6 @@ export const businessNavList: NavItem[] = [
           searchShortcut: ['r'],
           searchSection: '数据分析',
           searchPriority: 5
-        }
-      }
-    ]
-  },
-  {
-    title: '活动管理',
-    url: '#',
-    icon: Megaphone,
-    isActive: false,
-    items: [
-      {
-        title: '活动列表',
-        url: '/dashboard/campaigns',
-        icon: List,
-        description: '活动列表',
-        searchConfig: {
-          keywords: 'campaign 活动 列表',
-          searchShortcut: ['c'],
-          searchSection: '活动管理',
-          searchPriority: 6
-        }
-      },
-      {
-        title: '礼包列表',
-        url: '/dashboard/gift-packs',
-        icon: List,
-        description: '礼包列表',
-        searchConfig: {
-          keywords: 'gift pack 礼包 列表',
-          searchShortcut: ['l'],
-          searchSection: '礼包管理',
-          searchPriority: 7
-        }
-      }
-    ]
-  },
-  {
-    title: '通告管理',
-    url: '#',
-    icon: Megaphone,
-    isActive: false,
-    items: [
-      {
-        title: '通告列表',
-        url: '/dashboard/announcements',
-        icon: List,
-        description: '通告列表',
-        searchConfig: {
-          keywords: 'announcement 通告 公告 列表',
-          searchShortcut: ['n'],
-          searchSection: '通告管理',
-          searchPriority: 8
-        }
-      }
-    ]
-  },
-  {
-    title: 'Banner 管理',
-    url: '#',
-    icon: Image,
-    isActive: false,
-    items: [
-      {
-        title: 'Banner 列表',
-        url: '/dashboard/home-banners',
-        icon: Image,
-        description: '首页 Banner 列表',
-        searchConfig: {
-          keywords: 'home banner 首 页 轮播 列表',
-          searchShortcut: ['h'],
-          searchSection: '首页 Banner 管理',
-          searchPriority: 9
-        }
-      }
-    ]
-  },
-  {
-    title: '工单管理',
-    url: '#',
-    icon: ClipboardList,
-    isActive: false,
-    items: [
-      {
-        title: '工单列表',
-        url: '/dashboard/tickets',
-        icon: ClipboardList,
-        description: '工单列表',
-        searchConfig: {
-          keywords: 'ticket support 工单 列表',
-          searchShortcut: ['t'],
-          searchSection: '工单管理',
-          searchPriority: 10
-        }
-      }
-    ]
-  },
-  {
-    title: '订单管理',
-    url: '#',
-    icon: Receipt,
-    isActive: false,
-    items: [
-      {
-        title: '订单列表',
-        url: '/dashboard/orders',
-        icon: Receipt,
-        description: '订单列表',
-        searchConfig: {
-          keywords: 'order 订单 列表',
-          searchShortcut: ['o'],
-          searchSection: '订单管理',
-          searchPriority: 11
         }
       }
     ]
@@ -309,7 +247,27 @@ export const systemNavList: NavItem[] = [
           searchSection: '系统管理',
           searchPriority: 7
         }
+      },
+        {
+    title: '工单管理',
+    url: '#',
+    icon: ClipboardList,
+    isActive: false,
+    items: [
+      {
+        title: '工单列表',
+        url: '/dashboard/tickets',
+        icon: ClipboardList,
+        description: '工单列表',
+        searchConfig: {
+          keywords: 'ticket support 工单 列表',
+          searchShortcut: ['t'],
+          searchSection: '工单管理',
+          searchPriority: 10
+        }
       }
+    ]
+  }
     ]
   }
 ];

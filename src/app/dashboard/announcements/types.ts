@@ -1,40 +1,41 @@
 /**
- * 消息通知数据类型
+ * 公告数据类型
  */
-export interface Notification {
+export interface Announcement {
   id: number;
-  user_id: number;
   title: string;
   content: string;
-  notification_type: 'system' | 'order' | 'payment' | 'activity' | 'security' | 'interactive';
-  priority: 'low' | 'normal' | 'high' | 'urgent';
-  status: 'pending' | 'sent' | 'delivered' | 'read' | 'failed';
-  is_read: boolean;
+  type: 1 | 2 | 3; // 1=系统公告 2=活动公告 3=维护公告
+  priority: 1 | 2 | 3; // 1=高 2=中 3=低
+  start_time: string | null;
+  end_time: string | null;
+  status: 0 | 1; // 0=下线 1=上线
+  version: number;
   created_at: string;
-  sent_at?: string;
-  read_at?: string;
-  meta_data?: Record<string, any>;
-  channels_count?: Record<string, { sent: number; delivered: number; failed: number }>;
+  updated_at: string;
+  removed: boolean;
+  disabled: boolean;
+  activity_code?: string; // 关联活动代码（type=2时）
 }
 
 /**
- * 消息通知筛选条件
+ * 公告筛选条件
  */
-export interface NotificationFilters {
+export interface AnnouncementFilters {
   keyword?: string;
-  user_ids?: number[];
-  types?: string[];
-  priorities?: string[];
-  statuses?: string[];
-  is_read?: boolean;
-  channel?: string;
-  only_failed?: boolean;
+  types?: number[];
+  status?: 0 | 1 | 'all';
+  disabled?: boolean;
+  show_removed?: boolean;
+  active_only?: boolean;
+  start_from?: string;
+  start_to?: string;
+  end_from?: string;
+  end_to?: string;
   created_from?: string;
   created_to?: string;
-  sent_from?: string;
-  sent_to?: string;
-  read_from?: string;
-  read_to?: string;
+  updated_from?: string;
+  updated_to?: string;
   sort_by?: string;
   sort_dir?: 'asc' | 'desc';
   page?: number;
@@ -52,25 +53,28 @@ export interface PaginationInfo {
 }
 
 /**
- * 消息通知表单数据
+ * 公告表单数据
  */
-export interface NotificationFormData {
-  user_id: number;
+export interface AnnouncementFormData {
   title: string;
   content: string;
-  notification_type: 'system' | 'order' | 'payment' | 'activity' | 'security' | 'interactive';
-  priority: 'low' | 'normal' | 'high' | 'urgent';
-  meta_data?: Record<string, any>;
+  type: 1 | 2 | 3;
+  priority: 1 | 2 | 3;
+  start_time?: string | null;
+  end_time?: string | null;
+  status: 0 | 1;
+  disabled: boolean;
+  activity_code?: string;
 }
 
 /**
  * 对话框状态
  */
-export type NotificationDialogType = 'view' | null;
+export type AnnouncementDialogType = 'create' | 'edit' | 'view' | 'preview' | null;
 
-export interface NotificationDialogState {
-  type: NotificationDialogType;
-  notification: Notification | null;
+export interface AnnouncementDialogState {
+  type: AnnouncementDialogType;
+  announcement: Announcement | null;
   open: boolean;
 }
 
@@ -79,5 +83,5 @@ export interface NotificationDialogState {
  */
 export interface Option {
   label: string;
-  value: string;
+  value: string | number;
 }

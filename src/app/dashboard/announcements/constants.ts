@@ -1,4 +1,4 @@
-import { NotificationFilters } from './types';
+import { AnnouncementFilters } from './types';
 
 /**
  * 默认分页配置
@@ -16,16 +16,13 @@ export const DEFAULT_PAGINATION = {
 export const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
 /**
- * 消息类型选项
+ * 公告类型选项
  */
-export const NOTIFICATION_TYPE_OPTIONS = [
+export const ANNOUNCEMENT_TYPE_OPTIONS = [
   { label: '全部', value: 'all' },
-  { label: '系统消息', value: 'system' },
-  { label: '订单通知', value: 'order' },
-  { label: '支付通知', value: 'payment' },
-  { label: '活动通知', value: 'activity' },
-  { label: '安全提醒', value: 'security' },
-  { label: '互动消息', value: 'interactive' }
+  { label: '系统公告', value: 1 },
+  { label: '活动公告', value: 2 },
+  { label: '维护公告', value: 3 }
 ] as const;
 
 /**
@@ -33,10 +30,9 @@ export const NOTIFICATION_TYPE_OPTIONS = [
  */
 export const PRIORITY_OPTIONS = [
   { label: '全部', value: 'all' },
-  { label: '低', value: 'low' },
-  { label: '正常', value: 'normal' },
-  { label: '高', value: 'high' },
-  { label: '紧急', value: 'urgent' }
+  { label: '高', value: 1 },
+  { label: '中', value: 2 },
+  { label: '低', value: 3 }
 ] as const;
 
 /**
@@ -44,38 +40,44 @@ export const PRIORITY_OPTIONS = [
  */
 export const STATUS_OPTIONS = [
   { label: '全部', value: 'all' },
-  { label: '待处理', value: 'pending' },
-  { label: '已发送', value: 'sent' },
-  { label: '已送达', value: 'delivered' },
-  { label: '已读', value: 'read' },
-  { label: '失败', value: 'failed' }
+  { label: '上线', value: 1 },
+  { label: '下线', value: 0 }
+] as const;
+
+/**
+ * 布尔筛选选项
+ */
+export const BOOLEAN_OPTIONS = [
+  { label: '全部', value: 'all' },
+  { label: '是', value: 'true' },
+  { label: '否', value: 'false' }
 ] as const;
 
 /**
  * 排序字段选项
  */
 export const SORT_OPTIONS = [
-  { label: '创建时间', value: 'created_at' },
-  { label: '发送时间', value: 'sent_at' },
-  { label: '阅读时间', value: 'read_at' },
+  { label: '默认排序', value: 'default' },
   { label: '优先级', value: 'priority' },
-  { label: '状态', value: 'status' },
+  { label: '开始时间', value: 'start_time' },
+  { label: '结束时间', value: 'end_time' },
+  { label: '创建时间', value: 'created_at' },
+  { label: '更新时间', value: 'updated_at' },
   { label: 'ID', value: 'id' }
 ] as const;
 
 /**
  * 默认筛选条件
  */
-export const DEFAULT_FILTERS: NotificationFilters = {
+export const DEFAULT_FILTERS: AnnouncementFilters = {
   keyword: '',
-  user_ids: [],
   types: [],
-  priorities: [],
-  statuses: [],
-  is_read: undefined,
-  only_failed: false,
-  sort_by: 'created_at',
-  sort_dir: 'desc',
+  status: 'all',
+  disabled: false,
+  show_removed: false,
+  active_only: false,
+  sort_by: 'default',
+  sort_dir: 'asc',
   page: 1,
   page_size: 20
 } as const;
@@ -90,24 +92,29 @@ export const TABLE_COLUMNS = [
     className: 'text-center w-[50px] font-mono text-sm'
   },
   {
-    key: 'user_id',
-    title: '用户ID',
-    className: 'font-mono w-[80px]'
+    key: 'id',
+    title: 'ID',
+    className: 'font-mono text-xs w-[80px] text-center'
   },
   {
     key: 'title',
     title: '标题',
-    className: 'font-medium min-w-[150px]'
+    className: 'font-medium min-w-[200px]'
   },
   {
-    key: 'notification_type',
-    title: '消息类型',
-    className: 'w-[120px]'
+    key: 'type',
+    title: '类型',
+    className: 'w-[100px]'
   },
   {
     key: 'priority',
     title: '优先级',
-    className: 'text-center w-[100px]'
+    className: 'text-center w-[80px]'
+  },
+  {
+    key: 'time_range',
+    title: '有效期',
+    className: 'w-[280px]'
   },
   {
     key: 'status',
@@ -115,91 +122,82 @@ export const TABLE_COLUMNS = [
     className: 'text-center w-[100px]'
   },
   {
-    key: 'is_read',
-    title: '已读',
+    key: 'disabled',
+    title: '禁用',
     className: 'text-center w-[80px]'
   },
   {
-    key: 'channels',
-    title: '渠道统计',
-    className: 'w-[150px] text-xs'
+    key: 'version',
+    title: '版本',
+    className: 'text-center w-[60px] font-mono'
   },
   {
-    key: 'created_at',
-    title: '创建时间',
+    key: 'updated_at',
+    title: '更新时间',
     className: 'font-medium w-[140px]'
   },
   {
     key: 'actions',
     title: '操作',
-    className: 'text-center w-[100px]'
+    className: 'text-center w-[140px]'
   }
 ] as const;
-
-/**
- * 对话框类型
- */
-export const DIALOG_TYPES = {
-  VIEW: 'view'
-} as const;
 
 /**
  * 消息文案
  */
 export const MESSAGES = {
   SUCCESS: {
-    MARK_READ: '标记为已读',
-    MARK_UNREAD: '标记为未读',
-    RESEND: '重新发送成功',
-    DELETE: '消息删除成功'
+    CREATE: '公告创建成功',
+    UPDATE: '公告更新成功',
+    DELETE: '公告删除成功',
+    PUBLISH: '公告发布成功',
+    OFFLINE: '公告下线成功',
+    ENABLE: '公告启用成功',
+    DISABLE: '公告禁用成功',
+    SEND_NOTIFICATION: '站内通知发送成功'
   },
   ERROR: {
-    MARK_READ: '标记失败',
-    MARK_UNREAD: '标记失败',
-    RESEND: '重新发送失败',
-    DELETE: '删除失败',
-    FETCH_NOTIFICATIONS: '获取消息列表失败'
+    CREATE: '创建公告失败',
+    UPDATE: '更新公告失败',
+    DELETE: '删除公告失败',
+    FETCH: '获取公告列表失败',
+    VERSION_CONFLICT: '版本冲突，请刷新后重试'
   },
   EMPTY: {
-    NOTIFICATIONS: '暂无消息通知',
-    CONTENT: '无内容'
+    ANNOUNCEMENTS: '暂无公告数据'
   },
   CONFIRM: {
-    MARK_READ: (title: string) => `确定要标记 "${title}" 为已读吗？`,
-    MARK_UNREAD: (title: string) => `确定要标记 "${title}" 为未读吗？`,
-    DELETE: (title: string) => `确定要删除消息 "${title}" 吗？此操作不可撤销。`
+    DELETE: (title: string) => `确定要删除公告 "${title}" 吗？此操作不可撤销。`,
+    OFFLINE: (title: string) => `确定要下线公告 "${title}" 吗？`,
+    DISABLE: (title: string) => `确定要禁用公告 "${title}" 吗？紧急止投将立即生效。`,
+    ENABLE: (title: string) => `确定要启用公告 "${title}" 吗？`
   }
 } as const;
 
 /**
- * 消息类型标签映射
+ * 公告类型标签映射
  */
-export const NOTIFICATION_TYPE_LABELS: Record<string, string> = {
-  system: '系统消息',
-  order: '订单通知',
-  payment: '支付通知',
-  activity: '活动通知',
-  security: '安全提醒',
-  interactive: '互动消息'
+export const ANNOUNCEMENT_TYPE_LABELS: Record<number, string> = {
+  1: '系统公告',
+  2: '活动公告',
+  3: '维护公告'
+};
+
+/**
+ * 公告类型颜色映射
+ */
+export const ANNOUNCEMENT_TYPE_COLORS: Record<number, string> = {
+  1: 'default',
+  2: 'secondary',
+  3: 'destructive'
 };
 
 /**
  * 优先级标签映射
  */
-export const PRIORITY_LABELS: Record<string, { label: string; variant: string }> = {
-  low: { label: '低', variant: 'outline' },
-  normal: { label: '正常', variant: 'secondary' },
-  high: { label: '高', variant: 'default' },
-  urgent: { label: '紧急', variant: 'destructive' }
-};
-
-/**
- * 状态标签映射
- */
-export const STATUS_LABELS: Record<string, { label: string; variant: string }> = {
-  pending: { label: '待处理', variant: 'outline' },
-  sent: { label: '已发送', variant: 'secondary' },
-  delivered: { label: '已送达', variant: 'default' },
-  read: { label: '已读', variant: 'default' },
-  failed: { label: '失败', variant: 'destructive' }
+export const PRIORITY_LABELS: Record<number, { label: string; variant: string }> = {
+  1: { label: '高', variant: 'destructive' },
+  2: { label: '中', variant: 'default' },
+  3: { label: '低', variant: 'secondary' }
 };
