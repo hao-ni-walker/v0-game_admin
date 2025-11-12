@@ -13,7 +13,10 @@ import {
   Ticket,
   TicketComment,
   TicketEvent,
-  TicketStatus
+  TicketStatus,
+  Activity,
+  ActivityStatus,
+  Player
 } from '../models';
 import {
   LogsFilter,
@@ -21,7 +24,9 @@ import {
   Repositories,
   RolesFilter,
   UsersFilter,
-  TicketsFilter
+  TicketsFilter,
+  ActivitiesFilter,
+  PlayersFilter
 } from '../interfaces';
 
 type Tables = {
@@ -33,6 +38,8 @@ type Tables = {
   tickets: Ticket[];
   ticketComments: TicketComment[];
   ticketEvents: TicketEvent[];
+  activities: Activity[];
+  players: Player[];
 };
 
 function nowISO() {
@@ -74,7 +81,9 @@ export class JsonRepositories {
       systemLogs: [],
       tickets: [],
       ticketComments: [],
-      ticketEvents: []
+      ticketEvents: [],
+      activities: [],
+      players: []
     };
     this.seq = {
       users: 0,
@@ -84,7 +93,9 @@ export class JsonRepositories {
       systemLogs: 0,
       tickets: 0,
       ticketComments: 0,
-      ticketEvents: 0
+      ticketEvents: 0,
+      activities: 0,
+      players: 0
     };
   }
 
@@ -98,7 +109,9 @@ export class JsonRepositories {
       systemLogs,
       tickets,
       ticketComments,
-      ticketEvents
+      ticketEvents,
+      activities,
+      players
     ] = await Promise.all([
       this.store.readJson<User[]>('users.json', seed?.users ?? []),
       this.store.readJson<Role[]>('roles.json', seed?.roles ?? []),
@@ -122,7 +135,12 @@ export class JsonRepositories {
       this.store.readJson<TicketEvent[]>(
         'ticketEvents.json',
         seed?.ticketEvents ?? []
-      )
+      ),
+      this.store.readJson<Activity[]>(
+        'activities.json',
+        seed?.activities ?? []
+      ),
+      this.store.readJson<Player[]>('players.json', seed?.players ?? [])
     ]);
 
     this.tables = {
@@ -133,7 +151,9 @@ export class JsonRepositories {
       systemLogs,
       tickets,
       ticketComments,
-      ticketEvents
+      ticketEvents,
+      activities,
+      players
     };
     // 初始化自增ID
     (Object.keys(this.tables) as (keyof Tables)[]).forEach((k) => {
@@ -155,7 +175,9 @@ export class JsonRepositories {
       this.store.writeJson('systemLogs.json', t.systemLogs),
       this.store.writeJson('tickets.json', t.tickets),
       this.store.writeJson('ticketComments.json', t.ticketComments),
-      this.store.writeJson('ticketEvents.json', t.ticketEvents)
+      this.store.writeJson('ticketEvents.json', t.ticketEvents),
+      this.store.writeJson('activities.json', t.activities),
+      this.store.writeJson('players.json', t.players)
     ]);
   }
 
@@ -859,6 +881,455 @@ export class JsonRepositories {
       updateDueAt: this.updateTicketDueAt.bind(this)
     };
   }
+
+  // Activities
+  async listActivities(
+    filter: ActivitiesFilter
+  ): Promise<PageResult<Activity>> {
+    const page = Math.max(1, filter.page ?? 1);
+    const limit = Math.min(Math.max(1, filter.limit ?? 20), 100);
+    const offset = (page - 1) * limit;
+
+    let rows = this.tables.activities.filter((a) => {
+      // 关键词筛选
+      if (filter.keyword) {
+        const kw = filter.keyword.toLowerCase();
+        const match =
+          a.name.toLowerCase().includes(kw) ||
+          a.activityCode.toLowerCase().includes(kw) ||
+          a.activityType.toLowerCase().includes(kw);
+        if (!match) return false;
+      }
+
+      // 活动类型筛选
+      if (
+        filter.activityTypes &&
+        filter.activityTypes.length > 0 &&
+        !filter.activityTypes.includes(a.activityType)
+      ) {
+        return false;
+      }
+
+      // 状态筛选
+      if (
+        filter.statuses &&
+        filter.statuses.length > 0 &&
+        !filter.statuses.includes(a.status)
+      ) {
+        return false;
+      }
+
+      // 时间范围筛选
+      if (!inRange(a.startTime, filter.startFrom, filter.startTo)) return false;
+      if (!inRange(a.endTime, filter.endFrom, filter.endTo)) return false;
+      if (
+        !inRange(a.displayStartTime ?? undefined, filter.displayFrom, filter.displayTo)
+      )
+        return false;
+      if (!inRange(a.updatedAt, filter.updatedFrom, filter.updatedTo))
+        return false;
+
+      // 统计数据筛选
+      if (
+        filter.participantsMin !== undefined &&
+        a.totalParticipants < filter.participantsMin
+      )
+        return false;
+      if (
+        filter.participantsMax !== undefined &&
+        a.totalParticipants > filter.participantsMax
+      )
+        return false;
+      if (
+        filter.rewardsMin !== undefined &&
+        a.totalRewardsGiven < filter.rewardsMin
+      )
+        return false;
+      if (
+        filter.rewardsMax !== undefined &&
+        a.totalRewardsGiven > filter.rewardsMax
+      )
+        return false;
+
+      // 可参与筛选
+      if (filter.activeOnly) {
+        const now = new Date();
+        const start = new Date(a.startTime);
+        const end = new Date(a.endTime);
+        if (a.status !== 'active' || now < start || now > end) return false;
+      }
+
+      // 可见筛选
+      if (filter.availableForDisplay) {
+        const now = new Date();
+        const validStatuses: ActivityStatus[] = ['scheduled', 'active', 'paused'];
+        if (!validStatuses.includes(a.status)) return false;
+        if (a.displayStartTime && a.displayEndTime) {
+          const dStart = new Date(a.displayStartTime);
+          const dEnd = new Date(a.displayEndTime);
+          if (now < dStart || now > dEnd) return false;
+        }
+      }
+
+      return true;
+    });
+
+    // 排序
+    const sortBy = filter.sortBy || 'priority';
+    const sortDir = filter.sortDir || 'desc';
+
+    // 状态权重映射
+    const statusWeight: Record<ActivityStatus, number> = {
+      active: 5,
+      scheduled: 4,
+      paused: 3,
+      draft: 2,
+      ended: 1,
+      disabled: 0
+    };
+
+    rows.sort((a, b) => {
+      let compareValue = 0;
+
+      switch (sortBy) {
+        case 'priority':
+          // priority 降序，再status权重，再updated_at，再id
+          compareValue = b.priority - a.priority;
+          if (compareValue === 0) {
+            compareValue = statusWeight[b.status] - statusWeight[a.status];
+          }
+          if (compareValue === 0) {
+            compareValue =
+              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+          }
+          if (compareValue === 0) {
+            compareValue = b.id - a.id;
+          }
+          return compareValue;
+        case 'status':
+          compareValue = statusWeight[a.status] - statusWeight[b.status];
+          break;
+        case 'start_time':
+        case 'startTime':
+          compareValue =
+            new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+          break;
+        case 'end_time':
+        case 'endTime':
+          compareValue =
+            new Date(a.endTime).getTime() - new Date(b.endTime).getTime();
+          break;
+        case 'updated_at':
+        case 'updatedAt':
+          compareValue =
+            new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+          break;
+        case 'total_participants':
+        case 'totalParticipants':
+          compareValue = a.totalParticipants - b.totalParticipants;
+          break;
+        case 'total_rewards_given':
+        case 'totalRewardsGiven':
+          compareValue = a.totalRewardsGiven - b.totalRewardsGiven;
+          break;
+        case 'id':
+          compareValue = a.id - b.id;
+          break;
+        default:
+          compareValue = b.id - a.id;
+      }
+
+      return sortDir === 'asc' ? compareValue : -compareValue;
+    });
+
+    const total = rows.length;
+    const pageData = rows.slice(offset, offset + limit);
+
+    return {
+      data: pageData,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
+    };
+  }
+
+  async getActivityById(id: ID): Promise<Activity | undefined> {
+    return this.tables.activities.find((a) => a.id === id);
+  }
+
+  async findActivityByCode(activityCode: string): Promise<Activity | undefined> {
+    return this.tables.activities.find((a) => a.activityCode === activityCode);
+  }
+
+  async createActivity(
+    activity: Omit<Activity, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<ID> {
+    const id = this.nextId('activities');
+    const now = nowISO();
+    const newActivity: Activity = {
+      ...activity,
+      id,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.tables.activities.push(newActivity);
+    await this.flush();
+    return id;
+  }
+
+  async updateActivity(id: ID, patch: Partial<Activity>): Promise<void> {
+    const idx = this.tables.activities.findIndex((a) => a.id === id);
+    if (idx < 0) return;
+    this.tables.activities[idx] = {
+      ...this.tables.activities[idx],
+      ...patch,
+      updatedAt: nowISO()
+    };
+    await this.flush();
+  }
+
+  async deleteActivity(id: ID): Promise<void> {
+    const idx = this.tables.activities.findIndex((a) => a.id === id);
+    if (idx >= 0) {
+      this.tables.activities.splice(idx, 1);
+      await this.flush();
+    }
+  }
+
+  async changeActivityStatus(
+    id: ID,
+    status: ActivityStatus,
+    userId: ID
+  ): Promise<void> {
+    await this.updateActivity(id, { status, updatedBy: userId });
+  }
+
+  async updateActivityStats(
+    id: ID,
+    participants?: number,
+    rewards?: number
+  ): Promise<void> {
+    const activity = this.tables.activities.find((a) => a.id === id);
+    if (!activity) return;
+
+    const updates: Partial<Activity> = {};
+    if (participants !== undefined) {
+      updates.totalParticipants = activity.totalParticipants + participants;
+    }
+    if (rewards !== undefined) {
+      updates.totalRewardsGiven = activity.totalRewardsGiven + rewards;
+    }
+
+    await this.updateActivity(id, updates);
+  }
+
+  get activitiesRepo() {
+    return {
+      list: this.listActivities.bind(this),
+      getById: this.getActivityById.bind(this),
+      findByCode: this.findActivityByCode.bind(this),
+      create: this.createActivity.bind(this),
+      update: this.updateActivity.bind(this),
+      delete: this.deleteActivity.bind(this),
+      changeStatus: this.changeActivityStatus.bind(this),
+      updateStats: this.updateActivityStats.bind(this)
+    };
+  }
+
+  // Players
+  async listPlayers(filter: PlayersFilter): Promise<PageResult<Player>> {
+    const page = Math.max(1, filter.page ?? 1);
+    const limit = Math.min(Math.max(1, filter.limit ?? 20), 100);
+    const offset = (page - 1) * limit;
+
+    const rows = this.tables.players.filter((p) => {
+      // 关键词匹配：username、email、idname
+      if (filter.keyword) {
+        const kw = filter.keyword.toLowerCase();
+        const matchKeyword = 
+          p.username.toLowerCase().includes(kw) ||
+          p.email.toLowerCase().includes(kw) ||
+          p.idname.toLowerCase().includes(kw);
+        if (!matchKeyword) return false;
+      }
+
+      // 状态筛选
+      if (filter.status !== undefined && p.status !== filter.status) {
+        return false;
+      }
+
+      // VIP等级数组
+      if (filter.vipLevels && filter.vipLevels.length > 0) {
+        if (!filter.vipLevels.includes(p.vipLevel)) return false;
+      }
+
+      // VIP等级范围
+      if (filter.vipMin !== undefined && p.vipLevel < filter.vipMin) return false;
+      if (filter.vipMax !== undefined && p.vipLevel > filter.vipMax) return false;
+
+      // 余额范围
+      if (filter.balanceMin !== undefined && p.balance < filter.balanceMin) return false;
+      if (filter.balanceMax !== undefined && p.balance > filter.balanceMax) return false;
+
+      // 代理商筛选
+      if (filter.agents && filter.agents.length > 0) {
+        if (!p.agent || !filter.agents.includes(p.agent)) return false;
+      }
+
+      // 直属上级筛选
+      if (filter.directSuperiorIds && filter.directSuperiorIds.length > 0) {
+        if (!p.directSuperiorId || !filter.directSuperiorIds.includes(p.directSuperiorId)) return false;
+      }
+
+      // 注册方式筛选
+      if (filter.registrationMethods && filter.registrationMethods.length > 0) {
+        if (!filter.registrationMethods.includes(p.registrationMethod)) return false;
+      }
+
+      // 注册来源筛选
+      if (filter.registrationSources && filter.registrationSources.length > 0) {
+        if (!p.registrationSource || !filter.registrationSources.includes(p.registrationSource)) return false;
+      }
+
+      // 登录来源筛选
+      if (filter.loginSources && filter.loginSources.length > 0) {
+        if (!p.loginSource || !filter.loginSources.includes(p.loginSource)) return false;
+      }
+
+      // 身份类别筛选
+      if (filter.identityCategories && filter.identityCategories.length > 0) {
+        if (!filter.identityCategories.includes(p.identityCategory)) return false;
+      }
+
+      // 时间范围筛选
+      if (!inRange(p.createdAt, filter.createdFrom, filter.createdTo)) return false;
+      if (!inRange(p.updatedAt, filter.updatedFrom, filter.updatedTo)) return false;
+      if (!inRange(p.lastLogin, filter.lastLoginFrom, filter.lastLoginTo)) return false;
+
+      return true;
+    });
+
+    // 排序
+    const sortBy = filter.sortBy || 'updatedAt';
+    const sortDir = filter.sortDir || 'desc';
+    rows.sort((a, b) => {
+      let compareValue = 0;
+      switch (sortBy) {
+        case 'id':
+          compareValue = a.id - b.id;
+          break;
+        case 'username':
+          compareValue = a.username.localeCompare(b.username);
+          break;
+        case 'email':
+          compareValue = a.email.localeCompare(b.email);
+          break;
+        case 'balance':
+          compareValue = a.balance - b.balance;
+          break;
+        case 'vipLevel':
+          compareValue = a.vipLevel - b.vipLevel;
+          break;
+        case 'createdAt':
+          compareValue = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
+        case 'lastLogin':
+          const aTime = a.lastLogin ? new Date(a.lastLogin).getTime() : 0;
+          const bTime = b.lastLogin ? new Date(b.lastLogin).getTime() : 0;
+          compareValue = aTime - bTime;
+          break;
+        case 'updatedAt':
+        default:
+          compareValue = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+          break;
+      }
+      return sortDir === 'asc' ? compareValue : -compareValue;
+    });
+
+    const total = rows.length;
+    const data = rows.slice(offset, offset + limit);
+    return {
+      data,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
+    };
+  }
+
+  async getPlayerById(id: ID): Promise<Player | undefined> {
+    return this.tables.players.find((p) => p.id === id);
+  }
+
+  async findPlayerByUsername(username: string): Promise<Player | undefined> {
+    return this.tables.players.find((p) => p.username === username);
+  }
+
+  async findPlayerByEmail(email: string): Promise<Player | undefined> {
+    return this.tables.players.find((p) => p.email === email);
+  }
+
+  async findPlayerByIdname(idname: string): Promise<Player | undefined> {
+    return this.tables.players.find((p) => p.idname === idname);
+  }
+
+  async createPlayer(player: Omit<Player, 'id' | 'createdAt' | 'updatedAt'>): Promise<ID> {
+    const id = this.nextId('players');
+    const now = nowISO();
+    const newPlayer: Player = {
+      ...player,
+      id,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.tables.players.push(newPlayer);
+    await this.flush();
+    return id;
+  }
+
+  async updatePlayer(id: ID, patch: Partial<Player>): Promise<void> {
+    const player = this.tables.players.find((p) => p.id === id);
+    if (!player) return;
+    Object.assign(player, patch, { updatedAt: nowISO() });
+    await this.flush();
+  }
+
+  async deletePlayer(id: ID): Promise<void> {
+    const idx = this.tables.players.findIndex((p) => p.id === id);
+    if (idx >= 0) {
+      this.tables.players.splice(idx, 1);
+      await this.flush();
+    }
+  }
+
+  async updatePlayerBalance(id: ID, balance: number): Promise<void> {
+    await this.updatePlayer(id, { balance });
+  }
+
+  async updatePlayerVipLevel(id: ID, vipLevel: number): Promise<void> {
+    await this.updatePlayer(id, { vipLevel });
+  }
+
+  async updatePlayerStatus(id: ID, status: boolean): Promise<void> {
+    await this.updatePlayer(id, { status });
+  }
+
+  get playersRepo() {
+    return {
+      list: this.listPlayers.bind(this),
+      getById: this.getPlayerById.bind(this),
+      findByUsername: this.findPlayerByUsername.bind(this),
+      findByEmail: this.findPlayerByEmail.bind(this),
+      findByIdname: this.findPlayerByIdname.bind(this),
+      create: this.createPlayer.bind(this),
+      update: this.updatePlayer.bind(this),
+      delete: this.deletePlayer.bind(this),
+      updateBalance: this.updatePlayerBalance.bind(this),
+      updateVipLevel: this.updatePlayerVipLevel.bind(this),
+      updateStatus: this.updatePlayerStatus.bind(this)
+    };
+  }
 }
 
 // 工厂方法：返回聚合仓储
@@ -871,6 +1342,8 @@ export async function createJsonRepositories(seed?: Partial<Tables>) {
     permissions: impl.permissionsRepo,
     rolePermissions: impl.rolePermissionsRepo,
     logs: impl.logsRepo,
-    tickets: impl.ticketsRepo
+    tickets: impl.ticketsRepo,
+    activities: impl.activitiesRepo,
+    players: impl.playersRepo
   };
 }

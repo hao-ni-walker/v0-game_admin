@@ -148,6 +148,98 @@ export interface TicketEvent {
   createdAt: string;
 }
 
+// 支付渠道模型
+export type PaymentChannelType = 1 | 2; // 1=充值 2=提现
+export type ChannelType = 'alipay' | 'wechat' | 'bank' | 'usdt' | 'other';
+
+export interface PaymentChannel {
+  id: ID;
+  name: string; // 运营展示名称
+  code: string; // 全局唯一渠道代码
+  type: PaymentChannelType; // 1=充值 2=提现
+  channelType: ChannelType; // alipay/wechat/bank/usdt等
+  config: Record<string, unknown>; // JSON配置：商户号、密钥、回调URL等
+  minAmount: number; // 最小金额
+  maxAmount: number; // 最大金额
+  dailyLimit: number; // 每日限额
+  feeRate: number; // 费率(如0.0065表示0.65%)
+  fixedFee: number; // 固定费用
+  sortOrder: number; // 排序
+  status: 0 | 1; // 1=启用 0=停用
+  version: number; // 乐观锁版本
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+  removed: boolean; // 逻辑删除
+  disabled: boolean; // 紧急禁用开关
+}
+
+// 活动管理模型
+export type ActivityStatus =
+  | 'draft'
+  | 'scheduled'
+  | 'active'
+  | 'paused'
+  | 'ended'
+  | 'disabled';
+
+export type ActivityType =
+  | 'first_deposit'
+  | 'daily_signin'
+  | 'vip_reward'
+  | 'limited_pack'
+  | 'lottery'
+  | 'leaderboard'
+  | 'cashback'
+  | 'referral'
+  | 'other';
+
+export interface Activity {
+  id: ID;
+  activityCode: string; // 唯一业务主键
+  activityType: ActivityType; // 活动类型
+  name: string; // 活动标题
+  description: string; // 活动说明
+  startTime: string; // 生效时间（ISO字符串）
+  endTime: string; // 结束时间
+  displayStartTime?: string | null; // 展示开始时间
+  displayEndTime?: string | null; // 展示结束时间
+  status: ActivityStatus; // 状态
+  priority: number; // 展示优先级（数值越大越靠前）
+  participationConfig: Record<string, unknown>; // 参与配置 JSONB
+  extraConfig: Record<string, unknown>; // 扩展配置 JSONB
+  totalParticipants: number; // 累计参与人次
+  totalRewardsGiven: number; // 累计发放奖励
+  iconUrl?: string | null; // 图标资源
+  bannerUrl?: string | null; // 横幅资源
+  createdBy: ID; // 创建者ID
+  updatedBy: ID; // 更新者ID
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+}
+
+// 玩家管理模型
+export type RegistrationMethod = 'email' | 'google' | 'apple' | 'phone' | 'facebook' | 'other';
+export type IdentityCategory = 'user' | 'agent' | 'internal' | 'test';
+
+export interface Player {
+  id: ID;
+  idname: string; // 邮箱哈希16位，用于对外标识
+  username: string; // 登录标识
+  email: string; // 登录与找回渠道
+  balance: number; // 账户余额 Numeric(10,2)
+  vipLevel: number; // VIP等级
+  status: boolean; // true=启用 false=停用
+  agent?: string | null; // 代理商标识
+  directSuperiorId?: ID | null; // 直属上级ID
+  registrationMethod: RegistrationMethod; // 注册方式
+  registrationSource?: string | null; // 注册来源
+  loginSource?: string | null; // 最新登录来源
+  identityCategory: IdentityCategory; // 身份类别
+  lastLogin?: string | null; // 最后登录时间 ISO
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+}
+
 // 通用分页/查询类型
 export interface PageQuery {
   page?: number; // 1-based

@@ -14,7 +14,16 @@ import {
   TicketComment,
   TicketEvent,
   TicketStatus,
-  TicketPriority
+  TicketPriority,
+  PaymentChannel,
+  PaymentChannelType,
+  ChannelType,
+  Activity,
+  ActivityStatus,
+  ActivityType,
+  Player,
+  RegistrationMethod,
+  IdentityCategory
 } from './models';
 
 export interface UsersFilter extends PageQuery {
@@ -73,6 +82,29 @@ export interface TicketsFilter extends PageQuery {
   dueWithinMinutes?: number;
   myTickets?: boolean;
   currentUserId?: ID;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
+}
+
+export interface PaymentChannelsFilter extends PageQuery {
+  keyword?: string; // 匹配name、code
+  types?: PaymentChannelType[]; // 1/2多选
+  channelTypes?: ChannelType[]; // alipay/wechat等
+  status?: 0 | 1; // 启用/停用
+  disabled?: boolean; // 紧急禁用
+  showRemoved?: boolean; // 显示已删除
+  minAmountMaxlte?: number; // 筛选min_amount <= 此值
+  maxAmountMingte?: number; // 筛选max_amount >= 此值
+  feeRateMin?: number;
+  feeRateMax?: number;
+  fixedFeeMin?: number;
+  fixedFeeMax?: number;
+  dailyLimitMin?: number;
+  dailyLimitMax?: number;
+  createdFrom?: string;
+  createdTo?: string;
+  updatedFrom?: string;
+  updatedTo?: string;
   sortBy?: string;
   sortDir?: 'asc' | 'desc';
 }
@@ -153,6 +185,97 @@ export interface TicketsRepository {
   updateDueAt(id: ID, dueAt: string | null, userId?: ID): Promise<void>;
 }
 
+export interface PaymentChannelsRepository {
+  list(filter: PaymentChannelsFilter): Promise<PageResult<PaymentChannel>>;
+  getById(id: ID): Promise<PaymentChannel | undefined>;
+  findByCode(code: string): Promise<PaymentChannel | undefined>;
+  create(
+    channel: Omit<PaymentChannel, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<ID>;
+  update(id: ID, patch: Partial<PaymentChannel>): Promise<void>;
+  delete(id: ID): Promise<void>; // 逻辑删除
+  getAvailable(type: PaymentChannelType): Promise<PaymentChannel[]>; // 前台可用渠道
+}
+
+export interface PlayersFilter extends PageQuery {
+  keyword?: string; // username、email、idname 模糊匹配
+  status?: boolean; // true/false
+  vipLevels?: number[]; // VIP等级数组筛选
+  vipMin?: number; // VIP最小等级
+  vipMax?: number; // VIP最大等级
+  balanceMin?: number; // 余额最小值
+  balanceMax?: number; // 余额最大值
+  agents?: string[]; // 代理商数组
+  directSuperiorIds?: ID[]; // 直属上级数组
+  registrationMethods?: RegistrationMethod[]; // 注册方式数组
+  registrationSources?: string[]; // 注册来源数组
+  loginSources?: string[]; // 登录来源数组
+  identityCategories?: IdentityCategory[]; // 身份类别数组
+  createdFrom?: string; // ISO时间
+  createdTo?: string; // ISO时间
+  updatedFrom?: string; // ISO时间
+  updatedTo?: string; // ISO时间
+  lastLoginFrom?: string; // ISO时间
+  lastLoginTo?: string; // ISO时间
+  sortBy?: string; // 排序字段
+  sortDir?: 'asc' | 'desc'; // 排序方向
+}
+
+export interface ActivitiesFilter extends PageQuery {
+  keyword?: string; // 对name、activityCode、activityType模糊匹配
+  activityTypes?: ActivityType[]; // 活动类型数组筛选
+  statuses?: ActivityStatus[]; // 状态数组筛选
+  activeOnly?: boolean; // 仅返回当前可参与的活动
+  availableForDisplay?: boolean; // 仅返回当前可见
+  startFrom?: string; // 活动开始时间范围（起）
+  startTo?: string; // 活动开始时间范围（止）
+  endFrom?: string; // 活动结束时间范围（起）
+  endTo?: string; // 活动结束时间范围（止）
+  displayFrom?: string; // 展示时间范围（起）
+  displayTo?: string; // 展示时间范围（止）
+  participantsMin?: number; // 参与人数最小值
+  participantsMax?: number; // 参与人数最大值
+  rewardsMin?: number; // 发放奖励最小值
+  rewardsMax?: number; // 发放奖励最大值
+  updatedFrom?: string; // 更新时间范围（起）
+  updatedTo?: string; // 更新时间范围（止）
+  sortBy?: string; // 排序字段
+  sortDir?: 'asc' | 'desc'; // 排序方向
+}
+
+export interface ActivitiesRepository {
+  list(filter: ActivitiesFilter): Promise<PageResult<Activity>>;
+  getById(id: ID): Promise<Activity | undefined>;
+  findByCode(activityCode: string): Promise<Activity | undefined>;
+  create(activity: Omit<Activity, 'id' | 'createdAt' | 'updatedAt'>): Promise<ID>;
+  update(id: ID, patch: Partial<Activity>): Promise<void>;
+  delete(id: ID): Promise<void>;
+  changeStatus(
+    id: ID,
+    status: ActivityStatus,
+    userId: ID
+  ): Promise<void>;
+  updateStats(
+    id: ID,
+    participants?: number,
+    rewards?: number
+  ): Promise<void>;
+}
+
+export interface PlayersRepository {
+  list(filter: PlayersFilter): Promise<PageResult<Player>>;
+  getById(id: ID): Promise<Player | undefined>;
+  findByUsername(username: string): Promise<Player | undefined>;
+  findByEmail(email: string): Promise<Player | undefined>;
+  findByIdname(idname: string): Promise<Player | undefined>;
+  create(player: Omit<Player, 'id' | 'createdAt' | 'updatedAt'>): Promise<ID>;
+  update(id: ID, patch: Partial<Player>): Promise<void>;
+  delete(id: ID): Promise<void>;
+  updateBalance(id: ID, balance: number): Promise<void>;
+  updateVipLevel(id: ID, vipLevel: number): Promise<void>;
+  updateStatus(id: ID, status: boolean): Promise<void>;
+}
+
 export interface Repositories {
   users: UsersRepository;
   roles: RolesRepository;
@@ -160,4 +283,7 @@ export interface Repositories {
   rolePermissions: RolePermissionsRepository;
   logs: LogsRepository;
   tickets: TicketsRepository;
+  paymentChannels: PaymentChannelsRepository;
+  activities: ActivitiesRepository;
+  players: PlayersRepository;
 }
