@@ -17,7 +17,8 @@ import {
   Gift,
   ClipboardList,
   Image,
-  Receipt
+  Receipt,
+  Crown
 } from 'lucide-react';
 
 // 业务导航列表
@@ -246,6 +247,18 @@ export const systemNavList: NavItem[] = [
           searchShortcut: ['y'],
           searchSection: '系统管理',
           searchPriority: 7
+        }
+      },
+      {
+        title: 'VIP 等级管理',
+        url: '/dashboard/vip-levels',
+        icon: Crown,
+        description: 'VIP 等级管理',
+        searchConfig: {
+          keywords: 'vip level 等级 管理 会员',
+          searchShortcut: ['v'],
+          searchSection: 'VIP 等级管理',
+          searchPriority: 10
         }
       },
         {
