@@ -7,4 +7,4 @@ export { UserAPI } from './api/user';
 export { RoleAPI } from './api/role';
 export { PermissionAPI } from './api/permission';
 export { DashboardAPI } from './api/dashboard';
-export { LogAPI } from './api/log';
+export { LogAPI, OperationLogAPI } from './api/log';

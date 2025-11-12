@@ -1,7 +1,21 @@
 // 定义仓储接口，便于后续替换实现（JSON/内存/远端 API/数据库）
 // 设计目标：与现有 API 路由的筛选、分页、统计能力匹配
 
-import { ID, PageQuery, PageResult, Permission, Role, RolePermission, SystemLog, User } from './models';
+import {
+  ID,
+  PageQuery,
+  PageResult,
+  Permission,
+  Role,
+  RolePermission,
+  SystemLog,
+  User,
+  Ticket,
+  TicketComment,
+  TicketEvent,
+  TicketStatus,
+  TicketPriority
+} from './models';
 
 export interface UsersFilter extends PageQuery {
   username?: string;
@@ -9,7 +23,7 @@ export interface UsersFilter extends PageQuery {
   roleId?: ID;
   status?: 'active' | 'disabled' | 'all';
   startDate?: string; // ISO
-  endDate?: string;   // ISO
+  endDate?: string; // ISO
 }
 
 export interface RolesFilter extends PageQuery {
@@ -35,8 +49,38 @@ export interface LogsFilter extends PageQuery {
   endDate?: string;
 }
 
+export interface TicketsFilter extends PageQuery {
+  keyword?: string;
+  statuses?: TicketStatus[];
+  priorities?: TicketPriority[];
+  categories?: string[];
+  tagsAny?: string[];
+  tagsAll?: string[];
+  userIds?: ID[];
+  assigneeIds?: ID[];
+  onlyUnassigned?: boolean;
+  createdFrom?: string;
+  createdTo?: string;
+  updatedFrom?: string;
+  updatedTo?: string;
+  dueFrom?: string;
+  dueTo?: string;
+  resolvedFrom?: string;
+  resolvedTo?: string;
+  closedFrom?: string;
+  closedTo?: string;
+  onlyOverdue?: boolean;
+  dueWithinMinutes?: number;
+  myTickets?: boolean;
+  currentUserId?: ID;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
+}
+
 export interface UsersRepository {
-  list(filter: UsersFilter): Promise<PageResult<(User & { role?: Pick<Role, 'id' | 'name'> })>>;
+  list(
+    filter: UsersFilter
+  ): Promise<PageResult<User & { role?: Pick<Role, 'id' | 'name'> }>>;
   findByUsername(username: string): Promise<User | undefined>;
   findByEmail(email: string): Promise<User | undefined>;
   getById(id: ID): Promise<User | undefined>;
@@ -46,7 +90,7 @@ export interface UsersRepository {
 }
 
 export interface RolesRepository {
-  list(filter: RolesFilter): Promise<PageResult<(Role & { userCount: number })>>;
+  list(filter: RolesFilter): Promise<PageResult<Role & { userCount: number }>>;
   getById(id: ID): Promise<Role | undefined>;
   findByName(name: string): Promise<Role | undefined>;
   create(role: Omit<Role, 'id' | 'createdAt' | 'updatedAt'>): Promise<ID>;
@@ -70,9 +114,43 @@ export interface RolePermissionsRepository {
 }
 
 export interface LogsRepository {
-  list(filter: LogsFilter): Promise<PageResult<(SystemLog & { username?: string })>>;
+  list(
+    filter: LogsFilter
+  ): Promise<PageResult<SystemLog & { username?: string }>>;
   removeBefore(dateISO: string): Promise<void>;
   append(log: Omit<SystemLog, 'id' | 'createdAt'>): Promise<ID>;
+}
+
+export interface TicketsRepository {
+  list(
+    filter: TicketsFilter
+  ): Promise<
+    PageResult<
+      Ticket & { sla?: { isOverdue: boolean; remainingMinutes: number } }
+    >
+  >;
+  getById(
+    id: ID
+  ): Promise<
+    | (Ticket & { comments?: TicketComment[]; events?: TicketEvent[] })
+    | undefined
+  >;
+  create(ticket: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt'>): Promise<ID>;
+  update(id: ID, patch: Partial<Ticket>): Promise<void>;
+  delete(id: ID): Promise<void>;
+  assign(id: ID, assigneeId: ID | null, userId?: ID): Promise<void>;
+  changeStatus(
+    id: ID,
+    status: TicketStatus,
+    reason?: string,
+    userId?: ID
+  ): Promise<void>;
+  addComment(comment: Omit<TicketComment, 'id' | 'createdAt'>): Promise<ID>;
+  addEvent(event: Omit<TicketEvent, 'id' | 'createdAt'>): Promise<ID>;
+  getComments(ticketId: ID): Promise<TicketComment[]>;
+  getEvents(ticketId: ID): Promise<TicketEvent[]>;
+  updateTags(id: ID, tags: string[], userId?: ID): Promise<void>;
+  updateDueAt(id: ID, dueAt: string | null, userId?: ID): Promise<void>;
 }
 
 export interface Repositories {
@@ -81,4 +159,5 @@ export interface Repositories {
   permissions: PermissionsRepository;
   rolePermissions: RolePermissionsRepository;
   logs: LogsRepository;
+  tickets: TicketsRepository;
 }

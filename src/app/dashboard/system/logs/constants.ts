@@ -1,4 +1,8 @@
-import type { LogFilters, PaginationInfo } from './types';
+import type {
+  LogFilters,
+  PaginationInfo,
+  UserOperationLogFilters
+} from './types';
 
 /**
  * 默认分页配置
@@ -29,6 +33,26 @@ export const DEFAULT_FILTERS: LogFilters = {
 };
 
 /**
+ * 默认用户操作日志筛选条件
+ */
+export const DEFAULT_OPERATION_LOG_FILTERS: UserOperationLogFilters = {
+  keyword: '',
+  userIds: undefined,
+  usernames: undefined,
+  operations: undefined,
+  tables: undefined,
+  objectId: '',
+  ipAddress: '',
+  hasDiff: undefined,
+  from: undefined,
+  to: undefined,
+  sortBy: 'operationAt',
+  sortDir: 'desc',
+  page: 1,
+  pageSize: 20
+};
+
+/**
  * 日志级别选项
  */
 export const LOG_LEVEL_OPTIONS = [
@@ -37,6 +61,21 @@ export const LOG_LEVEL_OPTIONS = [
   { label: '警告', value: 'warn' },
   { label: '错误', value: 'error' },
   { label: '调试', value: 'debug' }
+];
+
+/**
+ * 操作类型选项
+ */
+export const OPERATION_TYPE_OPTIONS = [
+  { label: '全部操作', value: 'all' },
+  { label: '创建', value: 'CREATE' },
+  { label: '更新', value: 'UPDATE' },
+  { label: '删除', value: 'DELETE' },
+  { label: '读取', value: 'READ' },
+  { label: '导出', value: 'EXPORT' },
+  { label: '登录', value: 'LOGIN' },
+  { label: '登出', value: 'LOGOUT' },
+  { label: '重置密码', value: 'RESET_PWD' }
 ];
 
 /**
@@ -50,14 +89,30 @@ export const LOG_LEVEL_COLORS = {
 };
 
 /**
+ * 操作类型颜色映射
+ */
+export const OPERATION_TYPE_COLORS: Record<string, string> = {
+  CREATE: 'bg-green-100 text-green-800',
+  UPDATE: 'bg-blue-100 text-blue-800',
+  DELETE: 'bg-red-100 text-red-800',
+  READ: 'bg-gray-100 text-gray-800',
+  EXPORT: 'bg-purple-100 text-purple-800',
+  LOGIN: 'bg-cyan-100 text-cyan-800',
+  LOGOUT: 'bg-slate-100 text-slate-800',
+  RESET_PWD: 'bg-orange-100 text-orange-800'
+};
+
+/**
  * 消息提示
  */
 export const MESSAGES = {
   SUCCESS: {
-    REFRESH: '数据刷新成功'
+    REFRESH: '数据刷新成功',
+    EXPORT: '日志导出成功'
   },
   ERROR: {
     FETCH_LOGS: '获取日志列表失败',
-    FETCH_STATS: '获取统计信息失败'
+    FETCH_STATS: '获取统计信息失败',
+    EXPORT: '日志导出失败'
   }
 };
