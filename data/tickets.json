@@ -6,7 +6,11 @@
     "status": "in_progress",
     "priority": "high",
     "category": "payment",
-    "tags": ["deposit", "refund", "alipay"],
+    "tags": [
+      "deposit",
+      "refund",
+      "alipay"
+    ],
     "userId": 1024,
     "assigneeId": 2,
     "attachmentsCount": 2,
@@ -23,7 +27,11 @@
     "status": "pending",
     "priority": "urgent",
     "category": "account",
-    "tags": ["locked", "login", "VIP"],
+    "tags": [
+      "locked",
+      "login",
+      "VIP"
+    ],
     "userId": 10086,
     "assigneeId": 2,
     "attachmentsCount": 0,
@@ -40,7 +48,10 @@
     "status": "open",
     "priority": "normal",
     "category": "game",
-    "tags": ["performance", "blackjack"],
+    "tags": [
+      "performance",
+      "blackjack"
+    ],
     "userId": 2048,
     "assigneeId": null,
     "attachmentsCount": 1,
@@ -57,7 +68,11 @@
     "status": "resolved",
     "priority": "high",
     "category": "vip",
-    "tags": ["VIP", "privilege", "rebate"],
+    "tags": [
+      "VIP",
+      "privilege",
+      "rebate"
+    ],
     "userId": 3072,
     "assigneeId": 2,
     "attachmentsCount": 0,
@@ -74,7 +89,10 @@
     "status": "in_progress",
     "priority": "urgent",
     "category": "withdrawal",
-    "tags": ["withdrawal", "delay"],
+    "tags": [
+      "withdrawal",
+      "delay"
+    ],
     "userId": 4096,
     "assigneeId": 3,
     "attachmentsCount": 1,

@@ -148,10 +148,26 @@
       "freeDraws": 1,
       "costPerDraw": 10,
       "prizes": [
-        {"id": "iphone15", "name": "iPhone 15", "probability": 0.001},
-        {"id": "cash_1000", "name": "1000元现金", "probability": 0.01},
-        {"id": "cash_100", "name": "100元现金", "probability": 0.1},
-        {"id": "item_gem", name": "宝石*100", "probability": 0.3}
+        {
+          "id": "iphone15",
+          "name": "iPhone 15",
+          "probability": 0.001
+        },
+        {
+          "id": "cash_1000",
+          "name": "1000元现金",
+          "probability": 0.01
+        },
+        {
+          "id": "cash_100",
+          "name": "100元现金",
+          "probability": 0.1
+        },
+        {
+          "id": "item_gem",
+          "name": "宝石*100",
+          "probability": 0.3
+        }
       ]
     },
     "extraConfig": {
@@ -221,7 +237,10 @@
       "minBet": 100,
       "cashbackRate": 0.1,
       "maxCashback": 1000,
-      "applicableDays": [6, 0]
+      "applicableDays": [
+        6,
+        0
+      ]
     },
     "extraConfig": {
       "theme": "green",
@@ -257,7 +276,11 @@
     "extraConfig": {
       "theme": "orange",
       "entry": "/promo/referral",
-      "shareChannels": ["wechat", "qq", "link"]
+      "shareChannels": [
+        "wechat",
+        "qq",
+        "link"
+      ]
     },
     "totalParticipants": 15678,
     "totalRewardsGiven": 1254320,
