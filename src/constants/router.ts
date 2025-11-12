@@ -5,6 +5,7 @@ import {
   Settings,
   ScrollText,
   Cog,
+  CreditCard,
   Users,
   Shield,
   Key,
@@ -124,15 +125,7 @@ export const businessNavList: NavItem[] = [
           searchSection: '活动管理',
           searchPriority: 6
         }
-      }
-    ]
-  },
-  {
-    title: '礼包管理',
-    url: '#',
-    icon: Gift,
-    isActive: false,
-    items: [
+      },
       {
         title: '礼包列表',
         url: '/dashboard/gift-packs',
@@ -303,6 +296,18 @@ export const systemNavList: NavItem[] = [
           searchShortcut: ['s'],
           searchSection: '系统管理',
           searchPriority: 6
+        }
+      },
+      {
+        title: '支付渠道管理',
+        url: '/dashboard/system/payment-channels',
+        icon: CreditCard,
+        description: '支付渠道管理',
+        searchConfig: {
+          keywords: 'payment channel 支付 渠道 管理',
+          searchShortcut: ['y'],
+          searchSection: '系统管理',
+          searchPriority: 7
         }
       }
     ]
