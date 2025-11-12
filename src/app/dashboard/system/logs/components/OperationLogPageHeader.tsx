@@ -4,7 +4,7 @@ import React from 'react';
 import { FileText, RefreshCw, Download } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import Heading from '@/components/shared/heading';
+import { Heading } from '@/components/shared/heading';
 
 interface OperationLogPageHeaderProps {
   /** 刷新回调 */

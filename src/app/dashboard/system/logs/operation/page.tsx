@@ -3,8 +3,6 @@
 import React, { useEffect } from 'react';
 import { FileText } from 'lucide-react';
 
-import { PermissionGuard } from '@/components/auth/permission-guard';
-import { PERMISSIONS } from '@/lib/permissions';
 import { Pagination } from '@/components/table/pagination';
 import PageContainer from '@/components/layout/page-container';
 import { Button } from '@/components/ui/button';
@@ -76,86 +74,84 @@ export default function OperationLogsPage() {
   };
 
   return (
-    <PermissionGuard permissions={PERMISSIONS.LOG.READ}>
-      <PageContainer scrollable={false}>
-        <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
-          {/* 页面头部 */}
-          <OperationLogPageHeader
-            onRefresh={handleRefresh}
-            onExport={handleExport}
-            loading={loading}
-          />
+    <PageContainer scrollable={false}>
+      <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
+        {/* 页面头部 */}
+        <OperationLogPageHeader
+          onRefresh={handleRefresh}
+          onExport={handleExport}
+          loading={loading}
+        />
 
-          {/* 搜索和筛选 */}
-          <OperationLogFilters
-            filters={filters}
-            onSearch={handleSearch}
-            onReset={handleReset}
-            loading={loading}
-          />
+        {/* 搜索和筛选 */}
+        <OperationLogFilters
+          filters={filters}
+          onSearch={handleSearch}
+          onReset={handleReset}
+          loading={loading}
+        />
 
-          {/* 数据表格和分页 */}
-          <div className='flex min-h-0 flex-1 flex-col'>
-            <div className='min-h-0 flex-1'>
-              {logs.length === 0 && !loading ? (
-                <div className='flex h-full flex-col items-center justify-center space-y-3 p-8'>
-                  <FileText className='text-muted-foreground h-12 w-12' />
-                  <div className='text-center'>
-                    <p className='text-lg font-medium'>
-                      {hasActiveFilters
-                        ? '未找到匹配的操作日志'
-                        : '暂无操作日志'}
-                    </p>
-                    <p className='text-muted-foreground text-sm'>
-                      {hasActiveFilters
-                        ? '请尝试调整筛选条件以查看更多结果'
-                        : '系统暂无用户操作审计记录'}
-                    </p>
-                  </div>
-                  {hasActiveFilters && (
-                    <Button variant='outline' onClick={handleReset}>
-                      清除筛选
-                    </Button>
-                  )}
+        {/* 数据表格和分页 */}
+        <div className='flex min-h-0 flex-1 flex-col'>
+          <div className='min-h-0 flex-1'>
+            {logs.length === 0 && !loading ? (
+              <div className='flex h-full flex-col items-center justify-center space-y-3 p-8'>
+                <FileText className='text-muted-foreground h-12 w-12' />
+                <div className='text-center'>
+                  <p className='text-lg font-medium'>
+                    {hasActiveFilters
+                      ? '未找到匹配的操作日志'
+                      : '暂无操作日志'}
+                  </p>
+                  <p className='text-muted-foreground text-sm'>
+                    {hasActiveFilters
+                      ? '请尝试调整筛选条件以查看更多结果'
+                      : '系统暂无用户操作审计记录'}
+                  </p>
                 </div>
-              ) : (
-                <OperationLogTable
-                  data={logs}
-                  loading={loading}
-                  pagination={pagination}
-                  onView={openDetailDialog}
-                />
-              )}
-            </div>
-
-            {/* 分页控件 */}
-            {logs.length > 0 && (
-              <div className='flex-shrink-0 pt-4'>
-                <Pagination
-                  pagination={{
-                    ...pagination,
-                    limit: pagination.limit
-                  }}
-                  onPageChange={handlePageChange}
-                  onPageSizeChange={handlePageSizeChange}
-                  pageSizeOptions={PAGE_SIZE_OPTIONS}
-                />
+                {hasActiveFilters && (
+                  <Button variant='outline' onClick={handleReset}>
+                    清除筛选
+                  </Button>
+                )}
               </div>
+            ) : (
+              <OperationLogTable
+                data={logs}
+                loading={loading}
+                pagination={pagination}
+                onView={openDetailDialog}
+              />
             )}
           </div>
 
-          {/* 日志详情弹窗 */}
-          <OperationLogDetailDialog
-            log={dialogState.log}
-            open={dialogState.open}
-            onOpenChange={(open) => {
-              if (!open) {
-                closeDialog();
-              }
-            }}
-          />
+          {/* 分页控件 */}
+          {logs.length > 0 && (
+            <div className='flex-shrink-0 pt-4'>
+              <Pagination
+                pagination={{
+                  ...pagination,
+                  limit: pagination.limit
+                }}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+                pageSizeOptions={PAGE_SIZE_OPTIONS}
+              />
+            </div>
+          )}
         </div>
-      </PageContainer>
-    </PermissionGuard>
+
+        {/* 日志详情弹窗 */}
+        <OperationLogDetailDialog
+          log={dialogState.log}
+          open={dialogState.open}
+          onOpenChange={(open) => {
+            if (!open) {
+              closeDialog();
+            }
+          }}
+        />
+      </div>
+    </PageContainer>
   );
 }

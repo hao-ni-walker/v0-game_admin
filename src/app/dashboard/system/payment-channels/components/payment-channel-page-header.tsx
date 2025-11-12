@@ -1,6 +1,6 @@
 import { Plus, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import Heading from '@/components/shared/heading';
+import { Heading } from '@/components/shared/heading';
 
 interface PaymentChannelPageHeaderProps {
   onCreateChannel: () => void;

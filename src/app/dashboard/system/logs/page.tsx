@@ -2,8 +2,6 @@
 
 import React, { useEffect } from 'react';
 
-import { PermissionGuard } from '@/components/auth/permission-guard';
-import { PERMISSIONS } from '@/lib/permissions';
 import { Pagination } from '@/components/table/pagination';
 import PageContainer from '@/components/layout/page-container';
 
@@ -68,54 +66,52 @@ export default function LogsPage() {
   };
 
   return (
-    <PermissionGuard permissions={PERMISSIONS.LOG.READ}>
-      <PageContainer scrollable={false}>
-        <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
-          {/* 页面头部 */}
-          <LogPageHeader
-            filters={filters}
-            onRefresh={handleRefresh}
+    <PageContainer scrollable={false}>
+      <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
+        {/* 页面头部 */}
+        <LogPageHeader
+          filters={filters}
+          onRefresh={handleRefresh}
+          loading={loading}
+        />
+
+        {/* 搜索和筛选 */}
+        <LogFilters
+          filters={filters}
+          onSearch={handleSearch}
+          onReset={handleReset}
+          loading={loading}
+        />
+
+        {/* 数据表格 */}
+        <div className='flex min-h-0 flex-col'>
+          <LogTable
+            data={logs}
             loading={loading}
+            pagination={pagination}
+            onView={openDetailDialog}
           />
 
-          {/* 搜索和筛选 */}
-          <LogFilters
-            filters={filters}
-            onSearch={handleSearch}
-            onReset={handleReset}
-            loading={loading}
-          />
-
-          {/* 数据表格 */}
-          <div className='flex min-h-0 flex-col'>
-            <LogTable
-              data={logs}
-              loading={loading}
-              pagination={pagination}
-              onView={openDetailDialog}
-            />
-
-            {/* 分页控件 */}
-            <Pagination
-              pagination={pagination}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-              pageSizeOptions={PAGE_SIZE_OPTIONS}
-            />
-          </div>
-
-          {/* 日志详情弹窗 */}
-          <LogDetailDialog
-            log={dialogState.log}
-            open={dialogState.open}
-            onOpenChange={(open) => {
-              if (!open) {
-                closeDialog();
-              }
-            }}
+          {/* 分页控件 */}
+          <Pagination
+            pagination={pagination}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            pageSizeOptions={PAGE_SIZE_OPTIONS}
           />
         </div>
-      </PageContainer>
-    </PermissionGuard>
+
+        {/* 日志详情弹窗 */}
+        <LogDetailDialog
+          log={dialogState.log}
+          open={dialogState.open}
+          onOpenChange={(open) => {
+            if (!open) {
+              closeDialog();
+            }
+          }}
+        />
+      </div>
+    </PageContainer>
   );
 }
