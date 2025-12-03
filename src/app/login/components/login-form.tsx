@@ -26,7 +26,7 @@ export function LoginForm({
   const { forceReInitialize } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    email: process.env.NODE_ENV === 'development' ? 'admin@example.com' : '',
+    username: process.env.NODE_ENV === 'development' ? 'admin' : '',
     password: process.env.NODE_ENV === 'development' ? 'Admin@123456' : ''
   });
 
@@ -68,20 +68,20 @@ export function LoginForm({
       <Card>
         <CardHeader>
           <CardTitle className='text-2xl'>登录</CardTitle>
-          <CardDescription>请输入您的邮箱和密码登录</CardDescription>
+          <CardDescription>请输入您的用户名和密码登录</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
             <div className='flex flex-col gap-6'>
               <div className='grid gap-2'>
-                <Label htmlFor='email'>邮箱</Label>
+                <Label htmlFor='username'>用户名</Label>
                 <Input
-                  id='email'
-                  name='email'
-                  type='email'
-                  value={formData.email}
+                  id='username'
+                  name='username'
+                  type='text'
+                  value={formData.username}
                   onChange={handleChange}
-                  placeholder='your@email.com'
+                  placeholder='请输入用户名'
                   required
                   disabled={loading}
                 />

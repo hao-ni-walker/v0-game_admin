@@ -1,79 +1,88 @@
-import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-import { sign } from 'jsonwebtoken';
 import { logger } from '@/lib/logger';
+import { encryptPassword } from '@/lib/crypto';
 import {
   successResponse,
   errorResponse,
   unauthorizedResponse
 } from '@/service/response';
-import { getRepositories } from '@/repository';
+
+const REMOTE_API_URL = 'https://api.xreddeercasino.com/api/admin/login';
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
+    const { username, password } = await request.json();
 
-    const repos = await getRepositories();
-    const user = await repos.users.findByEmail(email);
-
-    if (!user) {
-      // 记录登录失败日志 - 用户不存在
-      await logger.warn('用户认证', '用户登录', '登录失败：用户不存在', {
-        reason: '用户不存在',
-        email: email,
+    // 验证必填字段
+    if (!username || !password) {
+      await logger.warn('用户认证', '用户登录', '登录失败：缺少必填字段', {
+        missingFields: {
+          username: !username,
+          password: !password
+        },
         timestamp: new Date().toISOString()
       });
 
-      return unauthorizedResponse('邮箱或密码错误');
+      return errorResponse('请填写用户名和密码');
     }
-    // 暂时跳过禁用状态与密码校验，直接签发 token（联调阶段）
 
-    // 更新最后登录时间（JSON 仓储）
-    await repos.users.update(user.id, { lastLoginAt: new Date().toISOString() });
+    // 加密密码
+    const encryptedPassword = await encryptPassword(password);
 
-    const token = sign(
-      {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        roleId: user.roleId,
-        avatar: user.avatar,
-        isSurperAdmin: user.isSuperAdmin
+    // 转发请求到远程 API
+    const remotePayload = {
+      username,
+      password: encryptedPassword
+    };
+
+    const remoteResponse = await fetch(REMOTE_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
       },
-      process.env.JWT_SECRET || 'secret',
-      { expiresIn: '1d' }
-    );
-
-    // 记录登录成功日志
-    await logger.info(
-      '用户认证',
-      '用户登录',
-      '用户登录成功',
-      {
-        userId: user.id,
-        username: user.username,
-        email: user.email,
-        roleId: user.roleId,
-        loginTime: new Date().toISOString(),
-        tokenExpiry: '24小时'
-      },
-      user.id
-    );
-
-    const response = successResponse({
-      message: '登录成功',
-      user: { id: user.id, email: user.email },
-      token
+      body: JSON.stringify(remotePayload)
     });
 
-    response.cookies.set('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24
-    });
+    const result = await remoteResponse.json();
 
-    return response;
+    // 处理远程 API 响应
+    if (result.code === 200) {
+      const token = result.data.access_token;
+
+      // 记录登录成功日志
+      await logger.info(
+        '用户认证',
+        '用户登录',
+        '用户登录成功',
+        {
+          username,
+          loginTime: new Date().toISOString()
+        }
+      );
+
+      const response = successResponse({
+        message: '登录成功',
+        token,
+        tokenType: result.data.token_type
+      });
+
+      response.cookies.set('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 24
+      });
+
+      return response;
+    } else {
+      // 记录登录失败日志
+      await logger.warn('用户认证', '用户登录', '登录失败：远程API返回错误', {
+        username,
+        remoteError: result.msg,
+        timestamp: new Date().toISOString()
+      });
+
+      return unauthorizedResponse(result.msg || '用户名或密码错误');
+    }
   } catch (error) {
     // 记录服务器错误日志
     await logger.error('用户认证', '用户登录', '登录过程发生服务器错误', {

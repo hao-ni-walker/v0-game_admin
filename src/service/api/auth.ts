@@ -3,7 +3,7 @@ import { apiRequest } from './base';
 // 认证相关 API
 export class AuthAPI {
   // 用户登录
-  static async login(credentials: { email: string; password: string }) {
+  static async login(credentials: { username: string; password: string }) {
     return apiRequest('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials)
@@ -25,5 +25,19 @@ export class AuthAPI {
   // 获取用户权限
   static async getPermissions() {
     return apiRequest('/auth/permissions');
+  }
+
+  // 用户注册
+  static async register(data: {
+    username: string;
+    email: string;
+    password: string;
+    roleId: number;
+    isSuperAdmin?: boolean;
+  }) {
+    return apiRequest('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
   }
 }
