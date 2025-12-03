@@ -49,15 +49,10 @@ export async function POST(request: Request) {
       const token = result.data.access_token;
 
       // 记录登录成功日志
-      await logger.info(
-        '用户认证',
-        '用户登录',
-        '用户登录成功',
-        {
-          username,
-          loginTime: new Date().toISOString()
-        }
-      );
+      await logger.info('用户认证', '用户登录', '用户登录成功', {
+        username,
+        loginTime: new Date().toISOString()
+      });
 
       const response = successResponse({
         message: '登录成功',

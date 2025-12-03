@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 import { encryptPassword } from '@/lib/crypto';
-import {
-  successResponse,
-  errorResponse
-} from '@/service/response';
+import { successResponse, errorResponse } from '@/service/response';
 
 const REMOTE_API_URL = 'https://api.xreddeercasino.com/api/admin/register';
 
@@ -91,4 +88,3 @@ export async function POST(request: Request) {
     return errorResponse('服务器错误');
   }
 }
-
