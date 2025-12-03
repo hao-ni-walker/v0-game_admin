@@ -25,11 +25,15 @@ export function OperationLogPageHeader({
 }: OperationLogPageHeaderProps) {
   return (
     <div className='flex items-start justify-between'>
-      <Heading
-        title='用户操作日志'
-        description='查看和管理系统用户操作审计日志'
-        icon={<FileText className='h-6 w-6' />}
-      />
+      <div className='flex items-center gap-3'>
+        <div className='bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg'>
+          <FileText className='text-primary h-6 w-6' />
+        </div>
+        <Heading
+          title='用户操作日志'
+          description='查看和管理系统用户操作审计日志'
+        />
+      </div>
       <div className='flex items-center gap-2'>
         {onExport && (
           <Button

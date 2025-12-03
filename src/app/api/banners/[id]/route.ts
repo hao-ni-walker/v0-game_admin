@@ -6,11 +6,11 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
-    
+    const { id } = await params;
+
     // 这里应该从数据库获取
     console.log('获取轮播图详情:', id);
 
@@ -25,10 +25,7 @@ export async function GET(
     });
   } catch (error) {
     console.error('获取轮播图详情失败:', error);
-    return NextResponse.json(
-      { error: '获取轮播图详情失败' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '获取轮播图详情失败' }, { status: 500 });
   }
 }
 
@@ -38,12 +35,12 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
-    
+
     // 这里应该是数据库操作（乐观锁）
     console.log('更新轮播图:', id, body);
 
@@ -58,10 +55,7 @@ export async function PUT(
     });
   } catch (error) {
     console.error('更新轮播图失败:', error);
-    return NextResponse.json(
-      { error: '更新轮播图失败' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '更新轮播图失败' }, { status: 500 });
   }
 }
 
@@ -71,11 +65,11 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
-    
+    const { id } = await params;
+
     // 这里应该是数据库操作
     console.log('删除轮播图:', id);
 
@@ -84,9 +78,6 @@ export async function DELETE(
     });
   } catch (error) {
     console.error('删除轮播图失败:', error);
-    return NextResponse.json(
-      { error: '删除轮播图失败' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '删除轮播图失败' }, { status: 500 });
   }
 }

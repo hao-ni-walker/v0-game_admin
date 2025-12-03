@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     console.log('获取公告列表:', body);
 
     // 模拟数据
@@ -95,41 +95,39 @@ export async function POST(request: NextRequest) {
 
     // 关键词搜索
     if (body.keyword) {
-      filteredData = filteredData.filter(item =>
+      filteredData = filteredData.filter((item) =>
         item.title.includes(body.keyword)
       );
     }
 
     // 类型筛选
     if (body.types && body.types.length > 0) {
-      filteredData = filteredData.filter(item =>
+      filteredData = filteredData.filter((item) =>
         body.types.includes(item.type)
       );
     }
 
     // 状态筛选
     if (body.status !== undefined && body.status !== null) {
-      filteredData = filteredData.filter(item =>
-        item.status === body.status
-      );
+      filteredData = filteredData.filter((item) => item.status === body.status);
     }
 
     // 禁用筛选
     if (body.disabled !== undefined) {
       if (!body.disabled) {
-        filteredData = filteredData.filter(item => !item.disabled);
+        filteredData = filteredData.filter((item) => !item.disabled);
       }
     }
 
     // 显示已删除
     if (!body.show_removed) {
-      filteredData = filteredData.filter(item => !item.removed);
+      filteredData = filteredData.filter((item) => !item.removed);
     }
 
     // 仅生效中
     if (body.active_only) {
       const now = new Date().toISOString();
-      filteredData = filteredData.filter(item => {
+      filteredData = filteredData.filter((item) => {
         if (item.disabled || item.status === 0 || item.removed) return false;
         const startOk = !item.start_time || item.start_time <= now;
         const endOk = !item.end_time || item.end_time >= now;
@@ -140,7 +138,7 @@ export async function POST(request: NextRequest) {
     // 排序
     const sortBy = body.sort_by || 'default';
     const sortDir = body.sort_dir || 'asc';
-    
+
     filteredData.sort((a: any, b: any) => {
       if (sortBy === 'default') {
         // 默认排序：priority 升序，start_time 降序，updated_at 降序，id 降序
@@ -148,17 +146,23 @@ export async function POST(request: NextRequest) {
           return a.priority - b.priority;
         }
         if (a.start_time && b.start_time) {
-          return new Date(b.start_time).getTime() - new Date(a.start_time).getTime();
+          return (
+            new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
+          );
         }
-        if (new Date(a.updated_at).getTime() !== new Date(b.updated_at).getTime()) {
-          return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+        if (
+          new Date(a.updated_at).getTime() !== new Date(b.updated_at).getTime()
+        ) {
+          return (
+            new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+          );
         }
         return b.id - a.id;
       }
 
-      let aVal = a[sortBy];
-      let bVal = b[sortBy];
-      
+      const aVal = a[sortBy];
+      const bVal = b[sortBy];
+
       if (sortDir === 'asc') {
         return aVal > bVal ? 1 : -1;
       } else {
@@ -182,9 +186,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('获取公告列表失败:', error);
-    return NextResponse.json(
-      { error: '获取公告列表失败' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '获取公告列表失败' }, { status: 500 });
   }
 }

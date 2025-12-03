@@ -6,10 +6,11 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     const body = await request.json();
 
     // TODO: 实际实现时更新数据库
@@ -19,10 +20,7 @@ export async function PUT(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('更新VIP等级失败:', error);
-    return NextResponse.json(
-      { error: '更新VIP等级失败' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '更新VIP等级失败' }, { status: 500 });
   }
 }
 
@@ -32,10 +30,11 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
 
     // TODO: 实际实现时从数据库删除
     // 这里模拟成功响应
@@ -44,10 +43,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('删除VIP等级失败:', error);
-    return NextResponse.json(
-      { error: '删除VIP等级失败' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '删除VIP等级失败' }, { status: 500 });
   }
 }
 
@@ -57,10 +53,11 @@ export async function DELETE(
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
 
     // TODO: 实际实现时从数据库查询
     // 这里返回模拟数据
@@ -89,9 +86,6 @@ export async function GET(
     return NextResponse.json(mockData);
   } catch (error) {
     console.error('获取VIP等级详情失败:', error);
-    return NextResponse.json(
-      { error: '获取VIP等级详情失败' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '获取VIP等级详情失败' }, { status: 500 });
   }
 }

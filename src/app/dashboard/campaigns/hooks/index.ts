@@ -1,84 +1,85 @@
 import { useState, useEffect } from 'react';
 import { Activity } from '@/repository/models';
-import { ActivityFilters } from '../types';
+import type { ActivityFilters } from '../types';
 
 // 模拟API调用
 const mockFetchActivities = async (filters: ActivityFilters) => {
   // 模拟网络延迟
   await new Promise((resolve) => setTimeout(resolve, 500));
-  
+
   // 模拟数据
   const mockData: Activity[] = [
     {
       id: 3001,
-      activityCode: "FIRST_DEPOSIT_NOV",
-      activityType: "first_deposit",
-      name: "新用户首充返利",
-      description: "首充返利 100%，上限 100 元。新用户首次充值即可享受超值返利优惠！",
-      startTime: "2025-11-01T00:00:00Z",
-      endTime: "2025-12-01T00:00:00Z",
-      displayStartTime: "2025-10-28T00:00:00Z",
-      displayEndTime: "2025-12-05T00:00:00Z",
-      status: "active",
+      activityCode: 'FIRST_DEPOSIT_NOV',
+      activityType: 'first_deposit',
+      name: '新用户首充返利',
+      description:
+        '首充返利 100%，上限 100 元。新用户首次充值即可享受超值返利优惠！',
+      startTime: '2025-11-01T00:00:00Z',
+      endTime: '2025-12-01T00:00:00Z',
+      displayStartTime: '2025-10-28T00:00:00Z',
+      displayEndTime: '2025-12-05T00:00:00Z',
+      status: 'active',
       priority: 900,
       participationConfig: {
         perUserDailyLimit: 1,
         minDeposit: 50,
         maxBonus: 100,
-        eligibility: "new_user"
+        eligibility: 'new_user'
       },
       extraConfig: {
-        theme: "purple",
-        entry: "/promo/first-deposit",
-        abGroup: "A"
+        theme: 'purple',
+        entry: '/promo/first-deposit',
+        abGroup: 'A'
       },
       totalParticipants: 12845,
       totalRewardsGiven: 11320,
-      iconUrl: "https://cdn.example.com/icons/fd.png",
-      bannerUrl: "https://cdn.example.com/banners/fd_1125.jpg",
+      iconUrl: 'https://cdn.example.com/icons/fd.png',
+      bannerUrl: 'https://cdn.example.com/banners/fd_1125.jpg',
       createdBy: 1,
       updatedBy: 1,
-      createdAt: "2025-10-20T09:30:00Z",
-      updatedAt: "2025-11-11T21:00:00Z"
+      createdAt: '2025-10-20T09:30:00Z',
+      updatedAt: '2025-11-11T21:00:00Z'
     },
     {
       id: 3002,
-      activityCode: "DAILY_SIGNIN_2025",
-      activityType: "daily_signin",
-      name: "每日签到送好礼",
-      description: "连续签到7天送大礼包，每天都有惊喜！",
-      startTime: "2025-01-01T00:00:00Z",
-      endTime: "2025-12-31T23:59:59Z",
-      displayStartTime: "2025-01-01T00:00:00Z",
-      displayEndTime: "2025-12-31T23:59:59Z",
-      status: "active",
+      activityCode: 'DAILY_SIGNIN_2025',
+      activityType: 'daily_signin',
+      name: '每日签到送好礼',
+      description: '连续签到7天送大礼包，每天都有惊喜！',
+      startTime: '2025-01-01T00:00:00Z',
+      endTime: '2025-12-31T23:59:59Z',
+      displayStartTime: '2025-01-01T00:00:00Z',
+      displayEndTime: '2025-12-31T23:59:59Z',
+      status: 'active',
       priority: 800,
       participationConfig: {
         perUserDailyLimit: 1,
         consecutiveDaysBonus: {
-          "7": 100,
-          "14": 200,
-          "30": 500
+          '7': 100,
+          '14': 200,
+          '30': 500
         }
       },
       extraConfig: {
-        theme: "blue",
-        entry: "/promo/daily-signin"
+        theme: 'blue',
+        entry: '/promo/daily-signin'
       },
       totalParticipants: 45623,
       totalRewardsGiven: 38901,
-      iconUrl: "https://cdn.example.com/icons/signin.png",
-      bannerUrl: "https://cdn.example.com/banners/signin.jpg",
+      iconUrl: 'https://cdn.example.com/icons/signin.png',
+      bannerUrl: 'https://cdn.example.com/banners/signin.jpg',
       createdBy: 1,
       updatedBy: 2,
-      createdAt: "2024-12-15T10:00:00Z",
-      updatedAt: "2025-11-10T14:30:00Z"
+      createdAt: '2024-12-15T10:00:00Z',
+      updatedAt: '2025-11-10T14:30:00Z'
     }
   ];
 
   // 应用筛选条件（简化版）
   let filteredData = [...mockData];
-  
+
   if (filters.keyword) {
     const keyword = filters.keyword.toLowerCase();
     filteredData = filteredData.filter(
@@ -88,13 +89,13 @@ const mockFetchActivities = async (filters: ActivityFilters) => {
         activity.activityType.toLowerCase().includes(keyword)
     );
   }
-  
+
   if (filters.activityTypes && filters.activityTypes.length > 0) {
     filteredData = filteredData.filter((activity) =>
       filters.activityTypes?.includes(activity.activityType)
     );
   }
-  
+
   if (filters.statuses && filters.statuses.length > 0) {
     filteredData = filteredData.filter((activity) =>
       filters.statuses?.includes(activity.status)
@@ -128,7 +129,10 @@ export const useActivityFilters = () => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
   };
 
-  const updatePagination = (pagination: { page?: number; pageSize?: number }) => {
+  const updatePagination = (pagination: {
+    page?: number;
+    pageSize?: number;
+  }) => {
     setFilters((prev) => ({
       ...prev,
       ...pagination,

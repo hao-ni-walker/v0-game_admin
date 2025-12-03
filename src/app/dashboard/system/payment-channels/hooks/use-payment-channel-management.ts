@@ -1,6 +1,10 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { PaymentChannel, PaymentChannelFilters, PaymentChannelPagination } from '../types';
+import type {
+  PaymentChannel,
+  PaymentChannelFilters,
+  PaymentChannelPagination
+} from '../types';
 
 /**
  * 支付渠道管理hooks

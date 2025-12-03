@@ -6,10 +6,10 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
     console.log('获取道具详情:', id);
 
     // 模拟返回数据
@@ -37,10 +37,7 @@ export async function GET(
     });
   } catch (error) {
     console.error('获取道具详情失败:', error);
-    return NextResponse.json(
-      { error: '获取道具详情失败' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '获取道具详情失败' }, { status: 500 });
   }
 }
 
@@ -50,12 +47,12 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
     const body = await request.json();
-    
+
     console.log('更新道具:', id, body);
 
     return NextResponse.json({
@@ -68,10 +65,7 @@ export async function PUT(
     });
   } catch (error) {
     console.error('更新道具失败:', error);
-    return NextResponse.json(
-      { error: '更新道具失败' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '更新道具失败' }, { status: 500 });
   }
 }
 
@@ -81,10 +75,10 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
     console.log('删除道具:', id);
 
     return NextResponse.json({
@@ -92,9 +86,6 @@ export async function DELETE(
     });
   } catch (error) {
     console.error('删除道具失败:', error);
-    return NextResponse.json(
-      { error: '删除道具失败' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '删除道具失败' }, { status: 500 });
   }
 }

@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { PaymentChannelFilters } from '../types';
+import type { PaymentChannelFilters } from '../types';
 import { DEFAULT_PAGE_SIZE } from '../constants';
 
 /**
@@ -15,13 +15,16 @@ export function usePaymentChannelFilters() {
   /**
    * 更新筛选条件
    */
-  const searchFilters = useCallback((newFilters: Partial<PaymentChannelFilters>) => {
-    setFilters((prev) => ({
-      ...prev,
-      ...newFilters,
-      page: 1 // 重置到第一页
-    }));
-  }, []);
+  const searchFilters = useCallback(
+    (newFilters: Partial<PaymentChannelFilters>) => {
+      setFilters((prev) => ({
+        ...prev,
+        ...newFilters,
+        page: 1 // 重置到第一页
+      }));
+    },
+    []
+  );
 
   /**
    * 更新分页

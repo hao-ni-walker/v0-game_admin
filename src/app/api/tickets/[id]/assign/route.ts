@@ -6,13 +6,14 @@ import { getRepositories } from '@/repository';
 // POST /api/tickets/[id]/assign - 指派工单
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const currentUser = getCurrentUser(request);
   const logger = new Logger('工单管理', currentUser?.id);
 
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     if (isNaN(id)) {
       return errorResponse('无效的工单ID');
     }

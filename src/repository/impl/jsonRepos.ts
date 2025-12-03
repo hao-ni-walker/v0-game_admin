@@ -16,7 +16,9 @@ import {
   TicketStatus,
   Activity,
   ActivityStatus,
-  Player
+  Player,
+  PaymentChannel,
+  PaymentChannelType
 } from '../models';
 import {
   LogsFilter,
@@ -26,7 +28,8 @@ import {
   UsersFilter,
   TicketsFilter,
   ActivitiesFilter,
-  PlayersFilter
+  PlayersFilter,
+  PaymentChannelsFilter
 } from '../interfaces';
 
 type Tables = {
@@ -40,6 +43,7 @@ type Tables = {
   ticketEvents: TicketEvent[];
   activities: Activity[];
   players: Player[];
+  paymentChannels: PaymentChannel[];
 };
 
 function nowISO() {
@@ -83,7 +87,8 @@ export class JsonRepositories {
       ticketComments: [],
       ticketEvents: [],
       activities: [],
-      players: []
+      players: [],
+      paymentChannels: []
     };
     this.seq = {
       users: 0,
@@ -95,7 +100,8 @@ export class JsonRepositories {
       ticketComments: 0,
       ticketEvents: 0,
       activities: 0,
-      players: 0
+      players: 0,
+      paymentChannels: 0
     };
   }
 
@@ -111,7 +117,8 @@ export class JsonRepositories {
       ticketComments,
       ticketEvents,
       activities,
-      players
+      players,
+      paymentChannels
     ] = await Promise.all([
       this.store.readJson<User[]>('users.json', seed?.users ?? []),
       this.store.readJson<Role[]>('roles.json', seed?.roles ?? []),
@@ -140,7 +147,11 @@ export class JsonRepositories {
         'activities.json',
         seed?.activities ?? []
       ),
-      this.store.readJson<Player[]>('players.json', seed?.players ?? [])
+      this.store.readJson<Player[]>('players.json', seed?.players ?? []),
+      this.store.readJson<PaymentChannel[]>(
+        'paymentChannels.json',
+        seed?.paymentChannels ?? []
+      )
     ]);
 
     this.tables = {
@@ -153,7 +164,8 @@ export class JsonRepositories {
       ticketComments,
       ticketEvents,
       activities,
-      players
+      players,
+      paymentChannels
     };
     // 初始化自增ID
     (Object.keys(this.tables) as (keyof Tables)[]).forEach((k) => {
@@ -177,7 +189,8 @@ export class JsonRepositories {
       this.store.writeJson('ticketComments.json', t.ticketComments),
       this.store.writeJson('ticketEvents.json', t.ticketEvents),
       this.store.writeJson('activities.json', t.activities),
-      this.store.writeJson('players.json', t.players)
+      this.store.writeJson('players.json', t.players),
+      this.store.writeJson('paymentChannels.json', t.paymentChannels)
     ]);
   }
 
@@ -564,7 +577,7 @@ export class JsonRepositories {
     const limit = Math.min(Math.max(1, filter.limit ?? 20), 100);
     const offset = (page - 1) * limit;
 
-    let rows = this.tables.tickets.filter((t) => {
+    const rows = this.tables.tickets.filter((t) => {
       // keyword
       if (filter.keyword && !like(t.title, filter.keyword)) return false;
 
@@ -890,7 +903,7 @@ export class JsonRepositories {
     const limit = Math.min(Math.max(1, filter.limit ?? 20), 100);
     const offset = (page - 1) * limit;
 
-    let rows = this.tables.activities.filter((a) => {
+    const rows = this.tables.activities.filter((a) => {
       // 关键词筛选
       if (filter.keyword) {
         const kw = filter.keyword.toLowerCase();
@@ -923,7 +936,11 @@ export class JsonRepositories {
       if (!inRange(a.startTime, filter.startFrom, filter.startTo)) return false;
       if (!inRange(a.endTime, filter.endFrom, filter.endTo)) return false;
       if (
-        !inRange(a.displayStartTime ?? undefined, filter.displayFrom, filter.displayTo)
+        !inRange(
+          a.displayStartTime ?? undefined,
+          filter.displayFrom,
+          filter.displayTo
+        )
       )
         return false;
       if (!inRange(a.updatedAt, filter.updatedFrom, filter.updatedTo))
@@ -962,7 +979,11 @@ export class JsonRepositories {
       // 可见筛选
       if (filter.availableForDisplay) {
         const now = new Date();
-        const validStatuses: ActivityStatus[] = ['scheduled', 'active', 'paused'];
+        const validStatuses: ActivityStatus[] = [
+          'scheduled',
+          'active',
+          'paused'
+        ];
         if (!validStatuses.includes(a.status)) return false;
         if (a.displayStartTime && a.displayEndTime) {
           const dStart = new Date(a.displayStartTime);
@@ -1058,7 +1079,9 @@ export class JsonRepositories {
     return this.tables.activities.find((a) => a.id === id);
   }
 
-  async findActivityByCode(activityCode: string): Promise<Activity | undefined> {
+  async findActivityByCode(
+    activityCode: string
+  ): Promise<Activity | undefined> {
     return this.tables.activities.find((a) => a.activityCode === activityCode);
   }
 
@@ -1147,7 +1170,7 @@ export class JsonRepositories {
       // 关键词匹配：username、email、idname
       if (filter.keyword) {
         const kw = filter.keyword.toLowerCase();
-        const matchKeyword = 
+        const matchKeyword =
           p.username.toLowerCase().includes(kw) ||
           p.email.toLowerCase().includes(kw) ||
           p.idname.toLowerCase().includes(kw);
@@ -1165,12 +1188,16 @@ export class JsonRepositories {
       }
 
       // VIP等级范围
-      if (filter.vipMin !== undefined && p.vipLevel < filter.vipMin) return false;
-      if (filter.vipMax !== undefined && p.vipLevel > filter.vipMax) return false;
+      if (filter.vipMin !== undefined && p.vipLevel < filter.vipMin)
+        return false;
+      if (filter.vipMax !== undefined && p.vipLevel > filter.vipMax)
+        return false;
 
       // 余额范围
-      if (filter.balanceMin !== undefined && p.balance < filter.balanceMin) return false;
-      if (filter.balanceMax !== undefined && p.balance > filter.balanceMax) return false;
+      if (filter.balanceMin !== undefined && p.balance < filter.balanceMin)
+        return false;
+      if (filter.balanceMax !== undefined && p.balance > filter.balanceMax)
+        return false;
 
       // 代理商筛选
       if (filter.agents && filter.agents.length > 0) {
@@ -1179,33 +1206,47 @@ export class JsonRepositories {
 
       // 直属上级筛选
       if (filter.directSuperiorIds && filter.directSuperiorIds.length > 0) {
-        if (!p.directSuperiorId || !filter.directSuperiorIds.includes(p.directSuperiorId)) return false;
+        if (
+          !p.directSuperiorId ||
+          !filter.directSuperiorIds.includes(p.directSuperiorId)
+        )
+          return false;
       }
 
       // 注册方式筛选
       if (filter.registrationMethods && filter.registrationMethods.length > 0) {
-        if (!filter.registrationMethods.includes(p.registrationMethod)) return false;
+        if (!filter.registrationMethods.includes(p.registrationMethod))
+          return false;
       }
 
       // 注册来源筛选
       if (filter.registrationSources && filter.registrationSources.length > 0) {
-        if (!p.registrationSource || !filter.registrationSources.includes(p.registrationSource)) return false;
+        if (
+          !p.registrationSource ||
+          !filter.registrationSources.includes(p.registrationSource)
+        )
+          return false;
       }
 
       // 登录来源筛选
       if (filter.loginSources && filter.loginSources.length > 0) {
-        if (!p.loginSource || !filter.loginSources.includes(p.loginSource)) return false;
+        if (!p.loginSource || !filter.loginSources.includes(p.loginSource))
+          return false;
       }
 
       // 身份类别筛选
       if (filter.identityCategories && filter.identityCategories.length > 0) {
-        if (!filter.identityCategories.includes(p.identityCategory)) return false;
+        if (!filter.identityCategories.includes(p.identityCategory))
+          return false;
       }
 
       // 时间范围筛选
-      if (!inRange(p.createdAt, filter.createdFrom, filter.createdTo)) return false;
-      if (!inRange(p.updatedAt, filter.updatedFrom, filter.updatedTo)) return false;
-      if (!inRange(p.lastLogin, filter.lastLoginFrom, filter.lastLoginTo)) return false;
+      if (!inRange(p.createdAt, filter.createdFrom, filter.createdTo))
+        return false;
+      if (!inRange(p.updatedAt, filter.updatedFrom, filter.updatedTo))
+        return false;
+      if (!inRange(p.lastLogin, filter.lastLoginFrom, filter.lastLoginTo))
+        return false;
 
       return true;
     });
@@ -1232,7 +1273,8 @@ export class JsonRepositories {
           compareValue = a.vipLevel - b.vipLevel;
           break;
         case 'createdAt':
-          compareValue = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          compareValue =
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
           break;
         case 'lastLogin':
           const aTime = a.lastLogin ? new Date(a.lastLogin).getTime() : 0;
@@ -1241,7 +1283,8 @@ export class JsonRepositories {
           break;
         case 'updatedAt':
         default:
-          compareValue = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+          compareValue =
+            new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
           break;
       }
       return sortDir === 'asc' ? compareValue : -compareValue;
@@ -1274,7 +1317,9 @@ export class JsonRepositories {
     return this.tables.players.find((p) => p.idname === idname);
   }
 
-  async createPlayer(player: Omit<Player, 'id' | 'createdAt' | 'updatedAt'>): Promise<ID> {
+  async createPlayer(
+    player: Omit<Player, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<ID> {
     const id = this.nextId('players');
     const now = nowISO();
     const newPlayer: Player = {
@@ -1330,6 +1375,181 @@ export class JsonRepositories {
       updateStatus: this.updatePlayerStatus.bind(this)
     };
   }
+
+  // PaymentChannels
+  async listPaymentChannels(
+    filter: PaymentChannelsFilter
+  ): Promise<PageResult<PaymentChannel>> {
+    const page = Math.max(1, filter.page ?? 1);
+    const limit = Math.min(Math.max(1, filter.limit ?? 20), 100);
+    const offset = (page - 1) * limit;
+
+    const rows = this.tables.paymentChannels.filter((pc) => {
+      // 关键词匹配
+      if (filter.keyword) {
+        const kw = filter.keyword.toLowerCase();
+        if (!like(pc.name, kw) && !like(pc.code, kw)) return false;
+      }
+
+      // 类型筛选
+      if (filter.types && filter.types.length > 0) {
+        if (!filter.types.includes(pc.type)) return false;
+      }
+
+      // 渠道类型筛选
+      if (filter.channelTypes && filter.channelTypes.length > 0) {
+        if (!filter.channelTypes.includes(pc.channelType)) return false;
+      }
+
+      // 状态筛选
+      if (filter.status !== undefined && pc.status !== filter.status)
+        return false;
+
+      // 禁用状态
+      if (filter.disabled !== undefined && pc.disabled !== filter.disabled)
+        return false;
+
+      // 显示已删除
+      if (!filter.showRemoved && pc.removed) return false;
+
+      // 金额范围
+      if (
+        filter.minAmountMaxlte !== undefined &&
+        pc.minAmount > filter.minAmountMaxlte
+      )
+        return false;
+      if (
+        filter.maxAmountMingte !== undefined &&
+        pc.maxAmount < filter.maxAmountMingte
+      )
+        return false;
+
+      // 费率范围
+      if (filter.feeRateMin !== undefined && pc.feeRate < filter.feeRateMin)
+        return false;
+      if (filter.feeRateMax !== undefined && pc.feeRate > filter.feeRateMax)
+        return false;
+
+      // 固定费用范围
+      if (filter.fixedFeeMin !== undefined && pc.fixedFee < filter.fixedFeeMin)
+        return false;
+      if (filter.fixedFeeMax !== undefined && pc.fixedFee > filter.fixedFeeMax)
+        return false;
+
+      // 每日限额范围
+      if (
+        filter.dailyLimitMin !== undefined &&
+        pc.dailyLimit < filter.dailyLimitMin
+      )
+        return false;
+      if (
+        filter.dailyLimitMax !== undefined &&
+        pc.dailyLimit > filter.dailyLimitMax
+      )
+        return false;
+
+      // 时间范围
+      if (!inRange(pc.createdAt, filter.createdFrom, filter.createdTo))
+        return false;
+      if (!inRange(pc.updatedAt, filter.updatedFrom, filter.updatedTo))
+        return false;
+
+      return true;
+    });
+
+    // 排序
+    const sortBy = filter.sortBy || 'sortOrder';
+    const sortDir = filter.sortDir || 'asc';
+    rows.sort((a, b) => {
+      const aVal = (a as any)[sortBy];
+      const bVal = (b as any)[sortBy];
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+      if (typeof aVal === 'string') {
+        return sortDir === 'asc'
+          ? aVal.localeCompare(bVal)
+          : bVal.localeCompare(aVal);
+      }
+      return sortDir === 'asc' ? aVal - bVal : bVal - aVal;
+    });
+
+    const total = rows.length;
+    const data = rows.slice(offset, offset + limit);
+    return {
+      data,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
+    };
+  }
+
+  async getPaymentChannelById(id: ID): Promise<PaymentChannel | undefined> {
+    return this.tables.paymentChannels.find((pc) => pc.id === id);
+  }
+
+  async findPaymentChannelByCode(
+    code: string
+  ): Promise<PaymentChannel | undefined> {
+    return this.tables.paymentChannels.find((pc) => pc.code === code);
+  }
+
+  async createPaymentChannel(
+    channel: Omit<PaymentChannel, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<ID> {
+    const id = this.nextId('paymentChannels');
+    const now = nowISO();
+    const newChannel: PaymentChannel = {
+      ...channel,
+      id,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.tables.paymentChannels.push(newChannel);
+    await this.flush();
+    return id;
+  }
+
+  async updatePaymentChannel(
+    id: ID,
+    patch: Partial<PaymentChannel>
+  ): Promise<void> {
+    const channel = this.tables.paymentChannels.find((pc) => pc.id === id);
+    if (!channel) return;
+    Object.assign(channel, patch, { updatedAt: nowISO() });
+    await this.flush();
+  }
+
+  async deletePaymentChannel(id: ID): Promise<void> {
+    const channel = this.tables.paymentChannels.find((pc) => pc.id === id);
+    if (channel) {
+      channel.removed = true;
+      channel.updatedAt = nowISO();
+      await this.flush();
+    }
+  }
+
+  async getAvailablePaymentChannels(
+    type: PaymentChannelType
+  ): Promise<PaymentChannel[]> {
+    const now = new Date();
+    return this.tables.paymentChannels.filter(
+      (pc) => !pc.removed && !pc.disabled && pc.status === 1 && pc.type === type
+    );
+  }
+
+  get paymentChannelsRepo() {
+    return {
+      list: this.listPaymentChannels.bind(this),
+      getById: this.getPaymentChannelById.bind(this),
+      findByCode: this.findPaymentChannelByCode.bind(this),
+      create: this.createPaymentChannel.bind(this),
+      update: this.updatePaymentChannel.bind(this),
+      delete: this.deletePaymentChannel.bind(this),
+      getAvailable: this.getAvailablePaymentChannels.bind(this)
+    };
+  }
 }
 
 // 工厂方法：返回聚合仓储
@@ -1343,6 +1563,7 @@ export async function createJsonRepositories(seed?: Partial<Tables>) {
     rolePermissions: impl.rolePermissionsRepo,
     logs: impl.logsRepo,
     tickets: impl.ticketsRepo,
+    paymentChannels: impl.paymentChannelsRepo,
     activities: impl.activitiesRepo,
     players: impl.playersRepo
   };

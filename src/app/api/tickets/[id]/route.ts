@@ -6,10 +6,11 @@ import { getRepositories } from '@/repository';
 // GET /api/tickets/[id] - 获取工单详情
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     if (isNaN(id)) {
       return errorResponse('无效的工单ID');
     }
@@ -31,13 +32,14 @@ export async function GET(
 // PATCH /api/tickets/[id] - 更新工单
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const currentUser = getCurrentUser(request);
   const logger = new Logger('工单管理', currentUser?.id);
 
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     if (isNaN(id)) {
       return errorResponse('无效的工单ID');
     }
@@ -73,13 +75,14 @@ export async function PATCH(
 // DELETE /api/tickets/[id] - 删除工单
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const currentUser = getCurrentUser(request);
   const logger = new Logger('工单管理', currentUser?.id);
 
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     if (isNaN(id)) {
       return errorResponse('无效的工单ID');
     }

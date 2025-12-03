@@ -6,11 +6,11 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
-    
+    const { id } = await params;
+
     console.log('获取系统配置详情:', id);
 
     return NextResponse.json({
@@ -44,12 +44,12 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
-    
+
     // 版本校验（乐观锁）
     if (body.version === undefined) {
       return NextResponse.json(
@@ -99,10 +99,7 @@ export async function PUT(
     });
   } catch (error) {
     console.error('更新系统配置失败:', error);
-    return NextResponse.json(
-      { error: '更新系统配置失败' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '更新系统配置失败' }, { status: 500 });
   }
 }
 
@@ -112,11 +109,11 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
-    
+    const { id } = await params;
+
     console.log('删除系统配置:', id);
 
     return NextResponse.json({
@@ -124,9 +121,6 @@ export async function DELETE(
     });
   } catch (error) {
     console.error('删除系统配置失败:', error);
-    return NextResponse.json(
-      { error: '删除系统配置失败' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '删除系统配置失败' }, { status: 500 });
   }
 }

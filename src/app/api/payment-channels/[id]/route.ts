@@ -6,10 +6,11 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id, 10);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam, 10);
 
     // 导入模拟数据
     const fs = await import('fs/promises');
@@ -47,10 +48,11 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id, 10);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam, 10);
     const updates = await request.json();
 
     // 导入模拟数据
@@ -110,10 +112,11 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id, 10);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam, 10);
 
     // 导入模拟数据
     const fs = await import('fs/promises');

@@ -15,7 +15,7 @@ import type { ActivityStatus } from '@/repository/models';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userId = await getUserFromRequest();
@@ -23,7 +23,8 @@ export async function POST(
       return unauthorizedResponse('未授权');
     }
 
-    const id = parseInt(params.id, 10);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam, 10);
     if (isNaN(id)) {
       return errorResponse('无效的活动ID');
     }

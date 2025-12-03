@@ -11,7 +11,11 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PaymentChannelFilters, ChannelType, PaymentChannelType } from '../types';
+import type {
+  PaymentChannelFilters,
+  ChannelType,
+  PaymentChannelType
+} from '../types';
 import {
   PAYMENT_TYPE_OPTIONS,
   CHANNEL_TYPE_OPTIONS,
@@ -31,7 +35,9 @@ export function PaymentChannelFilters({
   onReset,
   loading
 }: PaymentChannelFiltersProps) {
-  const [localFilters, setLocalFilters] = useState<Partial<PaymentChannelFilters>>({
+  const [localFilters, setLocalFilters] = useState<
+    Partial<PaymentChannelFilters>
+  >({
     keyword: filters.keyword || '',
     types: filters.types || [],
     channel_types: filters.channel_types || [],
@@ -39,7 +45,10 @@ export function PaymentChannelFilters({
     disabled: filters.disabled
   });
 
-  const handleInputChange = (field: keyof PaymentChannelFilters, value: any) => {
+  const handleInputChange = (
+    field: keyof PaymentChannelFilters,
+    value: any
+  ) => {
     setLocalFilters((prev) => ({
       ...prev,
       [field]: value
@@ -78,7 +87,7 @@ export function PaymentChannelFilters({
   };
 
   return (
-    <div className='space-y-4 rounded-lg border bg-card p-4'>
+    <div className='bg-card space-y-4 rounded-lg border p-4'>
       <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
         {/* 关键词搜索 */}
         <div className='space-y-2'>
@@ -98,7 +107,10 @@ export function PaymentChannelFilters({
           <Select
             value={String(localFilters.status || 'all')}
             onValueChange={(value) =>
-              handleInputChange('status', value === 'all' ? 'all' : parseInt(value))
+              handleInputChange(
+                'status',
+                value === 'all' ? 'all' : parseInt(value)
+              )
             }
           >
             <SelectTrigger id='status'>
@@ -127,7 +139,7 @@ export function PaymentChannelFilters({
             />
             <label
               htmlFor='disabled'
-              className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+              className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
             >
               仅显示禁用渠道
             </label>
@@ -144,7 +156,9 @@ export function PaymentChannelFilters({
               key={option.value}
               type='button'
               variant={
-                localFilters.types?.includes(option.value) ? 'default' : 'outline'
+                localFilters.types?.includes(option.value)
+                  ? 'default'
+                  : 'outline'
               }
               size='sm'
               onClick={() => handleTypeToggle(option.value)}

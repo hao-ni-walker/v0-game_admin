@@ -188,13 +188,19 @@ export default function PaymentChannelsPage() {
               onToggleStatus={handleToggleStatus}
               onDisable={handleDisableChannel}
               emptyState={{
-                icon: <CreditCard className='h-8 w-8 text-muted-foreground' />,
-                title: hasActiveFilters ? '未找到匹配的支付渠道' : '还没有支付渠道',
+                icon: <CreditCard className='text-muted-foreground h-8 w-8' />,
+                title: hasActiveFilters
+                  ? '未找到匹配的支付渠道'
+                  : '还没有支付渠道',
                 description: hasActiveFilters
                   ? '请尝试调整筛选条件以查看更多结果'
                   : '开始添加支付渠道来管理充值和提现',
                 action: !hasActiveFilters ? (
-                  <Button onClick={handleOpenCreateDialog} size='sm' className='mt-2'>
+                  <Button
+                    onClick={handleOpenCreateDialog}
+                    size='sm'
+                    className='mt-2'
+                  >
                     <Plus className='mr-2 h-4 w-4' />
                     新增支付渠道
                   </Button>
@@ -208,7 +214,8 @@ export default function PaymentChannelsPage() {
             <Pagination
               pagination={{
                 ...pagination,
-                limit: pagination.page_size
+                limit: pagination.page_size,
+                totalPages: Math.ceil(pagination.total / pagination.page_size)
               }}
               onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}

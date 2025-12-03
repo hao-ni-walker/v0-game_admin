@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { notFound } from 'next/navigation';
+import Image from 'next/image';
 import PageContainer from '@/components/layout/page-container';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,8 +13,9 @@ import { Play, Pause, Square, Copy, Eye, QrCode, Edit } from 'lucide-react';
 import { Activity } from '@/repository/models';
 import { STATUS_COLORS, STATUS_LABELS, TYPE_LABELS } from '../types';
 
-export default function ActivityDetailPage({ params }: { params: { id: string } }) {
+export default function ActivityDetailPage() {
   const router = useRouter();
+  const params = useParams<{ id: string }>();
   const [activity, setActivity] = useState<Activity | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -22,41 +24,42 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
       try {
         // 模拟API调用
         await new Promise((resolve) => setTimeout(resolve, 500));
-        
+
         // 模拟数据
         const mockActivity: Activity = {
-          id: parseInt(params.id, 10),
-          activityCode: "FIRST_DEPOSIT_NOV",
-          activityType: "first_deposit",
-          name: "新用户首充返利",
-          description: "首充返利 100%，上限 100 元。新用户首次充值即可享受超值返利优惠！",
-          startTime: "2025-11-01T00:00:00Z",
-          endTime: "2025-12-01T00:00:00Z",
-          displayStartTime: "2025-10-28T00:00:00Z",
-          displayEndTime: "2025-12-05T00:00:00Z",
-          status: "active",
+          id: parseInt(params.id as string, 10),
+          activityCode: 'FIRST_DEPOSIT_NOV',
+          activityType: 'first_deposit',
+          name: '新用户首充返利',
+          description:
+            '首充返利 100%，上限 100 元。新用户首次充值即可享受超值返利优惠！',
+          startTime: '2025-11-01T00:00:00Z',
+          endTime: '2025-12-01T00:00:00Z',
+          displayStartTime: '2025-10-28T00:00:00Z',
+          displayEndTime: '2025-12-05T00:00:00Z',
+          status: 'active',
           priority: 900,
           participationConfig: {
             perUserDailyLimit: 1,
             minDeposit: 50,
             maxBonus: 100,
-            eligibility: "new_user"
+            eligibility: 'new_user'
           },
           extraConfig: {
-            theme: "purple",
-            entry: "/promo/first-deposit",
-            abGroup: "A"
+            theme: 'purple',
+            entry: '/promo/first-deposit',
+            abGroup: 'A'
           },
           totalParticipants: 12845,
           totalRewardsGiven: 11320,
-          iconUrl: "https://cdn.example.com/icons/fd.png",
-          bannerUrl: "https://cdn.example.com/banners/fd_1125.jpg",
+          iconUrl: 'https://cdn.example.com/icons/fd.png',
+          bannerUrl: 'https://cdn.example.com/banners/fd_1125.jpg',
           createdBy: 1,
           updatedBy: 1,
-          createdAt: "2025-10-20T09:30:00Z",
-          updatedAt: "2025-11-11T21:00:00Z"
+          createdAt: '2025-10-20T09:30:00Z',
+          updatedAt: '2025-11-11T21:00:00Z'
         };
-        
+
         setActivity(mockActivity);
       } catch (error) {
         console.error('获取活动详情失败:', error);
@@ -75,18 +78,21 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
         <div className='space-y-6'>
           <div className='flex items-center justify-between'>
             <div>
-              <div className='h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse'></div>
-              <div className='mt-2 h-4 w-64 bg-gray-200 dark:bg-gray-700 rounded animate-pulse'></div>
+              <div className='h-8 w-48 animate-pulse rounded bg-gray-200 dark:bg-gray-700'></div>
+              <div className='mt-2 h-4 w-64 animate-pulse rounded bg-gray-200 dark:bg-gray-700'></div>
             </div>
             <div className='flex gap-2'>
-              <div className='h-10 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse'></div>
-              <div className='h-10 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse'></div>
+              <div className='h-10 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700'></div>
+              <div className='h-10 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700'></div>
             </div>
           </div>
-          
+
           <div className='grid gap-6 md:grid-cols-2'>
             {[...Array(4)].map((_, i) => (
-              <div key={i} className='h-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse'></div>
+              <div
+                key={i}
+                className='h-48 animate-pulse rounded bg-gray-200 dark:bg-gray-700'
+              ></div>
             ))}
           </div>
         </div>
@@ -227,7 +233,9 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
             </div>
             <div>
               <h3 className='font-medium'>创建者</h3>
-              <p className='text-muted-foreground'>用户 #{activity.createdBy}</p>
+              <p className='text-muted-foreground'>
+                用户 #{activity.createdBy}
+              </p>
             </div>
             <div>
               <h3 className='font-medium'>最后更新</h3>
@@ -271,11 +279,15 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
           </CardHeader>
           <CardContent className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
             <div className='text-center'>
-              <div className='text-2xl font-bold'>{activity.totalParticipants}</div>
+              <div className='text-2xl font-bold'>
+                {activity.totalParticipants}
+              </div>
               <div className='text-muted-foreground'>累计参与人次</div>
             </div>
             <div className='text-center'>
-              <div className='text-2xl font-bold'>{activity.totalRewardsGiven}</div>
+              <div className='text-2xl font-bold'>
+                {activity.totalRewardsGiven}
+              </div>
               <div className='text-muted-foreground'>累计发放奖励</div>
             </div>
             <div className='text-center'>
@@ -297,11 +309,13 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
           <CardContent>
             <div className='grid gap-4 md:grid-cols-2'>
               <div>
-                <h3 className='font-medium mb-2'>图标</h3>
+                <h3 className='mb-2 font-medium'>图标</h3>
                 {activity.iconUrl ? (
-                  <img
+                  <Image
                     src={activity.iconUrl}
                     alt='活动图标'
+                    width={64}
+                    height={64}
                     className='h-16 w-16 rounded-md border'
                   />
                 ) : (
@@ -309,11 +323,13 @@ export default function ActivityDetailPage({ params }: { params: { id: string } 
                 )}
               </div>
               <div>
-                <h3 className='font-medium mb-2'>横幅</h3>
+                <h3 className='mb-2 font-medium'>横幅</h3>
                 {activity.bannerUrl ? (
-                  <img
+                  <Image
                     src={activity.bannerUrl}
                     alt='活动横幅'
+                    width={800}
+                    height={128}
                     className='h-32 w-full rounded-md border object-cover'
                   />
                 ) : (

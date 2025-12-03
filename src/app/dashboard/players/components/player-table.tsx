@@ -29,7 +29,15 @@ function formatDateTime(dateStr: string): string {
 }
 
 export function PlayerTable() {
-  const { players, loading, total, page, pageSize, fetchPlayers, updatePlayerStatus } = usePlayers();
+  const {
+    players,
+    loading,
+    total,
+    page,
+    pageSize,
+    fetchPlayers,
+    updatePlayerStatus
+  } = usePlayers();
   const { appliedFilters } = usePlayerFilters();
 
   useEffect(() => {
@@ -38,7 +46,7 @@ export function PlayerTable() {
       page,
       pageSize
     });
-  }, [appliedFilters]);
+  }, [appliedFilters, fetchPlayers, page, pageSize]);
 
   const handlePageChange = (newPage: number) => {
     fetchPlayers({
@@ -55,9 +63,9 @@ export function PlayerTable() {
   if (loading && players.length === 0) {
     return (
       <Card>
-        <div className="p-4 space-y-3">
+        <div className='space-y-3 p-4'>
           {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full" />
+            <Skeleton key={i} className='h-12 w-full' />
           ))}
         </div>
       </Card>
@@ -65,7 +73,7 @@ export function PlayerTable() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       <Card>
         <Table>
           <TableHeader>
@@ -80,71 +88,74 @@ export function PlayerTable() {
               <TableHead>注册方式</TableHead>
               <TableHead>最后登录</TableHead>
               <TableHead>创建时间</TableHead>
-              <TableHead className="text-right">操作</TableHead>
+              <TableHead className='text-right'>操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {players.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={11} className="text-center text-muted-foreground">
+                <TableCell
+                  colSpan={11}
+                  className='text-muted-foreground text-center'
+                >
                   暂无数据
                 </TableCell>
               </TableRow>
             ) : (
               players.map((player) => (
                 <TableRow key={player.id}>
-                  <TableCell className="font-medium">{player.id}</TableCell>
+                  <TableCell className='font-medium'>{player.id}</TableCell>
                   <TableCell>{player.username}</TableCell>
-                  <TableCell className="text-xs">{player.email}</TableCell>
+                  <TableCell className='text-xs'>{player.email}</TableCell>
                   <TableCell>
-                    <span className="font-mono">${player.balance.toFixed(2)}</span>
+                    <span className='font-mono'>
+                      ${player.balance.toFixed(2)}
+                    </span>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline">VIP {player.vipLevel}</Badge>
+                    <Badge variant='outline'>VIP {player.vipLevel}</Badge>
                   </TableCell>
                   <TableCell>
                     {player.status ? (
-                      <Badge variant="default" className="bg-green-600">
+                      <Badge variant='default' className='bg-green-600'>
                         启用
                       </Badge>
                     ) : (
-                      <Badge variant="destructive">停用</Badge>
+                      <Badge variant='destructive'>停用</Badge>
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary">
+                    <Badge variant='secondary'>
                       {getIdentityCategoryLabel(player.identityCategory)}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline">
+                    <Badge variant='outline'>
                       {getRegistrationMethodLabel(player.registrationMethod)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-xs">
+                  <TableCell className='text-xs'>
                     {player.lastLogin ? formatDateTime(player.lastLogin) : '-'}
                   </TableCell>
-                  <TableCell className="text-xs">
+                  <TableCell className='text-xs'>
                     {formatDateTime(player.createdAt)}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {}}
-                      >
-                        <Eye className="h-4 w-4" />
+                  <TableCell className='text-right'>
+                    <div className='flex justify-end gap-2'>
+                      <Button variant='ghost' size='sm' onClick={() => {}}>
+                        <Eye className='h-4 w-4' />
                       </Button>
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleStatusToggle(player.id, player.status)}
+                        variant='ghost'
+                        size='sm'
+                        onClick={() =>
+                          handleStatusToggle(player.id, player.status)
+                        }
                       >
                         {player.status ? (
-                          <Ban className="h-4 w-4 text-red-500" />
+                          <Ban className='h-4 w-4 text-red-500' />
                         ) : (
-                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <CheckCircle className='h-4 w-4 text-green-500' />
                         )}
                       </Button>
                     </div>
@@ -158,22 +169,22 @@ export function PlayerTable() {
 
       {/* 分页 */}
       {total > 0 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
+        <div className='flex items-center justify-between'>
+          <div className='text-muted-foreground text-sm'>
             共 {total} 条记录，第 {page} / {Math.ceil(total / pageSize)} 页
           </div>
-          <div className="flex gap-2">
+          <div className='flex gap-2'>
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               disabled={page <= 1}
               onClick={() => handlePageChange(page - 1)}
             >
               上一页
             </Button>
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               disabled={page >= Math.ceil(total / pageSize)}
               onClick={() => handlePageChange(page + 1)}
             >

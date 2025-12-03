@@ -3,7 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PageContainer from '@/components/layout/page-container';
-import { ActivityTable, ActivityFilters, ActivityPageHeader } from './components';
+import {
+  ActivityTable,
+  ActivityFilters,
+  ActivityPageHeader
+} from './components';
 import { useActivityFilters, useActivityManagement } from './hooks';
 import { Activity } from '@/repository/models';
 import { Plus, Gift } from 'lucide-react';
@@ -13,12 +17,8 @@ export default function CampaignsPage() {
   const router = useRouter();
 
   // 使用自定义hooks
-  const {
-    filters,
-    updatePagination,
-    clearFilters,
-    hasActiveFilters
-  } = useActivityFilters();
+  const { filters, updatePagination, clearFilters, hasActiveFilters } =
+    useActivityFilters();
 
   const {
     activities,
@@ -33,7 +33,7 @@ export default function CampaignsPage() {
   // 初始化和筛选条件变化时获取数据
   useEffect(() => {
     fetchActivities(filters);
-  }, [filters]);
+  }, [filters, fetchActivities]);
 
   /**
    * 打开创建活动对话框

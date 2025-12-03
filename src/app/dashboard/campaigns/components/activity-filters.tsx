@@ -18,7 +18,7 @@ import { CalendarIcon, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { ActivityFilters } from '../types';
+import type { ActivityFilters } from '../types';
 
 interface ActivityFiltersProps {
   filters: ActivityFilters;
@@ -43,15 +43,15 @@ export function ActivityFilters({
 
   const handleSearch = () => {
     const searchFilters = { ...localFilters };
-    
+
     if (dateFrom) {
       searchFilters.startFrom = dateFrom.toISOString();
     }
-    
+
     if (dateTo) {
       searchFilters.startTo = dateTo.toISOString();
     }
-    
+
     onSearch(searchFilters);
   };
 

@@ -14,7 +14,7 @@ import { getRepositories } from '@/repository';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userId = await getUserFromRequest();
@@ -22,7 +22,8 @@ export async function GET(
       return unauthorizedResponse('未授权');
     }
 
-    const id = parseInt(params.id, 10);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam, 10);
     if (isNaN(id)) {
       return errorResponse('无效的活动ID');
     }
@@ -47,7 +48,7 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userId = await getUserFromRequest();
@@ -55,7 +56,8 @@ export async function PUT(
       return unauthorizedResponse('未授权');
     }
 
-    const id = parseInt(params.id, 10);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam, 10);
     if (isNaN(id)) {
       return errorResponse('无效的活动ID');
     }
@@ -87,7 +89,7 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userId = await getUserFromRequest();
@@ -95,7 +97,8 @@ export async function DELETE(
       return unauthorizedResponse('未授权');
     }
 
-    const id = parseInt(params.id, 10);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam, 10);
     if (isNaN(id)) {
       return errorResponse('无效的活动ID');
     }

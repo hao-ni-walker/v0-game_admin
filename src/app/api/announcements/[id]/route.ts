@@ -6,10 +6,10 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
     console.log('获取公告详情:', id);
 
     // 模拟返回数据
@@ -30,10 +30,7 @@ export async function GET(
     });
   } catch (error) {
     console.error('获取公告详情失败:', error);
-    return NextResponse.json(
-      { error: '获取公告详情失败' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '获取公告详情失败' }, { status: 500 });
   }
 }
 
@@ -43,19 +40,19 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
     const body = await request.json();
-    
+
     console.log('更新公告:', id, body);
 
     // 模拟版本冲突检查
     const currentVersion = 2; // 模拟当前版本
     if (body.version && body.version !== currentVersion) {
       return NextResponse.json(
-        { 
+        {
           error: '版本冲突，数据已被其他用户修改',
           code: 'VERSION_CONFLICT',
           current_version: currentVersion
@@ -75,10 +72,7 @@ export async function PUT(
     });
   } catch (error) {
     console.error('更新公告失败:', error);
-    return NextResponse.json(
-      { error: '更新公告失败' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '更新公告失败' }, { status: 500 });
   }
 }
 
@@ -88,10 +82,10 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
     console.log('删除公告:', id);
 
     return NextResponse.json({
@@ -99,9 +93,6 @@ export async function DELETE(
     });
   } catch (error) {
     console.error('删除公告失败:', error);
-    return NextResponse.json(
-      { error: '删除公告失败' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '删除公告失败' }, { status: 500 });
   }
 }

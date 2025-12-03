@@ -116,8 +116,8 @@ export default function TicketsPage() {
   /**
    * 处理页面大小变化
    */
-  const handlePageSizeChange = (page_size: number) => {
-    updatePagination({ page_size, page: 1 });
+  const handlePageSizeChange = (pageSize: number) => {
+    updatePagination({ page_size: pageSize, page: 1 });
   };
 
   return (
@@ -172,9 +172,12 @@ export default function TicketsPage() {
           {/* 分页 */}
           <div className='bg-card mt-auto border-t pt-4'>
             <Pagination
-              page={pagination.page}
-              pageSize={pagination.page_size}
-              total={pagination.total}
+              pagination={{
+                page: pagination.page,
+                limit: pagination.page_size,
+                total: pagination.total,
+                totalPages: Math.ceil(pagination.total / pagination.page_size)
+              }}
               onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
               pageSizeOptions={[10, 20, 50, 100]}
