@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, RefreshCw } from 'lucide-react';
 
 interface ActivityPageHeaderProps {
-  onCreateActivity: () => void;
+  onCreateActivity?: () => void;
   onRefresh: () => void;
   loading?: boolean;
 }
@@ -27,10 +27,12 @@ export function ActivityPageHeader({
           />
           刷新
         </Button>
-        <Button onClick={onCreateActivity}>
-          <Plus className='mr-2 h-4 w-4' />
-          创建活动
-        </Button>
+        {onCreateActivity && (
+          <Button onClick={onCreateActivity}>
+            <Plus className='mr-2 h-4 w-4' />
+            创建活动
+          </Button>
+        )}
       </div>
     </div>
   );

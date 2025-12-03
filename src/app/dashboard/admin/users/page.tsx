@@ -15,59 +15,59 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '@/components/ui/alert-dialog';
-import { PlayerFilterBar } from './components/player-filter-bar';
-import { PlayerStatisticsCards } from './components/player-statistics-cards';
-import { PlayerTableEnhanced } from './components/player-table-enhanced';
-import { PlayerDetailModal } from './components/player-detail-modal';
-import { PlayerEditModal } from './components/player-edit-modal';
-import { PlayerWalletAdjustModal } from './components/player-wallet-adjust-modal';
-import { PlayerNotificationModal } from './components/player-notification-modal';
-import { usePlayersEnhanced } from './hooks/use-players-enhanced';
-import { usePlayerFiltersEnhanced } from './hooks/use-player-filters-enhanced';
-import { Player, PlayerDetail } from './types';
+import { FilterBar } from './components/filter-bar';
+import { StatisticsCards } from './components/statistics-cards';
+import { UserTable } from './components/user-table';
+import { UserDetailModal } from './components/user-detail-modal';
+import { UserEditModal } from './components/user-edit-modal';
+import { WalletAdjustModal } from './components/wallet-adjust-modal';
+import { NotificationModal } from './components/notification-modal';
+import { useAdminUsers } from './hooks/use-admin-users';
+import { useAdminUserFilters } from './hooks/use-admin-user-filters';
+import { AdminUser, AdminUserDetail } from './types';
 import { useRouter } from 'next/navigation';
 
 /**
- * 玩家管理页面
+ * 用户管理页面
  */
-export default function PlayersPage() {
+export default function AdminUserPage() {
   const router = useRouter();
-  const { appliedFilters } = usePlayerFiltersEnhanced();
+  const { appliedFilters } = useAdminUserFilters();
   const {
-    players,
+    users,
     loading,
     pagination,
     sort,
     statistics,
     statisticsLoading,
-    fetchPlayers,
-    fetchPlayerDetail,
+    fetchUsers,
+    fetchUserDetail,
     fetchStatistics,
-    updatePlayer,
+    updateUser,
     adjustWallet,
     batchOperation,
     resetPassword,
     sendNotification,
-    exportPlayers,
+    exportUsers,
     setPage,
     setPageSize,
     setSort
-  } = usePlayersEnhanced();
+  } = useAdminUsers();
 
   // 弹窗状态
-  const [selectedPlayerIds, setSelectedPlayerIds] = useState<number[]>([]);
+  const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
-  const [currentPlayer, setCurrentPlayer] = useState<PlayerDetail | null>(null);
+  const [currentUser, setCurrentUser] = useState<AdminUserDetail | null>(null);
   const [batchConfirmOpen, setBatchConfirmOpen] = useState(false);
   const [batchOperationType, setBatchOperationType] = useState<'enable' | 'disable' | null>(null);
   const [notificationModalOpen, setNotificationModalOpen] = useState(false);
-  const [notificationPlayer, setNotificationPlayer] = useState<Player | null>(null);
+  const [notificationUser, setNotificationUser] = useState<AdminUser | null>(null);
 
   // 加载数据
   useEffect(() => {
-    fetchPlayers({
+    fetchUsers({
       filters: appliedFilters,
       page: pagination.page,
       pageSize: pagination.page_size,
@@ -83,37 +83,37 @@ export default function PlayersPage() {
 
   // 查看详情
   const handleViewDetail = useCallback(
-    async (player: Player) => {
-      setCurrentPlayer(null);
+    async (user: AdminUser) => {
+      setCurrentUser(null);
       setDetailModalOpen(true);
-      const playerDetail = await fetchPlayerDetail(player.id);
-      if (playerDetail) {
-        setCurrentPlayer(playerDetail);
+      const userDetail = await fetchUserDetail(user.id);
+      if (userDetail) {
+        setCurrentUser(userDetail);
       }
     },
-    [fetchPlayerDetail]
+    [fetchUserDetail]
   );
 
-  // 编辑玩家
+  // 编辑用户
   const handleEdit = useCallback(
-    async (player: Player | PlayerDetail) => {
-      if ('wallet' in player && player.wallet) {
-        setCurrentPlayer(player as PlayerDetail);
+    async (user: AdminUser | AdminUserDetail) => {
+      if ('wallet' in user && user.wallet) {
+        setCurrentUser(user as AdminUserDetail);
       } else {
-        const playerDetail = await fetchPlayerDetail(player.id);
-        if (playerDetail) {
-          setCurrentPlayer(playerDetail);
+        const userDetail = await fetchUserDetail(user.id);
+        if (userDetail) {
+          setCurrentUser(userDetail);
         }
       }
       setEditModalOpen(true);
     },
-    [fetchPlayerDetail]
+    [fetchUserDetail]
   );
 
   // 调整钱包
   const handleAdjustWallet = useCallback(
-    async (player: PlayerDetail) => {
-      setCurrentPlayer(player);
+    async (user: AdminUserDetail) => {
+      setCurrentUser(user);
       setWalletModalOpen(true);
     },
     []
@@ -121,11 +121,11 @@ export default function PlayersPage() {
 
   // 保存编辑
   const handleSaveEdit = useCallback(
-    async (playerId: number, data: any) => {
-      const success = await updatePlayer(playerId, data);
+    async (userId: number, data: any) => {
+      const success = await updateUser(userId, data);
       if (success) {
         // 刷新列表和统计
-        fetchPlayers({
+        fetchUsers({
           filters: appliedFilters,
           page: pagination.page,
           pageSize: pagination.page_size,
@@ -134,25 +134,25 @@ export default function PlayersPage() {
         });
         fetchStatistics(appliedFilters);
         // 如果详情弹窗打开，刷新详情
-        if (currentPlayer && currentPlayer.id === playerId) {
-          const playerDetail = await fetchPlayerDetail(playerId);
-          if (playerDetail) {
-            setCurrentPlayer(playerDetail);
+        if (currentUser && currentUser.id === userId) {
+          const userDetail = await fetchUserDetail(userId);
+          if (userDetail) {
+            setCurrentUser(userDetail);
           }
         }
       }
       return success;
     },
-    [updatePlayer, appliedFilters, pagination, sort, currentPlayer, fetchPlayerDetail, fetchPlayers, fetchStatistics]
+    [updateUser, appliedFilters, pagination, sort, currentUser, fetchUserDetail, fetchUsers, fetchStatistics]
   );
 
   // 保存钱包调整
   const handleSaveWalletAdjust = useCallback(
-    async (playerId: number, data: any) => {
-      const success = await adjustWallet(playerId, data);
+    async (userId: number, data: any) => {
+      const success = await adjustWallet(userId, data);
       if (success) {
         // 刷新列表和统计
-        fetchPlayers({
+        fetchUsers({
           filters: appliedFilters,
           page: pagination.page,
           pageSize: pagination.page_size,
@@ -163,39 +163,39 @@ export default function PlayersPage() {
       }
       return success;
     },
-    [adjustWallet, appliedFilters, pagination, sort, fetchPlayers, fetchStatistics]
+    [adjustWallet, appliedFilters, pagination, sort, fetchUsers, fetchStatistics]
   );
 
-  // 刷新玩家详情
-  const handleRefreshPlayerDetail = useCallback(
-    async (playerId: number) => {
-      const playerDetail = await fetchPlayerDetail(playerId);
-      if (playerDetail) {
-        setCurrentPlayer(playerDetail);
+  // 刷新用户详情
+  const handleRefreshUserDetail = useCallback(
+    async (userId: number) => {
+      const userDetail = await fetchUserDetail(userId);
+      if (userDetail) {
+        setCurrentUser(userDetail);
       }
-      return playerDetail;
+      return userDetail;
     },
-    [fetchPlayerDetail]
+    [fetchUserDetail]
   );
 
   // 批量操作
   const handleBatchOperation = useCallback(
     async (operation: 'enable' | 'disable') => {
-      if (selectedPlayerIds.length === 0) return;
+      if (selectedUserIds.length === 0) return;
 
       setBatchOperationType(operation);
       setBatchConfirmOpen(true);
     },
-    [selectedPlayerIds]
+    [selectedUserIds]
   );
 
   const handleConfirmBatchOperation = useCallback(async () => {
-    if (!batchOperationType || selectedPlayerIds.length === 0) return;
+    if (!batchOperationType || selectedUserIds.length === 0) return;
 
-    const success = await batchOperation(selectedPlayerIds, batchOperationType);
+    const success = await batchOperation(selectedUserIds, batchOperationType);
     if (success) {
-      setSelectedPlayerIds([]);
-      fetchPlayers({
+      setSelectedUserIds([]);
+      fetchUsers({
         filters: appliedFilters,
         page: pagination.page,
         pageSize: pagination.page_size,
@@ -206,31 +206,31 @@ export default function PlayersPage() {
     }
     setBatchConfirmOpen(false);
     setBatchOperationType(null);
-  }, [batchOperationType, selectedPlayerIds, batchOperation, appliedFilters, pagination, sort, fetchPlayers, fetchStatistics]);
+  }, [batchOperationType, selectedUserIds, batchOperation, appliedFilters, pagination, sort, fetchUsers, fetchStatistics]);
 
   // 重置密码
   const handleResetPassword = useCallback(
-    async (player: Player) => {
-      const confirmed = window.confirm(`确定要重置玩家 ${player.username} 的密码吗？`);
+    async (user: AdminUser) => {
+      const confirmed = window.confirm(`确定要重置用户 ${user.username} 的密码吗？`);
       if (confirmed) {
-        await resetPassword(player.id);
+        await resetPassword(user.id);
       }
     },
     [resetPassword]
   );
 
   // 发送通知
-  const handleSendNotification = useCallback((player: Player) => {
-    setNotificationPlayer(player);
+  const handleSendNotification = useCallback((user: AdminUser) => {
+    setNotificationUser(user);
     setNotificationModalOpen(true);
   }, []);
 
   const handleSaveNotification = useCallback(
-    async (playerId: number, data: { channel: string; title: string; content: string }) => {
-      const success = await sendNotification(playerId, data);
+    async (userId: number, data: { channel: string; title: string; content: string }) => {
+      const success = await sendNotification(userId, data);
       if (success) {
         setNotificationModalOpen(false);
-        setNotificationPlayer(null);
+        setNotificationUser(null);
       }
       return success;
     },
@@ -239,24 +239,24 @@ export default function PlayersPage() {
 
   // 查看操作日志
   const handleViewLogs = useCallback(
-    (player: Player) => {
-      router.push(`/dashboard/system/logs?user_id=${player.id}`);
+    (user: AdminUser) => {
+      router.push(`/dashboard/system/logs?user_id=${user.id}`);
     },
     [router]
   );
 
   // 导出
   const handleExport = useCallback(async () => {
-    await exportPlayers(appliedFilters);
-  }, [exportPlayers, appliedFilters]);
+    await exportUsers(appliedFilters);
+  }, [exportUsers, appliedFilters]);
 
-  // 选择玩家
-  const handleSelectPlayer = useCallback((playerId: number, selected: boolean) => {
-    setSelectedPlayerIds((prev) => {
+  // 选择用户
+  const handleSelectUser = useCallback((userId: number, selected: boolean) => {
+    setSelectedUserIds((prev) => {
       if (selected) {
-        return [...prev, playerId];
+        return [...prev, userId];
       } else {
-        return prev.filter((id) => id !== playerId);
+        return prev.filter((id) => id !== userId);
       }
     });
   }, []);
@@ -264,11 +264,11 @@ export default function PlayersPage() {
   // 全选
   const handleSelectAll = useCallback((selected: boolean) => {
     if (selected) {
-      setSelectedPlayerIds(players.map((p) => p.id));
+      setSelectedUserIds(users.map((u) => u.id));
     } else {
-      setSelectedPlayerIds([]);
+      setSelectedUserIds([]);
     }
-  }, [players]);
+  }, [users]);
 
   return (
     <PageContainer>
@@ -276,8 +276,8 @@ export default function PlayersPage() {
         {/* 页面头部 */}
         <div className='flex items-center justify-between'>
           <Heading
-            title='玩家管理'
-            description='查看和管理所有玩家账户信息'
+            title='用户管理'
+            description='查看和管理所有用户账户信息'
           />
           <div className='flex items-center gap-2'>
             <Button variant='outline' onClick={handleExport}>
@@ -287,7 +287,7 @@ export default function PlayersPage() {
             <Button
               variant='outline'
               onClick={() => {
-                fetchPlayers({
+                fetchUsers({
                   filters: appliedFilters,
                   page: pagination.page,
                   pageSize: pagination.page_size,
@@ -304,9 +304,9 @@ export default function PlayersPage() {
         </div>
 
         {/* 筛选区 */}
-        <PlayerFilterBar
+        <FilterBar
           onSearch={() => {
-            fetchPlayers({
+            fetchUsers({
               filters: appliedFilters,
               page: 1,
               pageSize: pagination.page_size,
@@ -319,17 +319,17 @@ export default function PlayersPage() {
         />
 
         {/* 统计卡片 */}
-        <PlayerStatisticsCards
+        <StatisticsCards
           statistics={statistics}
           loading={statisticsLoading}
           onRetry={() => fetchStatistics(appliedFilters)}
         />
 
         {/* 批量操作栏 */}
-        {selectedPlayerIds.length > 0 && (
+        {selectedUserIds.length > 0 && (
           <div className='flex items-center gap-2 rounded-lg border bg-muted/50 p-3'>
             <span className='text-sm font-medium'>
-              已选择 {selectedPlayerIds.length} 个玩家
+              已选择 {selectedUserIds.length} 个用户
             </span>
             <Button
               variant='outline'
@@ -350,24 +350,24 @@ export default function PlayersPage() {
             <Button
               variant='ghost'
               size='sm'
-              onClick={() => setSelectedPlayerIds([])}
+              onClick={() => setSelectedUserIds([])}
             >
               取消选择
             </Button>
           </div>
         )}
 
-        {/* 玩家列表表格 */}
-        <PlayerTableEnhanced
-          players={players}
+        {/* 用户列表表格 */}
+        <UserTable
+          users={users}
           loading={loading}
           pagination={pagination}
           sort={sort}
-          selectedPlayerIds={selectedPlayerIds}
+          selectedUserIds={selectedUserIds}
           onSort={setSort}
           onPageChange={setPage}
           onPageSizeChange={setPageSize}
-          onSelectPlayer={handleSelectPlayer}
+          onSelectUser={handleSelectUser}
           onSelectAll={handleSelectAll}
           onViewDetail={handleViewDetail}
           onEdit={handleEdit}
@@ -377,39 +377,39 @@ export default function PlayersPage() {
         />
 
         {/* 详情弹窗 */}
-        <PlayerDetailModal
+        <UserDetailModal
           open={detailModalOpen}
-          playerId={currentPlayer?.id || null}
+          userId={currentUser?.id || null}
           onClose={() => {
             setDetailModalOpen(false);
-            setCurrentPlayer(null);
+            setCurrentUser(null);
           }}
           onEdit={handleEdit}
           onAdjustWallet={handleAdjustWallet}
-          onRefresh={handleRefreshPlayerDetail}
+          onRefresh={handleRefreshUserDetail}
         />
 
         {/* 编辑弹窗 */}
-        <PlayerEditModal
+        <UserEditModal
           open={editModalOpen}
-          player={currentPlayer}
+          user={currentUser}
           onClose={() => {
             setEditModalOpen(false);
-            setCurrentPlayer(null);
+            setCurrentUser(null);
           }}
           onSubmit={handleSaveEdit}
         />
 
         {/* 钱包调整弹窗 */}
-        <PlayerWalletAdjustModal
+        <WalletAdjustModal
           open={walletModalOpen}
-          player={currentPlayer}
+          user={currentUser}
           onClose={() => {
             setWalletModalOpen(false);
-            setCurrentPlayer(null);
+            setCurrentUser(null);
           }}
           onSubmit={handleSaveWalletAdjust}
-          onRefresh={handleRefreshPlayerDetail}
+          onRefresh={handleRefreshUserDetail}
         />
 
         {/* 批量操作确认对话框 */}
@@ -419,7 +419,7 @@ export default function PlayersPage() {
               <AlertDialogTitle>确认批量操作</AlertDialogTitle>
               <AlertDialogDescription>
                 确定要{batchOperationType === 'enable' ? '启用' : '禁用'}{' '}
-                {selectedPlayerIds.length} 个玩家吗？
+                {selectedUserIds.length} 个用户吗？
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -432,12 +432,12 @@ export default function PlayersPage() {
         </AlertDialog>
 
         {/* 通知弹窗 */}
-        <PlayerNotificationModal
+        <NotificationModal
           open={notificationModalOpen}
-          player={notificationPlayer}
+          user={notificationUser}
           onClose={() => {
             setNotificationModalOpen(false);
-            setNotificationPlayer(null);
+            setNotificationUser(null);
           }}
           onSubmit={handleSaveNotification}
         />

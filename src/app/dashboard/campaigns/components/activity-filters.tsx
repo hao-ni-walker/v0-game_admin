@@ -1,6 +1,9 @@
-import { useState } from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -8,17 +11,20 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger
 } from '@/components/ui/popover';
-import { CalendarIcon, RotateCcw } from 'lucide-react';
+import { CalendarIcon, Filter, RotateCcw, Search, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { ActivityFilters } from '../types';
+import { AdvancedFilterContainer } from '@/components/shared/advanced-filter-container';
+import { TYPE_LABELS, STATUS_LABELS } from '../types';
 
 interface ActivityFiltersProps {
   filters: ActivityFilters;
@@ -27,175 +33,405 @@ interface ActivityFiltersProps {
   loading?: boolean;
 }
 
+interface FilterFormData {
+  id?: string;
+  activity_code?: string;
+  name?: string;
+  activity_type?: string;
+  statuses?: string[];
+  startTimeRange?: { from: Date | undefined; to: Date | undefined };
+  endTimeRange?: { from: Date | undefined; to: Date | undefined };
+  display_time_active?: boolean;
+  has_active_trigger?: boolean;
+}
+
 export function ActivityFilters({
   filters,
   onSearch,
   onReset,
   loading
 }: ActivityFiltersProps) {
-  const [localFilters, setLocalFilters] = useState<ActivityFilters>(filters);
-  const [dateFrom, setDateFrom] = useState<Date | undefined>(
-    filters.startFrom ? new Date(filters.startFrom) : undefined
-  );
-  const [dateTo, setDateTo] = useState<Date | undefined>(
-    filters.startTo ? new Date(filters.startTo) : undefined
-  );
+  const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
+  const [quickSearch, setQuickSearch] = useState('');
+  const [formData, setFormData] = useState<FilterFormData>({});
 
-  const handleSearch = () => {
-    const searchFilters = { ...localFilters };
+  // 初始化表单数据
+  useEffect(() => {
+    setFormData({
+      id: filters.id?.toString(),
+      activity_code: filters.activity_code,
+      name: filters.name,
+      activity_type: filters.activity_type,
+      statuses: filters.statuses || [],
+      startTimeRange: filters.start_time_start || filters.start_time_end
+        ? {
+            from: filters.start_time_start
+              ? new Date(filters.start_time_start)
+              : undefined,
+            to: filters.start_time_end
+              ? new Date(filters.start_time_end)
+              : undefined
+          }
+        : undefined,
+      endTimeRange: filters.end_time_start || filters.end_time_end
+        ? {
+            from: filters.end_time_start
+              ? new Date(filters.end_time_start)
+              : undefined,
+            to: filters.end_time_end
+              ? new Date(filters.end_time_end)
+              : undefined
+          }
+        : undefined,
+      display_time_active: filters.display_time_active,
+      has_active_trigger: filters.has_active_trigger
+    });
+  }, [filters]);
 
-    if (dateFrom) {
-      searchFilters.startFrom = dateFrom.toISOString();
+  const updateFormField = (field: keyof FilterFormData, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const hasActiveFilters = () => {
+    return !!(
+      filters.id ||
+      filters.activity_code ||
+      filters.name ||
+      filters.activity_type ||
+      (filters.statuses && filters.statuses.length > 0) ||
+      filters.start_time_start ||
+      filters.start_time_end ||
+      filters.end_time_start ||
+      filters.end_time_end ||
+      filters.display_time_active ||
+      filters.has_active_trigger
+    );
+  };
+
+  const handleQuickSearch = () => {
+    if (!quickSearch.trim()) {
+      onSearch({ page: 1, page_size: filters.page_size || 20 });
+      return;
     }
 
-    if (dateTo) {
-      searchFilters.startTo = dateTo.toISOString();
+    // 快速搜索：尝试匹配活动编码或名称
+    onSearch({
+      ...filters,
+      activity_code: quickSearch.trim(),
+      name: quickSearch.trim(),
+      page: 1,
+      page_size: filters.page_size || 20
+    });
+  };
+
+  const handleSearch = () => {
+    const searchFilters: ActivityFilters = {
+      page: 1,
+      page_size: filters.page_size || 20,
+      sort_by: filters.sort_by,
+      sort_order: filters.sort_order
+    };
+
+    // 基础信息筛选
+    if (formData.id) {
+      const idNum = parseInt(formData.id, 10);
+      if (!isNaN(idNum)) {
+        searchFilters.id = idNum;
+      }
+    }
+    if (formData.activity_code) {
+      searchFilters.activity_code = formData.activity_code;
+    }
+    if (formData.name) {
+      searchFilters.name = formData.name;
+    }
+    if (formData.activity_type) {
+      searchFilters.activity_type = formData.activity_type;
+    }
+
+    // 状态筛选
+    if (formData.statuses && formData.statuses.length > 0) {
+      searchFilters.statuses = formData.statuses;
+    }
+
+    // 活动开始时间范围
+    if (formData.startTimeRange?.from) {
+      searchFilters.start_time_start = formData.startTimeRange.from.toISOString();
+    }
+    if (formData.startTimeRange?.to) {
+      searchFilters.start_time_end = formData.startTimeRange.to.toISOString();
+    }
+
+    // 活动结束时间范围
+    if (formData.endTimeRange?.from) {
+      searchFilters.end_time_start = formData.endTimeRange.from.toISOString();
+    }
+    if (formData.endTimeRange?.to) {
+      searchFilters.end_time_end = formData.endTimeRange.to.toISOString();
+    }
+
+    // 展示时间状态
+    if (formData.display_time_active !== undefined) {
+      searchFilters.display_time_active = formData.display_time_active;
+    }
+
+    // 触发规则筛选
+    if (formData.has_active_trigger !== undefined) {
+      searchFilters.has_active_trigger = formData.has_active_trigger;
     }
 
     onSearch(searchFilters);
+    setIsAdvancedFilterOpen(false);
   };
 
   const handleReset = () => {
-    setLocalFilters({
-      page: 1,
-      pageSize: 20
-    });
-    setDateFrom(undefined);
-    setDateTo(undefined);
+    setFormData({});
+    setQuickSearch('');
     onReset();
+    setIsAdvancedFilterOpen(false);
   };
 
-  const handleInputChange = (field: keyof ActivityFilters, value: any) => {
-    setLocalFilters((prev) => ({ ...prev, [field]: value }));
-  };
+  const renderQuickSearch = () => (
+    <div className='flex items-center gap-2'>
+      <div className='relative flex-1'>
+        <Search className='text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2' />
+        <Input
+          placeholder='搜索活动编码或名称...'
+          value={quickSearch}
+          onChange={(e) => setQuickSearch(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleQuickSearch()}
+          className='pl-9'
+        />
+      </div>
+      <Button
+        variant='outline'
+        onClick={() => setIsAdvancedFilterOpen(true)}
+        className={cn(hasActiveFilters() && 'border-primary')}
+      >
+        <Filter className='mr-2 h-4 w-4' />
+        高级筛选
+        {hasActiveFilters() && (
+          <span className='bg-primary ml-2 flex h-5 w-5 items-center justify-center rounded-full text-xs text-primary-foreground'>
+            {Object.values(filters).filter(
+              (v) => v !== undefined && v !== '' && (!Array.isArray(v) || v.length > 0)
+            ).length}
+          </span>
+        )}
+      </Button>
+      {hasActiveFilters() && (
+        <Button variant='outline' onClick={handleReset} disabled={loading}>
+          <X className='mr-2 h-4 w-4' />
+          清空
+        </Button>
+      )}
+    </div>
+  );
 
-  return (
-    <div className='bg-card rounded-lg border p-4'>
-      <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
-        {/* 关键词搜索 */}
+  const renderAdvancedFilterForm = () => (
+    <div className='grid gap-4'>
+      {/* 第一行：基础信息 */}
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
         <div className='space-y-2'>
-          <label className='text-sm font-medium'>关键词</label>
+          <Label>活动ID</Label>
           <Input
-            placeholder='活动名称/编码/类型'
-            value={localFilters.keyword || ''}
-            onChange={(e) => handleInputChange('keyword', e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            placeholder='请输入活动ID'
+            value={formData.id || ''}
+            onChange={(e) => updateFormField('id', e.target.value)}
+            type='number'
           />
         </div>
-
-        {/* 活动类型 */}
         <div className='space-y-2'>
-          <label className='text-sm font-medium'>活动类型</label>
+          <Label>活动编码</Label>
+          <Input
+            placeholder='请输入活动编码'
+            value={formData.activity_code || ''}
+            onChange={(e) => updateFormField('activity_code', e.target.value)}
+          />
+        </div>
+        <div className='space-y-2'>
+          <Label>活动名称</Label>
+          <Input
+            placeholder='请输入活动名称'
+            value={formData.name || ''}
+            onChange={(e) => updateFormField('name', e.target.value)}
+          />
+        </div>
+        <div className='space-y-2'>
+          <Label>活动类型</Label>
           <Select
-            value={localFilters.activityTypes?.[0] || ''}
+            value={formData.activity_type || ''}
             onValueChange={(value) =>
-              handleInputChange('activityTypes', value ? [value] : [])
+              updateFormField('activity_type', value || undefined)
             }
           >
             <SelectTrigger>
-              <SelectValue placeholder='请选择类型' />
+              <SelectValue placeholder='请选择活动类型' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='first_deposit'>首充活动</SelectItem>
-              <SelectItem value='daily_signin'>每日签到</SelectItem>
-              <SelectItem value='vip_reward'>VIP奖励</SelectItem>
-              <SelectItem value='limited_pack'>限时礼包</SelectItem>
-              <SelectItem value='lottery'>抽奖活动</SelectItem>
-              <SelectItem value='leaderboard'>排行榜</SelectItem>
-              <SelectItem value='cashback'>返利活动</SelectItem>
-              <SelectItem value='referral'>推荐奖励</SelectItem>
-              <SelectItem value='other'>其他活动</SelectItem>
+              <SelectItem value=''>全部</SelectItem>
+              {Object.entries(TYPE_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
+      </div>
 
-        {/* 状态 */}
+      {/* 第二行：状态筛选 */}
+      <div className='grid grid-cols-1 gap-4'>
         <div className='space-y-2'>
-          <label className='text-sm font-medium'>状态</label>
-          <Select
-            value={localFilters.statuses?.[0] || ''}
-            onValueChange={(value) =>
-              handleInputChange('statuses', value ? [value] : [])
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder='请选择状态' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='draft'>草稿</SelectItem>
-              <SelectItem value='scheduled'>待上线</SelectItem>
-              <SelectItem value='active'>进行中</SelectItem>
-              <SelectItem value='paused'>已暂停</SelectItem>
-              <SelectItem value='ended'>已结束</SelectItem>
-              <SelectItem value='disabled'>已禁用</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* 时间范围 */}
-        <div className='space-y-2'>
-          <label className='text-sm font-medium'>时间范围</label>
-          <div className='flex gap-2'>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant='outline'
-                  className={cn(
-                    'w-full justify-start text-left font-normal',
-                    !dateFrom && 'text-muted-foreground'
-                  )}
-                >
-                  <CalendarIcon className='mr-2 h-4 w-4' />
-                  {dateFrom ? format(dateFrom, 'yyyy-MM-dd') : '开始时间'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className='w-auto p-0'>
-                <Calendar
-                  mode='single'
-                  selected={dateFrom}
-                  onSelect={setDateFrom}
-                  locale={zhCN}
-                  initialFocus
+          <Label>活动状态</Label>
+          <div className='flex flex-wrap gap-2'>
+            {Object.entries(STATUS_LABELS).map(([value, label]) => (
+              <div key={value} className='flex items-center space-x-2'>
+                <Checkbox
+                  id={`status-${value}`}
+                  checked={formData.statuses?.includes(value) || false}
+                  onCheckedChange={(checked) => {
+                    const currentStatuses = formData.statuses || [];
+                    if (checked) {
+                      updateFormField('statuses', [...currentStatuses, value]);
+                    } else {
+                      updateFormField(
+                        'statuses',
+                        currentStatuses.filter((s) => s !== value)
+                      );
+                    }
+                  }}
                 />
-              </PopoverContent>
-            </Popover>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant='outline'
-                  className={cn(
-                    'w-full justify-start text-left font-normal',
-                    !dateTo && 'text-muted-foreground'
-                  )}
+                <Label
+                  htmlFor={`status-${value}`}
+                  className='cursor-pointer text-sm font-normal'
                 >
-                  <CalendarIcon className='mr-2 h-4 w-4' />
-                  {dateTo ? format(dateTo, 'yyyy-MM-dd') : '结束时间'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className='w-auto p-0'>
-                <Calendar
-                  mode='single'
-                  selected={dateTo}
-                  onSelect={setDateTo}
-                  locale={zhCN}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+                  {label}
+                </Label>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* 操作按钮 */}
-      <div className='mt-4 flex justify-end gap-2'>
-        <Button variant='outline' onClick={handleReset} disabled={loading}>
-          <RotateCcw className='mr-2 h-4 w-4' />
-          重置
-        </Button>
-        <Button onClick={handleSearch} disabled={loading}>
-          {loading ? '搜索中...' : '搜索'}
-        </Button>
+      {/* 第三行：活动开始时间范围 */}
+      <div className='grid grid-cols-1 gap-4'>
+        <div className='space-y-2'>
+          <Label>活动开始时间</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant='outline'
+                className={cn(
+                  'w-full justify-start text-left font-normal',
+                  !formData.startTimeRange && 'text-muted-foreground'
+                )}
+              >
+                <CalendarIcon className='mr-2 h-4 w-4' />
+                {formData.startTimeRange?.from && formData.startTimeRange?.to
+                  ? `${format(formData.startTimeRange.from, 'yyyy-MM-dd', { locale: zhCN })} - ${format(formData.startTimeRange.to, 'yyyy-MM-dd', { locale: zhCN })}`
+                  : '选择时间范围'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className='w-auto p-0' align='start'>
+              <Calendar
+                mode='range'
+                selected={formData.startTimeRange}
+                onSelect={(range) => updateFormField('startTimeRange', range)}
+                numberOfMonths={2}
+                locale={zhCN}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
+
+      {/* 第四行：活动结束时间范围 */}
+      <div className='grid grid-cols-1 gap-4'>
+        <div className='space-y-2'>
+          <Label>活动结束时间</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant='outline'
+                className={cn(
+                  'w-full justify-start text-left font-normal',
+                  !formData.endTimeRange && 'text-muted-foreground'
+                )}
+              >
+                <CalendarIcon className='mr-2 h-4 w-4' />
+                {formData.endTimeRange?.from && formData.endTimeRange?.to
+                  ? `${format(formData.endTimeRange.from, 'yyyy-MM-dd', { locale: zhCN })} - ${format(formData.endTimeRange.to, 'yyyy-MM-dd', { locale: zhCN })}`
+                  : '选择时间范围'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className='w-auto p-0' align='start'>
+              <Calendar
+                mode='range'
+                selected={formData.endTimeRange}
+                onSelect={(range) => updateFormField('endTimeRange', range)}
+                numberOfMonths={2}
+                locale={zhCN}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+
+      {/* 第五行：其他筛选条件 */}
+      <div className='grid grid-cols-1 gap-4'>
+        <div className='flex flex-col space-y-2'>
+          <div className='flex items-center space-x-2'>
+            <Checkbox
+              id='display_time_active'
+              checked={formData.display_time_active === true}
+              onCheckedChange={(checked) =>
+                updateFormField('display_time_active', checked ? true : undefined)
+              }
+            />
+            <Label
+              htmlFor='display_time_active'
+              className='cursor-pointer text-sm font-normal'
+            >
+              当前展示中
+            </Label>
+          </div>
+          <div className='flex items-center space-x-2'>
+            <Checkbox
+              id='has_active_trigger'
+              checked={formData.has_active_trigger === true}
+              onCheckedChange={(checked) =>
+                updateFormField('has_active_trigger', checked ? true : undefined)
+              }
+            />
+            <Label
+              htmlFor='has_active_trigger'
+              className='cursor-pointer text-sm font-normal'
+            >
+              有启用中的触发规则
+            </Label>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className='space-y-4'>
+      {/* 快速搜索栏 */}
+      {renderQuickSearch()}
+
+      {/* 高级筛选弹窗 */}
+      <AdvancedFilterContainer
+        open={isAdvancedFilterOpen}
+        onClose={() => setIsAdvancedFilterOpen(false)}
+        title='活动筛选'
+        hasActiveFilters={hasActiveFilters()}
+        onSearch={handleSearch}
+        onReset={handleReset}
+        loading={loading}
+      >
+        {renderAdvancedFilterForm()}
+      </AdvancedFilterContainer>
     </div>
   );
 }

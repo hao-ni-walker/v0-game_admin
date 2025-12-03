@@ -157,5 +157,20 @@
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
     "requestId": "c469173a-22d5-4872-a603-8c8c74bfaffa"
+  },
+  {
+    "id": 9,
+    "createdAt": "2025-12-03T13:08:37.477Z",
+    "level": "info",
+    "action": "用户登录",
+    "module": "用户认证",
+    "message": "用户登录成功",
+    "details": {
+      "username": "test",
+      "loginTime": "2025-12-03T13:08:37.463Z"
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/2.1.46 Chrome/138.0.7204.251 Electron/37.7.0 Safari/537.36",
+    "ip": "::1",
+    "requestId": "207b479b-2f67-452a-8b65-15bf8d2f937e"
   }
 ]
