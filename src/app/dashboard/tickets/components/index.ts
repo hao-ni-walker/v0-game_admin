@@ -1,3 +1,8 @@
 export { TicketPageHeader } from './ticket-page-header';
 export { TicketFilters } from './ticket-filters';
 export { TicketTable } from './ticket-table';
+export { TicketDetailDrawer } from './ticket-detail-drawer';
+export { TicketForm } from './ticket-form';
+export { TicketCommentList } from './ticket-comment-list';
+export { TicketAttachmentList } from './ticket-attachment-list';
+export { TicketEventTimeline } from './ticket-event-timeline';

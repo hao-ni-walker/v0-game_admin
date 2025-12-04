@@ -5,10 +5,15 @@ export const API_BASE_URL = '/api';
 export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
 
+  // 如果是 FormData，不设置 Content-Type，让浏览器自动设置
+  const isFormData = options.body instanceof FormData;
+
   const defaultOptions: RequestInit = {
-    headers: {
-      'Content-Type': 'application/json'
-    }
+    headers: isFormData
+      ? {}
+      : {
+          'Content-Type': 'application/json'
+        }
   };
 
   const config = { ...defaultOptions, ...options };

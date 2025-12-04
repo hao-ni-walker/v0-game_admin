@@ -18,7 +18,9 @@ import {
   ClipboardList,
   Image,
   Receipt,
-  Crown
+  Crown,
+  Wallet,
+  ArrowDownCircle
 } from 'lucide-react';
 
 // 业务导航列表
@@ -37,7 +39,7 @@ export const businessNavList: NavItem[] = [
       searchPriority: 1
     }
   },
-    {
+  {
     title: '游戏运营',
     url: '#',
     icon: Users,
@@ -54,19 +56,47 @@ export const businessNavList: NavItem[] = [
           searchSection: '玩家管理',
           searchPriority: 3
         }
-      },      {
-        title: '订单列表',
-        url: '/dashboard/orders',
+      },
+      {
+        title: '订单管理',
+        url: '#',
         icon: Receipt,
-        description: '订单列表',
+        isActive: false,
+        description: '订单管理',
+        items: [
+          {
+            title: '储值管理',
+            url: '/dashboard/orders/deposits',
+            icon: Wallet,
+            description: '储值管理',
+            searchConfig: {
+              keywords: 'deposit 储值 充值 管理',
+              searchShortcut: ['d'],
+              searchSection: '订单管理',
+              searchPriority: 11
+            }
+          },
+          {
+            title: '提现管理',
+            url: '/dashboard/orders/withdrawals',
+            icon: ArrowDownCircle,
+            description: '提现管理',
+            searchConfig: {
+              keywords: 'withdrawal 提现 取现 管理',
+              searchShortcut: ['w'],
+              searchSection: '订单管理',
+              searchPriority: 12
+            }
+          }
+        ],
         searchConfig: {
-          keywords: 'order 订单 列表',
+          keywords: 'order 订单 管理',
           searchShortcut: ['o'],
           searchSection: '订单管理',
-          searchPriority: 11
+          searchPriority: 10
         }
       },
-            {
+      {
         title: '游戏列表',
         url: '/dashboard/games',
         icon: List,
@@ -78,7 +108,7 @@ export const businessNavList: NavItem[] = [
           searchPriority: 2
         }
       },
-            {
+      {
         title: '活动列表',
         url: '/dashboard/campaigns',
         icon: List,
@@ -102,7 +132,7 @@ export const businessNavList: NavItem[] = [
           searchPriority: 7
         }
       },
-            {
+      {
         title: '通告列表',
         url: '/dashboard/announcements',
         icon: List,
@@ -113,7 +143,8 @@ export const businessNavList: NavItem[] = [
           searchSection: '通告管理',
           searchPriority: 8
         }
-      },      {
+      },
+      {
         title: 'Banner 列表',
         url: '/dashboard/home-banners',
         icon: Image,
@@ -261,26 +292,26 @@ export const systemNavList: NavItem[] = [
           searchPriority: 10
         }
       },
-        {
-    title: '工单管理',
-    url: '#',
-    icon: ClipboardList,
-    isActive: false,
-    items: [
       {
-        title: '工单列表',
-        url: '/dashboard/tickets',
+        title: '工单管理',
+        url: '#',
         icon: ClipboardList,
-        description: '工单列表',
-        searchConfig: {
-          keywords: 'ticket support 工单 列表',
-          searchShortcut: ['t'],
-          searchSection: '工单管理',
-          searchPriority: 10
-        }
+        isActive: false,
+        items: [
+          {
+            title: '工单列表',
+            url: '/dashboard/tickets',
+            icon: ClipboardList,
+            description: '工单列表',
+            searchConfig: {
+              keywords: 'ticket support 工单 列表',
+              searchShortcut: ['t'],
+              searchSection: '工单管理',
+              searchPriority: 10
+            }
+          }
+        ]
       }
-    ]
-  }
     ]
   }
 ];

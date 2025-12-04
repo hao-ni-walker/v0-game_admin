@@ -5,13 +5,20 @@ import { Ticket, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/table/pagination';
 import PageContainer from '@/components/layout/page-container';
-import { useRouter } from 'next/navigation';
-import { TicketTable, TicketFilters, TicketPageHeader } from './components';
+import {
+  TicketTable,
+  TicketFilters,
+  TicketPageHeader,
+  TicketDetailDrawer,
+  TicketForm
+} from './components';
 import { useTicketFilters, useTicketManagement } from './hooks';
 import type { Ticket as TicketType } from '@/repository/models';
 
 export default function TicketsPage() {
-  const router = useRouter();
+  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
 
   // 使用自定义hooks
   const {
@@ -42,14 +49,15 @@ export default function TicketsPage() {
    * 打开创建工单对话框
    */
   const handleCreateTicket = () => {
-    router.push('/dashboard/tickets/create');
+    setFormOpen(true);
   };
 
   /**
    * 查看工单详情
    */
   const handleViewTicket = (ticket: TicketType) => {
-    router.push(`/dashboard/tickets/${ticket.id}`);
+    setSelectedTicketId(ticket.id);
+    setDrawerOpen(true);
   };
 
   /**
@@ -120,6 +128,13 @@ export default function TicketsPage() {
     updatePagination({ page_size: pageSize, page: 1 });
   };
 
+  /**
+   * 处理工单更新后的刷新
+   */
+  const handleTicketUpdate = () => {
+    fetchTickets(filters);
+  };
+
   return (
     <PageContainer scrollable={false}>
       <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
@@ -185,6 +200,26 @@ export default function TicketsPage() {
           </div>
         </div>
       </div>
+
+      {/* 工单详情 Drawer */}
+      <TicketDetailDrawer
+        open={drawerOpen}
+        onOpenChange={(open) => {
+          setDrawerOpen(open);
+          if (!open) {
+            setSelectedTicketId(null);
+          }
+        }}
+        ticketId={selectedTicketId}
+        onTicketUpdate={handleTicketUpdate}
+      />
+
+      {/* 新建/编辑工单表单 */}
+      <TicketForm
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        onSuccess={handleTicketUpdate}
+      />
     </PageContainer>
   );
 }

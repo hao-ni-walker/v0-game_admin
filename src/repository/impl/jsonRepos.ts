@@ -13,6 +13,7 @@ import {
   Ticket,
   TicketComment,
   TicketEvent,
+  TicketAttachment,
   TicketStatus,
   Activity,
   ActivityStatus,
@@ -41,6 +42,7 @@ type Tables = {
   tickets: Ticket[];
   ticketComments: TicketComment[];
   ticketEvents: TicketEvent[];
+  ticketAttachments: TicketAttachment[];
   activities: Activity[];
   players: Player[];
   paymentChannels: PaymentChannel[];
@@ -86,6 +88,7 @@ export class JsonRepositories {
       tickets: [],
       ticketComments: [],
       ticketEvents: [],
+      ticketAttachments: [],
       activities: [],
       players: [],
       paymentChannels: []
@@ -99,6 +102,7 @@ export class JsonRepositories {
       tickets: 0,
       ticketComments: 0,
       ticketEvents: 0,
+      ticketAttachments: 0,
       activities: 0,
       players: 0,
       paymentChannels: 0
@@ -116,6 +120,7 @@ export class JsonRepositories {
       tickets,
       ticketComments,
       ticketEvents,
+      ticketAttachments,
       activities,
       players,
       paymentChannels
@@ -143,6 +148,10 @@ export class JsonRepositories {
         'ticketEvents.json',
         seed?.ticketEvents ?? []
       ),
+      this.store.readJson<TicketAttachment[]>(
+        'ticketAttachments.json',
+        seed?.ticketAttachments ?? []
+      ),
       this.store.readJson<Activity[]>(
         'activities.json',
         seed?.activities ?? []
@@ -163,6 +172,7 @@ export class JsonRepositories {
       tickets,
       ticketComments,
       ticketEvents,
+      ticketAttachments,
       activities,
       players,
       paymentChannels
@@ -188,6 +198,7 @@ export class JsonRepositories {
       this.store.writeJson('tickets.json', t.tickets),
       this.store.writeJson('ticketComments.json', t.ticketComments),
       this.store.writeJson('ticketEvents.json', t.ticketEvents),
+      this.store.writeJson('ticketAttachments.json', t.ticketAttachments),
       this.store.writeJson('activities.json', t.activities),
       this.store.writeJson('players.json', t.players),
       this.store.writeJson('paymentChannels.json', t.paymentChannels)
@@ -877,6 +888,76 @@ export class JsonRepositories {
     await this.flush();
   }
 
+  async getTicketAttachments(ticketId: ID): Promise<TicketAttachment[]> {
+    return this.tables.ticketAttachments.filter((a) => a.ticketId === ticketId);
+  }
+
+  async getTicketAttachmentById(id: ID): Promise<TicketAttachment | undefined> {
+    return this.tables.ticketAttachments.find((a) => a.id === id);
+  }
+
+  async addTicketAttachment(
+    attachment: Omit<TicketAttachment, 'id' | 'uploadedAt'>
+  ): Promise<ID> {
+    const id = this.nextId('ticketAttachments');
+    const row: TicketAttachment = {
+      id,
+      uploadedAt: nowISO(),
+      ...attachment
+    };
+    this.tables.ticketAttachments.push(row);
+
+    // 更新工单的附件计数
+    const ticketIdx = this.tables.tickets.findIndex(
+      (t) => t.id === attachment.ticketId
+    );
+    if (ticketIdx >= 0) {
+      const ticket = this.tables.tickets[ticketIdx];
+      const attachmentsCount =
+        this.tables.ticketAttachments.filter(
+          (a) => a.ticketId === attachment.ticketId
+        ).length || 0;
+      this.tables.tickets[ticketIdx] = {
+        ...ticket,
+        attachmentsCount,
+        updatedAt: nowISO()
+      };
+    }
+
+    await this.flush();
+    return id;
+  }
+
+  async deleteTicketAttachment(id: ID): Promise<void> {
+    const attachment = this.tables.ticketAttachments.find((a) => a.id === id);
+    if (!attachment) return;
+
+    const before = this.tables.ticketAttachments.length;
+    this.tables.ticketAttachments = this.tables.ticketAttachments.filter(
+      (a) => a.id !== id
+    );
+
+    if (this.tables.ticketAttachments.length !== before) {
+      // 更新工单的附件计数
+      const ticketIdx = this.tables.tickets.findIndex(
+        (t) => t.id === attachment.ticketId
+      );
+      if (ticketIdx >= 0) {
+        const ticket = this.tables.tickets[ticketIdx];
+        const attachmentsCount =
+          this.tables.ticketAttachments.filter(
+            (a) => a.ticketId === attachment.ticketId
+          ).length || 0;
+        this.tables.tickets[ticketIdx] = {
+          ...ticket,
+          attachmentsCount,
+          updatedAt: nowISO()
+        };
+      }
+      await this.flush();
+    }
+  }
+
   get ticketsRepo() {
     return {
       list: this.listTickets.bind(this),
@@ -891,7 +972,11 @@ export class JsonRepositories {
       getComments: this.getTicketComments.bind(this),
       getEvents: this.getTicketEvents.bind(this),
       updateTags: this.updateTicketTags.bind(this),
-      updateDueAt: this.updateTicketDueAt.bind(this)
+      updateDueAt: this.updateTicketDueAt.bind(this),
+      getAttachments: this.getTicketAttachments.bind(this),
+      getAttachmentById: this.getTicketAttachmentById.bind(this),
+      addAttachment: this.addTicketAttachment.bind(this),
+      deleteAttachment: this.deleteTicketAttachment.bind(this)
     };
   }
 

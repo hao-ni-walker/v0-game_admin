@@ -1,5 +1,11 @@
 import { apiRequest } from './base';
-import type { TicketStatus, TicketPriority } from '@/repository/models';
+import type {
+  TicketStatus,
+  TicketPriority,
+  TicketComment,
+  TicketAttachment,
+  TicketEvent
+} from '@/repository/models';
 
 export interface TicketListParams {
   keyword?: string;
@@ -133,5 +139,56 @@ export class TicketAPI {
       method: 'POST',
       body: JSON.stringify({ dueAt })
     });
+  }
+
+  // 获取评论列表
+  static async getComments(
+    ticketId: number
+  ): Promise<
+    | { success: true; data: TicketComment[] }
+    | { success: false; message: string }
+  > {
+    return apiRequest(`/tickets/${ticketId}/comments`);
+  }
+
+  // 获取附件列表
+  static async getAttachments(
+    ticketId: number
+  ): Promise<
+    | { success: true; data: TicketAttachment[] }
+    | { success: false; message: string }
+  > {
+    return apiRequest(`/tickets/${ticketId}/attachments`);
+  }
+
+  // 上传附件
+  static async uploadAttachment(ticketId: number, file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return apiRequest(`/tickets/${ticketId}/attachments`, {
+      method: 'POST',
+      body: formData
+      // 注意：不要设置 Content-Type，让浏览器自动设置 multipart/form-data
+    }) as Promise<
+      | { success: true; data: TicketAttachment }
+      | { success: false; message: string }
+    >;
+  }
+
+  // 删除附件
+  static async deleteAttachment(attachmentId: number) {
+    return apiRequest(`/ticket-attachments/${attachmentId}`, {
+      method: 'DELETE'
+    });
+  }
+
+  // 获取事件列表
+  static async getEvents(
+    ticketId: number
+  ): Promise<
+    { success: true; data: TicketEvent[] } | { success: false; message: string }
+  > {
+    return apiRequest(`/tickets/${ticketId}/events`);
   }
 }

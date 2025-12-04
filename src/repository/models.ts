@@ -125,6 +125,17 @@ export interface TicketComment {
   updatedAt?: string;
 }
 
+export interface TicketAttachment {
+  id: ID;
+  ticketId: ID;
+  filename: string;
+  filePath: string;
+  fileSize: number; // 字节
+  contentType: string;
+  uploadedAt: string;
+  uploadedBy?: ID | null; // 上传人
+}
+
 export type TicketEventType =
   | 'created'
   | 'assigned'
@@ -218,7 +229,13 @@ export interface Activity {
 }
 
 // 玩家管理模型
-export type RegistrationMethod = 'email' | 'google' | 'apple' | 'phone' | 'facebook' | 'other';
+export type RegistrationMethod =
+  | 'email'
+  | 'google'
+  | 'apple'
+  | 'phone'
+  | 'facebook'
+  | 'other';
 export type IdentityCategory = 'user' | 'agent' | 'internal' | 'test';
 
 export interface Player {

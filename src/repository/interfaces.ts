@@ -183,6 +183,12 @@ export interface TicketsRepository {
   getEvents(ticketId: ID): Promise<TicketEvent[]>;
   updateTags(id: ID, tags: string[], userId?: ID): Promise<void>;
   updateDueAt(id: ID, dueAt: string | null, userId?: ID): Promise<void>;
+  getAttachments(ticketId: ID): Promise<TicketAttachment[]>;
+  getAttachmentById(id: ID): Promise<TicketAttachment | undefined>;
+  addAttachment(
+    attachment: Omit<TicketAttachment, 'id' | 'uploadedAt'>
+  ): Promise<ID>;
+  deleteAttachment(id: ID): Promise<void>;
 }
 
 export interface PaymentChannelsRepository {
@@ -247,19 +253,13 @@ export interface ActivitiesRepository {
   list(filter: ActivitiesFilter): Promise<PageResult<Activity>>;
   getById(id: ID): Promise<Activity | undefined>;
   findByCode(activityCode: string): Promise<Activity | undefined>;
-  create(activity: Omit<Activity, 'id' | 'createdAt' | 'updatedAt'>): Promise<ID>;
+  create(
+    activity: Omit<Activity, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<ID>;
   update(id: ID, patch: Partial<Activity>): Promise<void>;
   delete(id: ID): Promise<void>;
-  changeStatus(
-    id: ID,
-    status: ActivityStatus,
-    userId: ID
-  ): Promise<void>;
-  updateStats(
-    id: ID,
-    participants?: number,
-    rewards?: number
-  ): Promise<void>;
+  changeStatus(id: ID, status: ActivityStatus, userId: ID): Promise<void>;
+  updateStats(id: ID, participants?: number, rewards?: number): Promise<void>;
 }
 
 export interface PlayersRepository {
