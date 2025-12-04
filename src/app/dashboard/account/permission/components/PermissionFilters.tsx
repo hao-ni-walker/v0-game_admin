@@ -10,14 +10,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import {
   Popover,
   PopoverContent,
   PopoverTrigger
 } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { AdvancedFilterContainer } from '@/components/shared/advanced-filter-container';
+import { PermissionAPI } from '@/service/api/permission';
 
-import type { PermissionFilters } from '../types';
+import type { PermissionFilters, Permission } from '../types';
 
 interface PermissionFiltersProps {
   /** 筛选条件值 */
@@ -44,6 +52,7 @@ export function PermissionFilters({
   const [formData, setFormData] = useState<PermissionFilters>({
     name: '',
     code: '',
+    parent_id: undefined,
     dateRange: undefined,
     page: 1,
     limit: 10
@@ -52,11 +61,84 @@ export function PermissionFilters({
   // 控制高级筛选弹窗
   const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
 
+  // 父级权限选项列表
+  const [parentOptions, setParentOptions] = useState<
+    Array<{ id: number; name: string; code: string; level: number }>
+  >([]);
+  const [loadingParents, setLoadingParents] = useState(false);
+
+  // 加载父级权限选项
+  useEffect(() => {
+    const loadParentOptions = async () => {
+      setLoadingParents(true);
+      try {
+        const res = await PermissionAPI.getAllPermissions();
+        if (res.code === 0 && res.data) {
+          const permissions = res.data as Permission[];
+
+          // 构建树形结构用于显示层级
+          const buildTreeOptions = (
+            perms: Permission[],
+            parentId: number | null = null,
+            level: number = 0
+          ): Array<{
+            id: number;
+            name: string;
+            code: string;
+            level: number;
+          }> => {
+            const options: Array<{
+              id: number;
+              name: string;
+              code: string;
+              level: number;
+            }> = [];
+
+            perms
+              .filter((p) => {
+                const pid = p.parent_id ?? p.parentId ?? null;
+                return pid === parentId;
+              })
+              .sort((a, b) => {
+                const aOrder = a.sort_order ?? a.sortOrder ?? 0;
+                const bOrder = b.sort_order ?? b.sortOrder ?? 0;
+                return aOrder - bOrder;
+              })
+              .forEach((perm) => {
+                options.push({
+                  id: perm.id,
+                  name: perm.name,
+                  code: perm.code,
+                  level
+                });
+
+                // 递归添加子权限
+                const children = buildTreeOptions(perms, perm.id, level + 1);
+                options.push(...children);
+              });
+
+            return options;
+          };
+
+          const options = buildTreeOptions(permissions);
+          setParentOptions(options);
+        }
+      } catch (error) {
+        console.error('加载父级权限失败:', error);
+      } finally {
+        setLoadingParents(false);
+      }
+    };
+
+    loadParentOptions();
+  }, []);
+
   // 同步外部 filters 到本地表单状态
   useEffect(() => {
     setFormData({
       name: filters.name || '',
       code: filters.code || '',
+      parent_id: filters.parent_id,
       dateRange: filters.dateRange,
       page: filters.page || 1,
       limit: filters.limit || 10
@@ -90,6 +172,7 @@ export function PermissionFilters({
     const resetData = {
       name: '',
       code: '',
+      parent_id: undefined,
       dateRange: undefined,
       page: 1,
       limit: 10
@@ -112,8 +195,21 @@ export function PermissionFilters({
    * 检查是否有激活的筛选条件
    */
   const hasActiveFilters = Boolean(
-    formData.name || formData.code || formData.dateRange
+    formData.name || formData.code || formData.parent_id || formData.dateRange
   );
+
+  /**
+   * 格式化父级权限显示文本
+   */
+  const formatParentOption = (option: {
+    id: number;
+    name: string;
+    code: string;
+    level: number;
+  }) => {
+    const indent = '  '.repeat(option.level);
+    return `${indent}${option.name} (${option.code})`;
+  };
 
   /**
    * 渲染快速搜索栏
@@ -197,8 +293,38 @@ export function PermissionFilters({
         </div>
       </div>
 
-      {/* 第二行：创建时间范围 */}
-      <div className='grid grid-cols-1 gap-4'>
+      {/* 第二行：父级权限和创建时间范围 */}
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+        <div className='space-y-2'>
+          <Label>父级权限</Label>
+          <Select
+            value={
+              formData.parent_id === null || formData.parent_id === undefined
+                ? 'all'
+                : formData.parent_id.toString()
+            }
+            onValueChange={(value) =>
+              updateFormField(
+                'parent_id',
+                value === 'all' ? undefined : parseInt(value, 10)
+              )
+            }
+            disabled={loadingParents}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder='选择父级权限（可选）' />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='all'>全部</SelectItem>
+              <SelectItem value='none'>无（顶级权限）</SelectItem>
+              {parentOptions.map((option) => (
+                <SelectItem key={option.id} value={option.id.toString()}>
+                  {formatParentOption(option)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <div className='space-y-2'>
           <Label>创建时间</Label>
           <Popover>

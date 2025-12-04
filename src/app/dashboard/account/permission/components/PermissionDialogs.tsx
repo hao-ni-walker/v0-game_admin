@@ -19,6 +19,8 @@ interface PermissionDialogsProps {
   onClose: () => void;
   /** 提交表单回调 */
   onSubmit: (data: PermissionFormData) => Promise<void>;
+  /** 加载状态 */
+  loading?: boolean;
 }
 
 /**
@@ -28,7 +30,8 @@ interface PermissionDialogsProps {
 export function PermissionDialogs({
   dialogState,
   onClose,
-  onSubmit
+  onSubmit,
+  loading = false
 }: PermissionDialogsProps) {
   const { type, permission, open } = dialogState;
 
@@ -62,6 +65,7 @@ export function PermissionDialogs({
             initialData={permission || undefined}
             onSubmit={handleSubmit}
             onCancel={onClose}
+            loading={loading}
           />
         </div>
       </DialogContent>

@@ -1,12 +1,17 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Pagination } from '@/components/table/pagination';
 import PageContainer from '@/components/layout/page-container';
+import { toast } from 'sonner';
 
 // 导入类型和常量
-import type { PermissionFilters, PermissionFormData } from './types';
-import { PAGE_SIZE_OPTIONS } from './constants';
+import type {
+  PermissionFilters,
+  PermissionFormData,
+  Permission
+} from './types';
+import { PAGE_SIZE_OPTIONS, MESSAGES } from './constants';
 
 // 导入自定义hooks
 import { usePermissionFilters, usePermissionManagement } from './hooks';
@@ -21,12 +26,8 @@ import {
 
 export default function PermissionManagementPage() {
   // 使用自定义 hooks
-  const {
-    filters,
-    searchFilters,
-    updatePagination,
-    clearFilters
-  } = usePermissionFilters();
+  const { filters, searchFilters, updatePagination, clearFilters } =
+    usePermissionFilters();
   const {
     permissions,
     loading,
@@ -36,10 +37,20 @@ export default function PermissionManagementPage() {
     createPermission,
     updatePermission,
     deletePermission,
+    batchDeletePermissions,
     openCreateDialog,
     openEditDialog,
     closeDialog
   } = usePermissionManagement();
+
+  // 构建父级权限映射（用于表格显示父级名称）
+  const parentMap = useMemo(() => {
+    const map = new Map<number, Permission>();
+    permissions.forEach((perm) => {
+      map.set(perm.id, perm);
+    });
+    return map;
+  }, [permissions]);
 
   // 监听 filters 变化，获取权限数据
   useEffect(() => {
@@ -71,8 +82,28 @@ export default function PermissionManagementPage() {
     }
   };
 
-  const handleDeletePermission = async (permission: any) => {
+  const handleDeletePermission = async (permission: Permission) => {
     const success = await deletePermission(permission.id);
+    if (success) {
+      // 重新获取数据
+      fetchPermissions(filters);
+    }
+  };
+
+  const handleBatchDelete = async (ids: number[]) => {
+    if (ids.length === 0) {
+      toast.error('请至少选择一个权限');
+      return;
+    }
+
+    // 显示确认对话框
+    const confirmed = window.confirm(MESSAGES.CONFIRM.BATCH_DELETE(ids.length));
+
+    if (!confirmed) {
+      return;
+    }
+
+    const success = await batchDeletePermissions(ids);
     if (success) {
       // 重新获取数据
       fetchPermissions(filters);
@@ -101,6 +132,8 @@ export default function PermissionManagementPage() {
             pagination={pagination}
             onEdit={openEditDialog}
             onDelete={handleDeletePermission}
+            onBatchDelete={handleBatchDelete}
+            parentMap={parentMap}
           />
 
           {/* 分页控件 */}
@@ -117,6 +150,7 @@ export default function PermissionManagementPage() {
           dialogState={dialogState}
           onClose={closeDialog}
           onSubmit={handleFormSubmit}
+          loading={loading}
         />
       </div>
     </PageContainer>

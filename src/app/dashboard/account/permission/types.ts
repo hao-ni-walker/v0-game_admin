@@ -3,16 +3,27 @@ export interface Permission {
   name: string;
   code: string;
   description?: string;
-  createdAt: string;
+  parent_id?: number | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+  children?: Permission[]; // 用于树形结构展示（可选）
+  // 兼容旧字段名（用于向后兼容）
+  parentId?: number | null;
+  sortOrder?: number;
+  createdAt?: string;
   updatedAt?: string;
 }
 
 export interface PermissionFilters {
   name?: string;
   code?: string;
+  parent_id?: number | null;
   dateRange?: { from: Date; to: Date } | undefined;
   page?: number;
   limit?: number;
+  sort_by?: string;
+  sort_dir?: 'asc' | 'desc';
 }
 
 export interface PaginationInfo {
@@ -26,6 +37,8 @@ export interface PermissionFormData {
   name: string;
   code: string;
   description?: string;
+  parent_id?: number | null;
+  sort_order: number;
 }
 
 export interface PermissionManagementState {
@@ -40,6 +53,7 @@ export interface PermissionManagementActions {
   createPermission: (data: PermissionFormData) => Promise<boolean>;
   updatePermission: (id: number, data: PermissionFormData) => Promise<boolean>;
   deletePermission: (id: number) => Promise<boolean>;
+  batchDeletePermissions: (ids: number[]) => Promise<boolean>;
   updateFilters: (newFilters: Partial<PermissionFilters>) => void;
   clearFilters: () => void;
 }

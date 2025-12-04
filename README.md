@@ -158,6 +158,12 @@ DATABASE_URL="postgresql://user:password@localhost:5432/n_admin"
 JWT_SECRET="your-secret-key"
 JWT_REFRESH_SECRET="your-refresh-secret"
 
+# 密码加密 (用于注册接口传输密码加密)
+PASSWORD_JWT_SECRET="your-password-jwt-secret"
+
+# 密码哈希盐值轮次
+SALT_ROUNDS=12
+
 # 应用
 NEXT_PUBLIC_APP_NAME="N-Admin"
 NEXT_PUBLIC_APP_URL="http://localhost:3001"

@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { PermissionAPI } from '@/service/request';
+import { PermissionAPI } from '@/service/api/permission';
 import {
   Permission,
   PermissionFilters,
@@ -28,21 +28,27 @@ export function usePermissionManagement() {
     try {
       setLoading(true);
 
-      const params: Record<string, any> = {};
-      Object.entries(filters).forEach(([key, value]) => {
-        if (key === 'dateRange' && value) {
-          // 处理日期范围
-          const dateRange = value as { from: Date; to: Date };
-          if (dateRange.from && dateRange.to) {
-            const startDateStr = dateRange.from.toISOString().split('T')[0];
-            const endDateStr = dateRange.to.toISOString().split('T')[0];
-            params.startDate = startDateStr;
-            params.endDate = endDateStr;
-          }
-        } else if (value !== undefined && value !== null && value !== '') {
-          params[key] = value;
-        }
-      });
+      const params: Record<string, any> = {
+        page: filters.page || 1,
+        limit: filters.limit || 10
+      };
+
+      // 处理筛选条件
+      if (filters.name) params.name = filters.name;
+      if (filters.code) params.code = filters.code;
+      if (filters.parent_id !== undefined && filters.parent_id !== null) {
+        params.parent_id = filters.parent_id;
+      }
+      if (filters.sort_by) params.sort_by = filters.sort_by;
+      if (filters.sort_dir) params.sort_dir = filters.sort_dir;
+
+      // 处理日期范围
+      if (filters.dateRange && filters.dateRange.from && filters.dateRange.to) {
+        const startDateStr = filters.dateRange.from.toISOString().split('T')[0];
+        const endDateStr = filters.dateRange.to.toISOString().split('T')[0];
+        params.startDate = startDateStr;
+        params.endDate = endDateStr;
+      }
 
       const res = await PermissionAPI.getPermissions(params);
       if (res.code === 0) {
@@ -135,6 +141,31 @@ export function usePermissionManagement() {
     }
   }, []);
 
+  // 批量删除权限
+  const batchDeletePermissions = useCallback(
+    async (ids: number[]): Promise<boolean> => {
+      if (ids.length === 0) {
+        toast.error('请至少选择一个权限');
+        return false;
+      }
+
+      try {
+        const res = await PermissionAPI.batchDeletePermissions(ids);
+        if (res.code === 0) {
+          toast.success(MESSAGES.SUCCESS.BATCH_DELETE);
+          return true;
+        } else {
+          toast.error(res.message || MESSAGES.ERROR.BATCH_DELETE);
+          return false;
+        }
+      } catch (error) {
+        toast.error(MESSAGES.ERROR.BATCH_DELETE);
+        return false;
+      }
+    },
+    []
+  );
+
   // 打开创建对话框
   const openCreateDialog = useCallback(() => {
     setDialogState({
@@ -174,6 +205,7 @@ export function usePermissionManagement() {
     createPermission,
     updatePermission,
     deletePermission,
+    batchDeletePermissions,
     openCreateDialog,
     openEditDialog,
     closeDialog

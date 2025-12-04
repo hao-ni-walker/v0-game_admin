@@ -44,18 +44,43 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, code, description } = body;
+    const { name, code, description, parent_id, sort_order } = body;
 
     const repos = await getRepositories();
     await repos.permissions.create({
       name,
       code,
-      description
+      description,
+      parentId: parent_id ?? null,
+      sortOrder: sort_order ?? 0
     });
 
     return successResponse({ message: '权限创建成功' });
   } catch (error) {
     console.error('创建权限失败:', error);
     return errorResponse('创建权限失败');
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const body = await request.json();
+    const { ids } = body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return errorResponse('请提供要删除的权限ID数组');
+    }
+
+    const repos = await getRepositories();
+
+    // 批量删除权限
+    for (const id of ids) {
+      await repos.permissions.delete(id);
+    }
+
+    return successResponse({ message: `成功删除 ${ids.length} 个权限` });
+  } catch (error) {
+    console.error('批量删除权限失败:', error);
+    return errorResponse('批量删除权限失败');
   }
 }

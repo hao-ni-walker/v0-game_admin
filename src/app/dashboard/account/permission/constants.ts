@@ -27,9 +27,12 @@ export const PAGE_SIZE_OPTIONS = [10, 20, 30, 50, 100];
 export const DEFAULT_FILTERS = {
   name: '',
   code: '',
+  parent_id: undefined,
   dateRange: undefined,
   page: 1,
-  limit: 10
+  limit: 10,
+  sort_by: 'sort_order',
+  sort_dir: 'asc' as 'asc' | 'desc'
 } as const;
 
 /**
@@ -75,7 +78,7 @@ export const TABLE_COLUMNS = [
   },
   {
     key: 'code',
-    title: '权限标识',
+    title: '权限编码',
     className: 'font-mono text-sm'
   },
   {
@@ -84,8 +87,23 @@ export const TABLE_COLUMNS = [
     className: 'text-muted-foreground max-w-xs'
   },
   {
-    key: 'createdAt',
+    key: 'parent_id',
+    title: '父级权限',
+    className: 'text-muted-foreground w-[120px]'
+  },
+  {
+    key: 'sort_order',
+    title: '排序值',
+    className: 'text-center w-[80px] font-mono text-sm'
+  },
+  {
+    key: 'created_at',
     title: '创建时间',
+    className: 'font-medium w-[140px]'
+  },
+  {
+    key: 'updated_at',
+    title: '更新时间',
     className: 'font-medium w-[140px]'
   },
   {
@@ -110,12 +128,14 @@ export const MESSAGES = {
   SUCCESS: {
     CREATE: '权限创建成功',
     UPDATE: '权限更新成功',
-    DELETE: '权限删除成功'
+    DELETE: '权限删除成功',
+    BATCH_DELETE: '批量删除权限成功'
   },
   ERROR: {
     CREATE: '创建权限失败',
     UPDATE: '更新权限失败',
     DELETE: '删除权限失败',
+    BATCH_DELETE: '批量删除权限失败',
     FETCH_PERMISSIONS: '获取权限列表失败'
   },
   EMPTY: {
@@ -123,6 +143,8 @@ export const MESSAGES = {
     DESCRIPTION: '暂无描述'
   },
   CONFIRM: {
-    DELETE: (name: string) => `确定要删除权限 "${name}" 吗？此操作不可撤销。`
+    DELETE: (name: string) => `确定要删除权限 "${name}" 吗？此操作不可撤销。`,
+    BATCH_DELETE: (count: number) =>
+      `确定要删除选中的 ${count} 个权限吗？此操作不可撤销，如果权限存在子权限，可能会影响权限层级结构。`
   }
 } as const;
