@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Download, Ban, CheckCircle, RefreshCw } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
 import { Heading } from '@/components/shared/heading';
@@ -65,6 +65,12 @@ export default function PlayersPage() {
   const [notificationModalOpen, setNotificationModalOpen] = useState(false);
   const [notificationPlayer, setNotificationPlayer] = useState<Player | null>(null);
 
+  // 使用 useMemo 稳定 appliedFilters 的引用，通过 JSON.stringify 比较内容
+  const appliedFiltersKey = useMemo(
+    () => JSON.stringify(appliedFilters),
+    [appliedFilters]
+  );
+
   // 加载数据
   useEffect(() => {
     fetchPlayers({
@@ -74,12 +80,18 @@ export default function PlayersPage() {
       sortBy: sort.sort_by,
       sortOrder: sort.sort_order
     });
-  }, [appliedFilters, pagination.page, pagination.page_size, sort.sort_by, sort.sort_order]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appliedFiltersKey, pagination.page, pagination.page_size, sort.sort_by, sort.sort_order]);
 
-  // 加载统计数据
+  // 加载统计数据 - 使用防抖避免频繁请求
   useEffect(() => {
-    fetchStatistics(appliedFilters);
-  }, [appliedFilters]);
+    const timer = setTimeout(() => {
+      fetchStatistics(appliedFilters);
+    }, 300); // 300ms 防抖
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appliedFiltersKey]);
 
   // 查看详情
   const handleViewDetail = useCallback(
@@ -272,7 +284,7 @@ export default function PlayersPage() {
 
   return (
     <PageContainer>
-      <div className='space-y-4'>
+      <div className='flex w-full flex-1 flex-col space-y-4'>
         {/* 页面头部 */}
         <div className='flex items-center justify-between'>
           <Heading

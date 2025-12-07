@@ -23,7 +23,7 @@ export function LoginForm({
   ...props
 }: React.ComponentPropsWithoutRef<'div'>) {
   const router = useRouter();
-  const { forceReInitialize } = useAuthStore();
+  const { forceReInitialize, setToken } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: process.env.NODE_ENV === 'development' ? 'admin' : '',
@@ -43,16 +43,26 @@ export function LoginForm({
     try {
       const res = await AuthAPI.login(formData);
       if (res.code === 0) {
-        toast.success('登录成功');
+        // 保存 token 到 store
+        if (res.data?.token) {
+          setToken(res.data.token, res.data.tokenType || 'bearer');
+        }
+
+        toast.success(res.data?.message || '登录成功');
 
         // 重置全局初始化标志，确保跳转后会重新初始化
         resetGlobalInitFlag();
 
+        // 等待一小段时间，确保 cookie 已设置完成
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
         // 立即强制重新初始化认证状态（获取最新的会话和权限信息）
+        // 等待初始化完成，确保 session 已更新
         await forceReInitialize();
 
-        // 跳转到dashboard
+        // 跳转到dashboard并刷新页面，确保获取最新的认证状态
         router.push('/dashboard');
+        router.refresh();
       } else {
         toast.error(res.message || '登录失败');
       }

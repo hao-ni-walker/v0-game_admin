@@ -16,6 +16,8 @@ interface Session {
 interface AuthState {
   // 状态
   session: Session | null;
+  token: string | null;
+  tokenType: string | null;
   permissions: string[];
   loading: boolean;
   permissionsLoading: boolean;
@@ -23,6 +25,7 @@ interface AuthState {
   isInitialized: boolean;
 
   // Actions
+  setToken: (token: string, tokenType?: string) => void;
   initializeAuth: () => Promise<void>;
   fetchSession: () => Promise<void>;
   fetchPermissions: () => Promise<void>;
@@ -47,11 +50,18 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       // 初始状态
       session: null,
+      token: null,
+      tokenType: null,
       permissions: [],
       loading: false,
       permissionsLoading: false,
       error: null,
       isInitialized: false,
+
+      // 设置 token
+      setToken: (token: string, tokenType: string = 'bearer') => {
+        set({ token, tokenType });
+      },
 
       // 初始化认证状态（页面加载时调用）
       initializeAuth: async () => {
@@ -165,16 +175,27 @@ export const useAuthStore = create<AuthState>()(
         // 重置所有标志位
         hasGloballyHydrated = false;
         hasEverInitialized = false;
+        isSessionFetching = false;
+        isPermissionsFetching = false;
         set({ isInitialized: false });
 
         // 重新初始化
         await get().triggerGlobalInitialization();
+        
+        // 等待初始化完成
+        let retries = 0;
+        while (retries < 10 && !get().isInitialized) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          retries++;
+        }
       },
 
       // 退出登录
       logout: () => {
         set({
           session: null,
+          token: null,
+          tokenType: null,
           permissions: [],
           loading: false,
           permissionsLoading: false,
@@ -209,6 +230,8 @@ export const useAuthStore = create<AuthState>()(
       // 只持久化核心数据，避免临时状态
       partialize: (state) => ({
         session: state.session,
+        token: state.token,
+        tokenType: state.tokenType,
         permissions: state.permissions
         // 不持久化 isInitialized，确保每次刷新都会重新初始化
       }),

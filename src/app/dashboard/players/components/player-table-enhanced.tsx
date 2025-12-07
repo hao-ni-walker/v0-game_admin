@@ -131,8 +131,8 @@ export function PlayerTableEnhanced({
   }
 
   return (
-    <div className='space-y-4'>
-      <Card>
+    <div className='flex flex-1 flex-col space-y-4'>
+      <Card className='flex-1 overflow-auto'>
         <Table>
           <TableHeader>
             <TableRow>

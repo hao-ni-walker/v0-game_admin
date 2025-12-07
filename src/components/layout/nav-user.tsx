@@ -29,8 +29,25 @@ export function NavUser() {
   const { isMobile } = useSidebar();
   const router = useRouter();
 
-  const { session } = useAuth();
+  const { session, loading, hasHydrated } = useAuth();
   const { logout } = useAuthStore();
+
+  // 如果还在加载或未水合，显示加载状态
+  if (loading || !hasHydrated) {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton size='lg' disabled>
+            <div className='h-8 w-8 rounded-lg bg-muted animate-pulse' />
+            <div className='grid flex-1 text-left text-sm leading-tight'>
+              <span className='truncate font-semibold'>加载中...</span>
+              <span className='truncate text-xs'>请稍候</span>
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    );
+  }
 
   const user = {
     username: '游客',
@@ -41,22 +58,28 @@ export function NavUser() {
 
   const handleLogout = async () => {
     try {
+      // 先清理本地状态，提升用户体验
+      logout();
+      
+      // 调用退出登录接口清除服务端 cookie
       const res = await AuthAPI.logout();
 
       if (res.code === 0) {
-        // 清理 Zustand store 状态
-        logout();
         toast.success(res.message || '退出登录成功');
-        router.push('/login');
-        router.refresh();
       } else {
-        toast.error(res.message || '退出登录失败');
+        // 即使接口返回错误，本地状态已清理，仍然跳转
+        toast.warning(res.message || '退出登录完成');
       }
+
+      // 跳转到登录页
+      router.push('/login');
+      router.refresh();
     } catch (error) {
       console.error('退出登录失败:', error);
-      // 即使API调用失败，也清理本地状态
-      logout();
+      // 即使API调用失败，本地状态已清理，仍然跳转
+      toast.warning('退出登录完成');
       router.push('/login');
+      router.refresh();
     }
   };
 

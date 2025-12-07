@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { PlayerAPI } from '@/service/api/player';
 import {
@@ -84,6 +84,10 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
   const [statistics, setStatistics] = useState<PlayerStatistics | null>(null);
   const [statisticsLoading, setStatisticsLoading] = useState(false);
 
+  // 请求锁，防止重复请求
+  const isFetchingPlayersRef = useRef(false);
+  const isFetchingStatsRef = useRef(false);
+
   // 获取玩家列表
   const fetchPlayers = useCallback(
     async (params?: {
@@ -93,7 +97,13 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
       sortBy?: string;
       sortOrder?: 'asc' | 'desc';
     }) => {
+      // 如果正在请求，直接返回
+      if (isFetchingPlayersRef.current) {
+        return;
+      }
+
       try {
+        isFetchingPlayersRef.current = true;
         setLoading(true);
         setError(null);
 
@@ -132,6 +142,7 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
         toast.error(message);
       } finally {
         setLoading(false);
+        isFetchingPlayersRef.current = false;
       }
     },
     [pagination.page, pagination.page_size, sort]
@@ -162,7 +173,13 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
   // 获取统计信息
   const fetchStatistics = useCallback(
     async (filters?: Partial<PlayerFilters>) => {
+      // 如果正在请求，直接返回
+      if (isFetchingStatsRef.current) {
+        return;
+      }
+
       try {
+        isFetchingStatsRef.current = true;
         setStatisticsLoading(true);
         const response = await PlayerAPI.getStatistics(filters);
         if (response.success && response.data) {
@@ -183,6 +200,7 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
         toast.error(message);
       } finally {
         setStatisticsLoading(false);
+        isFetchingStatsRef.current = false;
       }
     },
     []

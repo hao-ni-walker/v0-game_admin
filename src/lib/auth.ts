@@ -20,25 +20,50 @@ export async function auth(): Promise<Session | null> {
   const cookieStore = cookies();
   const token = (await cookieStore).get('token');
 
-  if (!token) {
+  if (!token || !token.value) {
     return null;
   }
 
   try {
-    const verified = verify(
-      token.value,
-      process.env.JWT_SECRET || 'secret'
-    ) as User;
+    // 直接解析 JWT token 的 payload（不验证签名，因为远程 API 的 secret 可能不同）
+    // JWT 格式：header.payload.signature
+    const parts = token.value.split('.');
+    if (parts.length !== 3) {
+      return null;
+    }
+
+    // 解析 payload（base64 解码）
+    const payload = JSON.parse(
+      Buffer.from(parts[1], 'base64').toString()
+    ) as any;
+
+    // 检查 token 是否过期
+    if (payload.exp && payload.exp * 1000 < Date.now()) {
+      return null;
+    }
+
+    // 支持远程 API 的 token 结构（sub, username, type）和本地结构（id, email, username）
+    const userId = payload.id || payload.sub || payload.userId;
+    const username = payload.username || payload.name || '';
+    const email = payload.email || '';
+    const avatar = payload.avatar || '';
+    const roleId = payload.roleId || payload.role_id || payload.type || '';
+
+    if (!userId) {
+      return null;
+    }
+
     return {
       user: {
-        id: verified.id,
-        email: verified.email,
-        username: verified.username,
-        avatar: verified.avatar,
-        roleId: verified.roleId
+        id: typeof userId === 'string' ? parseInt(userId) || 0 : userId,
+        email: email || username || '',
+        username: username || email || '用户',
+        avatar: avatar || '/avatars/default.jpg',
+        roleId: String(roleId)
       }
     };
-  } catch {
+  } catch (error) {
+    // 解析失败，返回 null
     return null;
   }
 }

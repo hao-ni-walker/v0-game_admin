@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { PlayerFilters } from '../types';
 
@@ -162,7 +162,8 @@ export function usePlayerFiltersEnhanced() {
   }, []);
 
   // 获取用于 API 请求的筛选参数（过滤空值）
-  const getApiFilters = useCallback((): Partial<PlayerFilters> => {
+  // 使用 useMemo 稳定引用，避免每次渲染都创建新对象
+  const appliedFilters = useMemo((): Partial<PlayerFilters> => {
     const apiFilters: Partial<PlayerFilters> = {};
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
@@ -173,18 +174,18 @@ export function usePlayerFiltersEnhanced() {
   }, [filters]);
 
   // 检查是否有活跃的筛选条件
-  const hasActiveFilters = useCallback(() => {
-    return Object.keys(getApiFilters()).length > 0;
-  }, [getApiFilters]);
+  const hasActiveFilters = useMemo(() => {
+    return Object.keys(appliedFilters).length > 0;
+  }, [appliedFilters]);
 
   return {
     filters,
-    appliedFilters: getApiFilters(),
+    appliedFilters,
     updateFilter,
     updateFilters,
     resetFilters,
     applyFilters,
-    hasActiveFilters: hasActiveFilters()
+    hasActiveFilters
   };
 }
 
