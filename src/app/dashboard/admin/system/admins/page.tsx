@@ -27,7 +27,14 @@ import {
 } from './components';
 import { useAdminManagement } from './hooks/use-admin-management';
 import { useAdminFilters } from './hooks/use-admin-filters';
-import { Admin, AdminDetail, CreateAdminFormData, EditAdminFormData, StatusChangeData, PasswordResetFormData } from './types';
+import {
+  Admin,
+  AdminDetail,
+  CreateAdminFormData,
+  EditAdminFormData,
+  StatusChangeData,
+  PasswordResetFormData
+} from './types';
 import { useAuthStore } from '@/stores/auth';
 
 /**
@@ -68,7 +75,8 @@ export default function AdminManagementPage() {
   const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [currentAdmin, setCurrentAdmin] = useState<AdminDetail | null>(null);
-  const [currentAdminForAction, setCurrentAdminForAction] = useState<Admin | null>(null);
+  const [currentAdminForAction, setCurrentAdminForAction] =
+    useState<Admin | null>(null);
   const [isCreateMode, setIsCreateMode] = useState(false);
 
   // 加载角色列表
@@ -85,7 +93,14 @@ export default function AdminManagementPage() {
       sortBy: sort.sort_by,
       sortOrder: sort.sort_order
     });
-  }, [appliedFilters, pagination.page, pagination.page_size, sort.sort_by, sort.sort_order]);
+  }, [
+    appliedFilters,
+    pagination.page,
+    pagination.page_size,
+    sort.sort_by,
+    sort.sort_order,
+    fetchAdmins
+  ]);
 
   // 加载统计数据
   useEffect(() => {
@@ -312,24 +327,30 @@ export default function AdminManagementPage() {
   ]);
 
   // 选择管理员
-  const handleSelectAdmin = useCallback((adminId: number, selected: boolean) => {
-    setSelectedAdminIds((prev) => {
-      if (selected) {
-        return [...prev, adminId];
-      } else {
-        return prev.filter((id) => id !== adminId);
-      }
-    });
-  }, []);
+  const handleSelectAdmin = useCallback(
+    (adminId: number, selected: boolean) => {
+      setSelectedAdminIds((prev) => {
+        if (selected) {
+          return [...prev, adminId];
+        } else {
+          return prev.filter((id) => id !== adminId);
+        }
+      });
+    },
+    []
+  );
 
   // 全选
-  const handleSelectAll = useCallback((selected: boolean) => {
-    if (selected) {
-      setSelectedAdminIds(admins.map((a) => a.id));
-    } else {
-      setSelectedAdminIds([]);
-    }
-  }, [admins]);
+  const handleSelectAll = useCallback(
+    (selected: boolean) => {
+      if (selected) {
+        setSelectedAdminIds(admins.map((a) => a.id));
+      } else {
+        setSelectedAdminIds([]);
+      }
+    },
+    [admins]
+  );
 
   // 批量操作
   const handleBatchOperation = useCallback(
@@ -404,7 +425,7 @@ export default function AdminManagementPage() {
 
           {/* 批量操作栏 */}
           {selectedAdminIds.length > 0 && (
-            <div className='flex items-center gap-2 rounded-lg border bg-muted/50 p-3'>
+            <div className='bg-muted/50 flex items-center gap-2 rounded-lg border p-3'>
               <span className='text-sm font-medium'>
                 已选择 {selectedAdminIds.length} 个管理员
               </span>
@@ -510,15 +531,19 @@ export default function AdminManagementPage() {
           />
 
           {/* 删除确认对话框 */}
-          <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+          <AlertDialog
+            open={deleteConfirmOpen}
+            onOpenChange={setDeleteConfirmOpen}
+          >
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>确认删除</AlertDialogTitle>
                 <AlertDialogDescription>
                   {currentAdminForAction && (
-                    <div className='space-y-2 mt-4'>
+                    <div className='mt-4 space-y-2'>
                       <p>
-                        确定要删除管理员 <strong>{currentAdminForAction.username}</strong>（ID：
+                        确定要删除管理员{' '}
+                        <strong>{currentAdminForAction.username}</strong>（ID：
                         {currentAdminForAction.id}）吗？
                       </p>
                       {currentAdminForAction.is_super_admin && (
@@ -526,7 +551,7 @@ export default function AdminManagementPage() {
                           注意：该账号为超级管理员
                         </p>
                       )}
-                      <p className='text-sm text-muted-foreground'>
+                      <p className='text-muted-foreground text-sm'>
                         该操作通常为逻辑删除/禁用，不会删除历史日志。
                       </p>
                     </div>
@@ -535,7 +560,9 @@ export default function AdminManagementPage() {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>取消</AlertDialogCancel>
-                <AlertDialogAction onClick={handleConfirmDelete}>确认删除</AlertDialogAction>
+                <AlertDialogAction onClick={handleConfirmDelete}>
+                  确认删除
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -544,4 +571,3 @@ export default function AdminManagementPage() {
     </PermissionGuard>
   );
 }
-

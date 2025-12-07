@@ -13,6 +13,7 @@ import {
   Ticket,
   TicketComment,
   TicketEvent,
+  TicketAttachment,
   TicketStatus,
   TicketPriority,
   PaymentChannel,

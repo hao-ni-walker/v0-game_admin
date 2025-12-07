@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, Loader2, Edit2, Save, X as XIcon } from 'lucide-react';
 import {
   Drawer,
@@ -84,7 +84,7 @@ export function TicketDetailDrawer({
   });
 
   // 获取工单详情
-  const fetchTicket = async () => {
+  const fetchTicket = useCallback(async () => {
     if (!ticketId) return;
 
     setLoading(true);
@@ -114,14 +114,14 @@ export function TicketDetailDrawer({
     } finally {
       setLoading(false);
     }
-  };
+  }, [ticketId, onOpenChange]);
 
   useEffect(() => {
     if (open && ticketId) {
       fetchTicket();
       setEditing(false);
     }
-  }, [open, ticketId]);
+  }, [open, ticketId, fetchTicket]);
 
   // 保存编辑
   const handleSave = async () => {

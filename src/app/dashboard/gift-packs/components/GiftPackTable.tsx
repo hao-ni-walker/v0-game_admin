@@ -88,7 +88,7 @@ export function GiftPackTable({
             <div className='flex items-center justify-center gap-1'>
               <span className='truncate font-mono text-xs'>{value}</span>
               <Copy
-                className='h-3 w-3 cursor-pointer text-muted-foreground hover:text-foreground'
+                className='text-muted-foreground hover:text-foreground h-3 w-3 cursor-pointer'
                 onClick={() => handleCopyItemId(value)}
               />
             </div>
@@ -101,11 +101,14 @@ export function GiftPackTable({
       return {
         ...col,
         render: (value: any, record: GiftPack) => {
-          const rawIcon = record.locale_overrides?.display_icon || record.display_icon;
-          const displayIcon = rawIcon 
-            ? (rawIcon.startsWith('http') ? rawIcon : `${IMAGE_BASE_URL}${rawIcon}`) 
+          const rawIcon =
+            record.locale_overrides?.display_icon || record.display_icon;
+          const displayIcon = rawIcon
+            ? rawIcon.startsWith('http')
+              ? rawIcon
+              : `${IMAGE_BASE_URL}${rawIcon}`
             : null;
-            
+
           return (
             <div className='flex items-center justify-center'>
               {displayIcon ? (
@@ -135,20 +138,21 @@ export function GiftPackTable({
       return {
         ...col,
         render: (value: string, record: GiftPack) => {
-          const displayName = record.locale_overrides?.name || record.name || record.name_default;
+          const displayName =
+            record.locale_overrides?.name || record.name || record.name_default;
           const description = record.locale_overrides?.description;
           const shortDesc = record.locale_overrides?.short_desc;
-          
+
           return (
             <div className='space-y-1'>
               <div className='font-medium'>{displayName}</div>
               {(shortDesc || description) && (
-                <div className='line-clamp-1 text-xs text-muted-foreground'>
+                <div className='text-muted-foreground line-clamp-1 text-xs'>
                   {shortDesc || description}
                 </div>
               )}
               {record.name !== record.name_default && (
-                <div className='text-xs text-muted-foreground'>
+                <div className='text-muted-foreground text-xs'>
                   默认: {record.name_default}
                 </div>
               )}
@@ -163,9 +167,7 @@ export function GiftPackTable({
         ...col,
         render: (value: string) => {
           return (
-            <Badge variant='outline'>
-              {CATEGORY_LABELS[value] || value}
-            </Badge>
+            <Badge variant='outline'>{CATEGORY_LABELS[value] || value}</Badge>
           );
         }
       };
@@ -221,13 +223,21 @@ export function GiftPackTable({
         ...col,
         render: (value: any, record: GiftPack) => {
           const requirements = [];
-          if (record.vip_required !== undefined && record.vip_required > 0) {
+          if (
+            record.vip_required !== undefined &&
+            record.vip_required !== null &&
+            record.vip_required > 0
+          ) {
             requirements.push(`VIP${record.vip_required}`);
           }
-          if (record.level_required !== undefined && record.level_required > 0) {
+          if (
+            record.level_required !== undefined &&
+            record.level_required !== null &&
+            record.level_required > 0
+          ) {
             requirements.push(`Lv${record.level_required}`);
           }
-          
+
           return (
             <div className='space-y-1 text-xs'>
               {requirements.length > 0 ? (
@@ -253,20 +263,26 @@ export function GiftPackTable({
         render: (value: any, record: GiftPack) => {
           return (
             <div className='space-y-1 text-xs'>
-              {record.expire_days !== null && record.expire_days !== undefined && (
-                <div>
-                  有效期: <span className='font-mono'>{record.expire_days}天</span>
-                </div>
-              )}
-              {record.usage_limit !== null && record.usage_limit !== undefined && (
-                <div>
-                  使用: <span className='font-mono'>{record.usage_limit}次</span>
-                </div>
-              )}
-              {(record.expire_days === null || record.expire_days === undefined) &&
-               (record.usage_limit === null || record.usage_limit === undefined) && (
-                <span className='text-muted-foreground'>无限制</span>
-              )}
+              {record.expire_days !== null &&
+                record.expire_days !== undefined && (
+                  <div>
+                    有效期:{' '}
+                    <span className='font-mono'>{record.expire_days}天</span>
+                  </div>
+                )}
+              {record.usage_limit !== null &&
+                record.usage_limit !== undefined && (
+                  <div>
+                    使用:{' '}
+                    <span className='font-mono'>{record.usage_limit}次</span>
+                  </div>
+                )}
+              {(record.expire_days === null ||
+                record.expire_days === undefined) &&
+                (record.usage_limit === null ||
+                  record.usage_limit === undefined) && (
+                  <span className='text-muted-foreground'>无限制</span>
+                )}
             </div>
           );
         }
@@ -277,11 +293,13 @@ export function GiftPackTable({
       return {
         ...col,
         render: (value: string, record: GiftPack) => {
-          const statusVariant = 
-            value === 'active' ? 'default' : 
-            value === 'disabled' ? 'destructive' : 
-            'secondary';
-          
+          const statusVariant =
+            value === 'active'
+              ? 'default'
+              : value === 'disabled'
+                ? 'destructive'
+                : 'secondary';
+
           return (
             <div className='flex justify-center'>
               <Badge variant={statusVariant}>
@@ -368,7 +386,9 @@ export function GiftPackTable({
           }
 
           const deleteAction: DeleteAction = {
-            description: MESSAGES.CONFIRM.DELETE(record.name || record.name_default),
+            description: MESSAGES.CONFIRM.DELETE(
+              record.name || record.name_default
+            ),
             onConfirm: () => onDelete(record)
           };
 

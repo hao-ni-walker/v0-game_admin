@@ -1,7 +1,16 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { ArrowUpDown, Eye, Edit, MoreHorizontal, ArrowUp, ArrowDown, Key, Trash2 } from 'lucide-react';
+import {
+  ArrowUpDown,
+  Eye,
+  Edit,
+  MoreHorizontal,
+  ArrowUp,
+  ArrowDown,
+  Key,
+  Trash2
+} from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -71,12 +80,17 @@ export function AdminTable({
 }: AdminTableProps) {
   // 是否全选
   const isAllSelected = useMemo(() => {
-    return admins.length > 0 && admins.every((admin) => selectedAdminIds.includes(admin.id));
+    return (
+      admins.length > 0 &&
+      admins.every((admin) => selectedAdminIds.includes(admin.id))
+    );
   }, [admins, selectedAdminIds]);
 
   // 是否部分选中
   const isIndeterminate = useMemo(() => {
-    return selectedAdminIds.length > 0 && selectedAdminIds.length < admins.length;
+    return (
+      selectedAdminIds.length > 0 && selectedAdminIds.length < admins.length
+    );
   }, [selectedAdminIds, admins]);
 
   /**
@@ -123,9 +137,9 @@ export function AdminTable({
     return (
       <Card>
         <div className='p-4'>
-          <Skeleton className='h-10 w-full mb-2' />
-          <Skeleton className='h-10 w-full mb-2' />
-          <Skeleton className='h-10 w-full mb-2' />
+          <Skeleton className='mb-2 h-10 w-full' />
+          <Skeleton className='mb-2 h-10 w-full' />
+          <Skeleton className='mb-2 h-10 w-full' />
           <Skeleton className='h-10 w-full' />
         </div>
       </Card>
@@ -141,27 +155,46 @@ export function AdminTable({
               <TableHead className='w-12'>
                 <Checkbox
                   checked={isAllSelected}
-                  indeterminate={isIndeterminate}
                   onCheckedChange={onSelectAll}
+                  ref={(el) => {
+                    if (el) {
+                      // 访问底层 DOM 元素设置 indeterminate 状态
+                      const input = el.querySelector(
+                        'input'
+                      ) as HTMLInputElement | null;
+                      if (input) {
+                        input.indeterminate = isIndeterminate;
+                      }
+                    }
+                  }}
                 />
               </TableHead>
               <TableHead>{renderSortableHeader('id', 'ID')}</TableHead>
-              <TableHead>{renderSortableHeader('username', '用户名')}</TableHead>
+              <TableHead>
+                {renderSortableHeader('username', '用户名')}
+              </TableHead>
               <TableHead>邮箱</TableHead>
               <TableHead>角色</TableHead>
               <TableHead>超管</TableHead>
               <TableHead>{renderSortableHeader('status', '状态')}</TableHead>
-              <TableHead>{renderSortableHeader('last_login_at', '最后登录时间')}</TableHead>
+              <TableHead>
+                {renderSortableHeader('last_login_at', '最后登录时间')}
+              </TableHead>
               <TableHead>登录失败次数</TableHead>
               <TableHead>锁定时间</TableHead>
-              <TableHead>{renderSortableHeader('created_at', '创建时间')}</TableHead>
+              <TableHead>
+                {renderSortableHeader('created_at', '创建时间')}
+              </TableHead>
               <TableHead className='text-right'>操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {admins.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={12} className='text-center text-muted-foreground'>
+                <TableCell
+                  colSpan={12}
+                  className='text-muted-foreground text-center'
+                >
                   暂无数据
                 </TableCell>
               </TableRow>
@@ -179,10 +212,14 @@ export function AdminTable({
                       />
                     </TableCell>
                     <TableCell>{admin.id}</TableCell>
-                    <TableCell className='font-medium'>{admin.username}</TableCell>
+                    <TableCell className='font-medium'>
+                      {admin.username}
+                    </TableCell>
                     <TableCell>{admin.email}</TableCell>
                     <TableCell>
-                      <Badge variant={admin.is_super_admin ? 'default' : 'secondary'}>
+                      <Badge
+                        variant={admin.is_super_admin ? 'default' : 'secondary'}
+                      >
                         {admin.role_name}
                       </Badge>
                     </TableCell>
@@ -223,13 +260,17 @@ export function AdminTable({
                             <Edit className='mr-2 h-4 w-4' />
                             编辑
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onResetPassword(admin)}>
+                          <DropdownMenuItem
+                            onClick={() => onResetPassword(admin)}
+                          >
                             <Key className='mr-2 h-4 w-4' />
                             重置密码
                           </DropdownMenuItem>
                           {!isCurrentUser && (
                             <>
-                              <DropdownMenuItem onClick={() => onStatusChange(admin)}>
+                              <DropdownMenuItem
+                                onClick={() => onStatusChange(admin)}
+                              >
                                 状态变更
                               </DropdownMenuItem>
                               <DropdownMenuItem
@@ -268,4 +309,3 @@ export function AdminTable({
     </Card>
   );
 }
-

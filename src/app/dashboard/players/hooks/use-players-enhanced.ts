@@ -181,16 +181,27 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
       try {
         isFetchingStatsRef.current = true;
         setStatisticsLoading(true);
-        const response = await PlayerAPI.getStatistics(filters);
+        // 过滤掉空字符串值
+        const cleanedFilters = filters
+          ? Object.fromEntries(
+              Object.entries(filters).filter(
+                ([, value]) =>
+                  value !== '' && value !== undefined && value !== null
+              )
+            )
+          : undefined;
+        const response = await PlayerAPI.getStatistics(cleanedFilters as any);
         if (response.success && response.data) {
           // 适配统计数据结构
           const stats = response.data;
           setStatistics({
             total_players: stats.total_players || stats.total_users || 0,
             active_players: stats.active_players || stats.active_users || 0,
-            disabled_players: stats.disabled_players || stats.disabled_users || 0,
+            disabled_players:
+              stats.disabled_players || stats.disabled_users || 0,
             total_balance: stats.total_balance || 0,
-            today_new_players: stats.today_new_players || stats.today_new_users || 0
+            today_new_players:
+              stats.today_new_players || stats.today_new_users || 0
           });
         } else {
           throw new Error(response.message || '获取统计信息失败');
@@ -257,7 +268,10 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
           return true;
         } else {
           // 处理版本冲突
-          if (response.code === 409 || response.message?.includes('VERSION_CONFLICT')) {
+          if (
+            response.code === 409 ||
+            response.message?.includes('VERSION_CONFLICT')
+          ) {
             toast.error('钱包信息已被其他操作修改，请刷新后重试', {
               action: {
                 label: '刷新',
@@ -304,21 +318,24 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
   );
 
   // 重置密码
-  const resetPassword = useCallback(async (playerId: number): Promise<boolean> => {
-    try {
-      const response = await PlayerAPI.resetPassword(playerId);
-      if (response.success) {
-        toast.success('重置链接已发送');
-        return true;
-      } else {
-        throw new Error(response.message || '重置密码失败');
+  const resetPassword = useCallback(
+    async (playerId: number): Promise<boolean> => {
+      try {
+        const response = await PlayerAPI.resetPassword(playerId);
+        if (response.success) {
+          toast.success('重置链接已发送');
+          return true;
+        } else {
+          throw new Error(response.message || '重置密码失败');
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : '重置密码失败';
+        toast.error(message);
+        return false;
       }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : '重置密码失败';
-      toast.error(message);
-      return false;
-    }
-  }, []);
+    },
+    []
+  );
 
   // 发送通知
   const sendNotification = useCallback(
@@ -347,7 +364,16 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
   const exportPlayers = useCallback(
     async (filters?: Partial<PlayerFilters>): Promise<boolean> => {
       try {
-        const response = await PlayerAPI.exportPlayers(filters);
+        // 过滤掉空字符串值
+        const cleanedFilters = filters
+          ? Object.fromEntries(
+              Object.entries(filters).filter(
+                ([, value]) =>
+                  value !== '' && value !== undefined && value !== null
+              )
+            )
+          : undefined;
+        const response = await PlayerAPI.exportPlayers(cleanedFilters as any);
         if (response.success) {
           toast.success('导出任务创建成功');
           // 如果返回了下载链接，可以触发下载
@@ -403,4 +429,3 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
     setSort
   };
 }
-

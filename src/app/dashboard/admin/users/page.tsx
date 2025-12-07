@@ -61,9 +61,13 @@ export default function AdminUserPage() {
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<AdminUserDetail | null>(null);
   const [batchConfirmOpen, setBatchConfirmOpen] = useState(false);
-  const [batchOperationType, setBatchOperationType] = useState<'enable' | 'disable' | null>(null);
+  const [batchOperationType, setBatchOperationType] = useState<
+    'enable' | 'disable' | null
+  >(null);
   const [notificationModalOpen, setNotificationModalOpen] = useState(false);
-  const [notificationUser, setNotificationUser] = useState<AdminUser | null>(null);
+  const [notificationUser, setNotificationUser] = useState<AdminUser | null>(
+    null
+  );
 
   // 加载数据
   useEffect(() => {
@@ -74,12 +78,19 @@ export default function AdminUserPage() {
       sortBy: sort.sort_by,
       sortOrder: sort.sort_order
     });
-  }, [appliedFilters, pagination.page, pagination.page_size, sort.sort_by, sort.sort_order]);
+  }, [
+    appliedFilters,
+    pagination.page,
+    pagination.page_size,
+    sort.sort_by,
+    sort.sort_order,
+    fetchUsers
+  ]);
 
   // 加载统计数据
   useEffect(() => {
     fetchStatistics(appliedFilters);
-  }, [appliedFilters]);
+  }, [appliedFilters, fetchStatistics]);
 
   // 查看详情
   const handleViewDetail = useCallback(
@@ -111,13 +122,10 @@ export default function AdminUserPage() {
   );
 
   // 调整钱包
-  const handleAdjustWallet = useCallback(
-    async (user: AdminUserDetail) => {
-      setCurrentUser(user);
-      setWalletModalOpen(true);
-    },
-    []
-  );
+  const handleAdjustWallet = useCallback(async (user: AdminUserDetail) => {
+    setCurrentUser(user);
+    setWalletModalOpen(true);
+  }, []);
 
   // 保存编辑
   const handleSaveEdit = useCallback(
@@ -143,7 +151,16 @@ export default function AdminUserPage() {
       }
       return success;
     },
-    [updateUser, appliedFilters, pagination, sort, currentUser, fetchUserDetail, fetchUsers, fetchStatistics]
+    [
+      updateUser,
+      appliedFilters,
+      pagination,
+      sort,
+      currentUser,
+      fetchUserDetail,
+      fetchUsers,
+      fetchStatistics
+    ]
   );
 
   // 保存钱包调整
@@ -163,7 +180,14 @@ export default function AdminUserPage() {
       }
       return success;
     },
-    [adjustWallet, appliedFilters, pagination, sort, fetchUsers, fetchStatistics]
+    [
+      adjustWallet,
+      appliedFilters,
+      pagination,
+      sort,
+      fetchUsers,
+      fetchStatistics
+    ]
   );
 
   // 刷新用户详情
@@ -206,12 +230,23 @@ export default function AdminUserPage() {
     }
     setBatchConfirmOpen(false);
     setBatchOperationType(null);
-  }, [batchOperationType, selectedUserIds, batchOperation, appliedFilters, pagination, sort, fetchUsers, fetchStatistics]);
+  }, [
+    batchOperationType,
+    selectedUserIds,
+    batchOperation,
+    appliedFilters,
+    pagination,
+    sort,
+    fetchUsers,
+    fetchStatistics
+  ]);
 
   // 重置密码
   const handleResetPassword = useCallback(
     async (user: AdminUser) => {
-      const confirmed = window.confirm(`确定要重置用户 ${user.username} 的密码吗？`);
+      const confirmed = window.confirm(
+        `确定要重置用户 ${user.username} 的密码吗？`
+      );
       if (confirmed) {
         await resetPassword(user.id);
       }
@@ -226,7 +261,10 @@ export default function AdminUserPage() {
   }, []);
 
   const handleSaveNotification = useCallback(
-    async (userId: number, data: { channel: string; title: string; content: string }) => {
+    async (
+      userId: number,
+      data: { channel: string; title: string; content: string }
+    ) => {
       const success = await sendNotification(userId, data);
       if (success) {
         setNotificationModalOpen(false);
@@ -262,23 +300,23 @@ export default function AdminUserPage() {
   }, []);
 
   // 全选
-  const handleSelectAll = useCallback((selected: boolean) => {
-    if (selected) {
-      setSelectedUserIds(users.map((u) => u.id));
-    } else {
-      setSelectedUserIds([]);
-    }
-  }, [users]);
+  const handleSelectAll = useCallback(
+    (selected: boolean) => {
+      if (selected) {
+        setSelectedUserIds(users.map((u) => u.id));
+      } else {
+        setSelectedUserIds([]);
+      }
+    },
+    [users]
+  );
 
   return (
     <PageContainer>
       <div className='space-y-4'>
         {/* 页面头部 */}
         <div className='flex items-center justify-between'>
-          <Heading
-            title='用户管理'
-            description='查看和管理所有用户账户信息'
-          />
+          <Heading title='用户管理' description='查看和管理所有用户账户信息' />
           <div className='flex items-center gap-2'>
             <Button variant='outline' onClick={handleExport}>
               <Download className='mr-2 h-4 w-4' />
@@ -327,7 +365,7 @@ export default function AdminUserPage() {
 
         {/* 批量操作栏 */}
         {selectedUserIds.length > 0 && (
-          <div className='flex items-center gap-2 rounded-lg border bg-muted/50 p-3'>
+          <div className='bg-muted/50 flex items-center gap-2 rounded-lg border p-3'>
             <span className='text-sm font-medium'>
               已选择 {selectedUserIds.length} 个用户
             </span>
@@ -445,4 +483,3 @@ export default function AdminUserPage() {
     </PageContainer>
   );
 }
-

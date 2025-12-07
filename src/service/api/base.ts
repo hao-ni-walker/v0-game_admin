@@ -7,6 +7,12 @@ export interface ApiResponse<T = any> {
   data?: T;
   message?: string;
   success: boolean;
+  pager?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 // 通用请求函数
@@ -38,7 +44,8 @@ export async function apiRequest<T = any>(
         const errorData = await response.json();
         return {
           code: errorData.code ?? response.status,
-          message: errorData.message ?? `HTTP error! status: ${response.status}`,
+          message:
+            errorData.message ?? `HTTP error! status: ${response.status}`,
           success: false
         };
       } catch {

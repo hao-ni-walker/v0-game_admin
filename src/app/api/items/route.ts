@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import {
   successResponse,
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
       const { total, limit, offset, items } = result.data;
       const pageSize = limit || 20;
       const page = pageSize > 0 ? Math.floor(offset / pageSize) + 1 : 1;
-      
+
       return successResponse(
         {
           total: total || 0,
@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // 这里应该是数据库操作
     // 现在只是模拟返回
     console.log('创建道具:', body);
@@ -136,9 +136,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('创建道具失败:', error);
-    return NextResponse.json(
-      { error: '创建道具失败' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '创建道具失败' }, { status: 500 });
   }
 }

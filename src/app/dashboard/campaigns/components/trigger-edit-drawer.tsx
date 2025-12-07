@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -21,7 +21,11 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { ActivityAPI, CreateTriggerParams, EventActivityTrigger } from '@/service/api/activities';
+import {
+  ActivityAPI,
+  CreateTriggerParams,
+  EventActivityTrigger
+} from '@/service/api/activities';
 import { TRIGGER_MODE_LABELS } from '../types';
 import { toast } from 'sonner';
 
@@ -67,31 +71,7 @@ export function TriggerEditDrawer({
   const [matchCriteriaJson, setMatchCriteriaJson] = useState('{}');
   const [rewardItemsJson, setRewardItemsJson] = useState('{}');
 
-  useEffect(() => {
-    if (open) {
-      if (triggerId) {
-        // 编辑模式：加载触发规则数据
-        loadTrigger();
-      } else {
-        // 新建模式：重置表单
-        setFormData({
-          event_type: '',
-          match_criteria: {},
-          trigger_mode: 'immediate',
-          reward_items: {},
-          cooldown_seconds: null,
-          daily_limit_per_user: null,
-          total_limit: null,
-          priority: 0,
-          is_active: true
-        });
-        setMatchCriteriaJson('{}');
-        setRewardItemsJson('{}');
-      }
-    }
-  }, [open, triggerId]);
-
-  const loadTrigger = async () => {
+  const loadTrigger = useCallback(async () => {
     if (!triggerId) return;
     try {
       // 这里需要从触发规则列表获取，或者添加一个获取单个触发规则的 API
@@ -119,7 +99,31 @@ export function TriggerEditDrawer({
       console.error('加载触发规则失败:', error);
       toast.error('加载触发规则失败');
     }
-  };
+  }, [triggerId, activityId]);
+
+  useEffect(() => {
+    if (open) {
+      if (triggerId) {
+        // 编辑模式：加载触发规则数据
+        loadTrigger();
+      } else {
+        // 新建模式：重置表单
+        setFormData({
+          event_type: '',
+          match_criteria: {},
+          trigger_mode: 'immediate',
+          reward_items: {},
+          cooldown_seconds: null,
+          daily_limit_per_user: null,
+          total_limit: null,
+          priority: 0,
+          is_active: true
+        });
+        setMatchCriteriaJson('{}');
+        setRewardItemsJson('{}');
+      }
+    }
+  }, [open, triggerId, loadTrigger]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -171,7 +175,10 @@ export function TriggerEditDrawer({
           toast.error(response.message || '更新失败');
         }
       } else {
-        const response = await ActivityAPI.createTrigger(activityId, submitData);
+        const response = await ActivityAPI.createTrigger(
+          activityId,
+          submitData
+        );
         if (response.code === 0) {
           toast.success('创建成功');
           onSuccess();
@@ -316,7 +323,9 @@ export function TriggerEditDrawer({
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    total_limit: e.target.value ? parseInt(e.target.value) : null
+                    total_limit: e.target.value
+                      ? parseInt(e.target.value)
+                      : null
                   })
                 }
                 placeholder='留空表示无限制'
@@ -355,7 +364,12 @@ export function TriggerEditDrawer({
           </div>
 
           <SheetFooter>
-            <Button type='button' variant='outline' onClick={onClose} disabled={loading}>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={onClose}
+              disabled={loading}
+            >
               取消
             </Button>
             <Button type='submit' disabled={loading}>
@@ -367,4 +381,3 @@ export function TriggerEditDrawer({
     </Sheet>
   );
 }
-

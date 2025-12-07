@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Upload, Trash2, Download, Loader2, File } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,7 +46,7 @@ export function TicketAttachmentList({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 获取附件列表
-  const fetchAttachments = async () => {
+  const fetchAttachments = useCallback(async () => {
     setLoading(true);
     try {
       const response = await TicketAPI.getAttachments(ticketId);
@@ -61,13 +61,13 @@ export function TicketAttachmentList({
     } finally {
       setLoading(false);
     }
-  };
+  }, [ticketId]);
 
   useEffect(() => {
     if (ticketId) {
       fetchAttachments();
     }
-  }, [ticketId]);
+  }, [ticketId, fetchAttachments]);
 
   // 处理文件选择
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {

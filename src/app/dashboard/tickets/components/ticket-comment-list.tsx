@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -33,7 +33,7 @@ export function TicketCommentList({
   const [isInternal, setIsInternal] = useState(false);
 
   // 获取评论列表
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     setLoading(true);
     try {
       const response = await TicketAPI.getComments(ticketId);
@@ -48,13 +48,13 @@ export function TicketCommentList({
     } finally {
       setLoading(false);
     }
-  };
+  }, [ticketId]);
 
   useEffect(() => {
     if (ticketId) {
       fetchComments();
     }
-  }, [ticketId]);
+  }, [ticketId, fetchComments]);
 
   // 添加评论
   const handleSubmit = async (e: React.FormEvent) => {

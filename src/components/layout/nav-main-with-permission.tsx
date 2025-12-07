@@ -134,12 +134,15 @@ export function NavMainWithPermission() {
                         <SidebarMenuSub>
                           {item.items?.map((subItem) => {
                             // 检查子项是否有三级菜单
-                            const hasSubItems = subItem.items && subItem.items.length > 0;
+                            const hasSubItems =
+                              subItem.items && subItem.items.length > 0;
                             const isSubItemActive = isActivePath(subItem.url);
-                            const hasActiveSubSubItem = hasSubItems
-                              ? hasActiveChild(subItem.items)
-                              : false;
-                            const shouldOpenSub = isSubItemActive || hasActiveSubSubItem;
+                            const hasActiveSubSubItem =
+                              hasSubItems && subItem.items
+                                ? hasActiveChild(subItem.items)
+                                : false;
+                            const shouldOpenSub =
+                              isSubItemActive || hasActiveSubSubItem;
 
                             // 如果有三级菜单，需要渲染为可折叠的菜单项
                             if (hasSubItems) {
@@ -158,32 +161,48 @@ export function NavMainWithPermission() {
                                       >
                                         {subItem.url === '#' ? (
                                           <div className='flex items-center gap-2'>
-                                            {subItem.icon && <subItem.icon className='h-4 w-4' />}
+                                            {subItem.icon && (
+                                              <subItem.icon className='h-4 w-4' />
+                                            )}
                                             <span>{subItem.title}</span>
                                           </div>
                                         ) : (
-                                          <Link href={subItem.url} className='flex items-center gap-2'>
-                                            {subItem.icon && <subItem.icon className='h-4 w-4' />}
+                                          <Link
+                                            href={subItem.url}
+                                            className='flex items-center gap-2'
+                                          >
+                                            {subItem.icon && (
+                                              <subItem.icon className='h-4 w-4' />
+                                            )}
                                             <span>{subItem.title}</span>
                                           </Link>
                                         )}
                                       </SidebarMenuSubButton>
                                       <CollapsibleTrigger asChild>
-                                        <SidebarMenuAction className='data-[state=open]:rotate-90 relative'>
+                                        <SidebarMenuAction className='relative data-[state=open]:rotate-90'>
                                           <ChevronRight className='h-3 w-3' />
-                                          <span className='sr-only'>Toggle</span>
+                                          <span className='sr-only'>
+                                            Toggle
+                                          </span>
                                         </SidebarMenuAction>
                                       </CollapsibleTrigger>
                                     </div>
                                     <CollapsibleContent>
                                       <SidebarMenuSub>
                                         {subItem.items?.map((subSubItem) => (
-                                          <SidebarMenuSubItem key={subSubItem.title}>
+                                          <SidebarMenuSubItem
+                                            key={subSubItem.title}
+                                          >
                                             <SidebarMenuSubButton
                                               asChild
-                                              isActive={isActivePath(subSubItem.url)}
+                                              isActive={isActivePath(
+                                                subSubItem.url
+                                              )}
                                             >
-                                              <Link href={subSubItem.url} className='flex items-center gap-2'>
+                                              <Link
+                                                href={subSubItem.url}
+                                                className='flex items-center gap-2'
+                                              >
                                                 {subSubItem.icon && (
                                                   <subSubItem.icon className='h-4 w-4' />
                                                 )}
@@ -206,8 +225,13 @@ export function NavMainWithPermission() {
                                   asChild
                                   isActive={isSubItemActive}
                                 >
-                                  <Link href={subItem.url} className='flex items-center gap-2'>
-                                    {subItem.icon && <subItem.icon className='h-4 w-4' />}
+                                  <Link
+                                    href={subItem.url}
+                                    className='flex items-center gap-2'
+                                  >
+                                    {subItem.icon && (
+                                      <subItem.icon className='h-4 w-4' />
+                                    )}
                                     <span>{subItem.title}</span>
                                   </Link>
                                 </SidebarMenuSubButton>

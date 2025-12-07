@@ -165,7 +165,18 @@ export function useAdminUsers(): UseAdminUsersResult {
     async (filters?: Partial<AdminUserFilters>) => {
       try {
         setStatisticsLoading(true);
-        const response = await AdminUserAPI.getStatistics(filters);
+        // 过滤掉空字符串值
+        const cleanedFilters = filters
+          ? Object.fromEntries(
+              Object.entries(filters).filter(
+                ([, value]) =>
+                  value !== '' && value !== undefined && value !== null
+              )
+            )
+          : undefined;
+        const response = await AdminUserAPI.getStatistics(
+          cleanedFilters as any
+        );
         if (response.success && response.data) {
           setStatistics(response.data);
         } else {
@@ -232,7 +243,10 @@ export function useAdminUsers(): UseAdminUsersResult {
           return true;
         } else {
           // 处理版本冲突
-          if (response.code === 409 || response.message?.includes('VERSION_CONFLICT')) {
+          if (
+            response.code === 409 ||
+            response.message?.includes('VERSION_CONFLICT')
+          ) {
             toast.error('钱包信息已被其他操作修改，请刷新后重试', {
               action: {
                 label: '刷新',
@@ -279,21 +293,24 @@ export function useAdminUsers(): UseAdminUsersResult {
   );
 
   // 重置密码
-  const resetPassword = useCallback(async (userId: number): Promise<boolean> => {
-    try {
-      const response = await AdminUserAPI.resetPassword(userId);
-      if (response.success) {
-        toast.success('重置链接已发送');
-        return true;
-      } else {
-        throw new Error(response.message || '重置密码失败');
+  const resetPassword = useCallback(
+    async (userId: number): Promise<boolean> => {
+      try {
+        const response = await AdminUserAPI.resetPassword(userId);
+        if (response.success) {
+          toast.success('重置链接已发送');
+          return true;
+        } else {
+          throw new Error(response.message || '重置密码失败');
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : '重置密码失败';
+        toast.error(message);
+        return false;
       }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : '重置密码失败';
-      toast.error(message);
-      return false;
-    }
-  }, []);
+    },
+    []
+  );
 
   // 发送通知
   const sendNotification = useCallback(
@@ -322,7 +339,16 @@ export function useAdminUsers(): UseAdminUsersResult {
   const exportUsers = useCallback(
     async (filters?: Partial<AdminUserFilters>): Promise<boolean> => {
       try {
-        const response = await AdminUserAPI.exportUsers(filters);
+        // 过滤掉空字符串值
+        const cleanedFilters = filters
+          ? Object.fromEntries(
+              Object.entries(filters).filter(
+                ([, value]) =>
+                  value !== '' && value !== undefined && value !== null
+              )
+            )
+          : undefined;
+        const response = await AdminUserAPI.exportUsers(cleanedFilters as any);
         if (response.success) {
           toast.success('导出任务创建成功');
           // 如果返回了下载链接，可以触发下载
@@ -378,4 +404,3 @@ export function useAdminUsers(): UseAdminUsersResult {
     setSort
   };
 }
-

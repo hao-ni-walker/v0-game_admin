@@ -65,7 +65,7 @@ export function StatusChangeConfirmModal({
 
     setLoading(true);
     try {
-      let data: StatusChangeData = {};
+      const data: StatusChangeData = {};
 
       if (action === 'status') {
         data.status = status;
@@ -95,8 +95,8 @@ export function StatusChangeConfirmModal({
         <AlertDialogHeader>
           <AlertDialogTitle>确认操作</AlertDialogTitle>
           <AlertDialogDescription>
-            <div className='space-y-4 mt-4'>
-              <div className='rounded-lg bg-muted p-3'>
+            <div className='mt-4 space-y-4'>
+              <div className='bg-muted rounded-lg p-3'>
                 <p className='text-sm'>
                   管理员ID：<span className='font-medium'>{admin.id}</span>
                 </p>
@@ -104,7 +104,10 @@ export function StatusChangeConfirmModal({
                   用户名：<span className='font-medium'>{admin.username}</span>
                 </p>
                 <p className='text-sm'>
-                  当前状态：<span className='font-medium'>{getAdminStatusText(admin.status)}</span>
+                  当前状态：
+                  <span className='font-medium'>
+                    {getAdminStatusText(admin.status)}
+                  </span>
                 </p>
                 {admin.is_super_admin && (
                   <p className='text-sm text-yellow-600 dark:text-yellow-400'>
@@ -166,7 +169,7 @@ export function StatusChangeConfirmModal({
               )}
 
               {/* 风险提示 */}
-              <div className='rounded-lg bg-red-50 dark:bg-red-900/20 p-3'>
+              <div className='rounded-lg bg-red-50 p-3 dark:bg-red-900/20'>
                 <p className='text-sm text-red-800 dark:text-red-200'>
                   {action === 'status' && status === 'disabled'
                     ? '禁用后将阻止该管理员登录系统。'
@@ -188,4 +191,3 @@ export function StatusChangeConfirmModal({
     </AlertDialog>
   );
 }
-

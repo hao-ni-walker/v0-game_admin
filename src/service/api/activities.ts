@@ -23,8 +23,8 @@ export interface ActivityListParams {
 // 活动列表响应
 export interface ActivityListResponse {
   code: number;
-  message: string;
-  data: {
+  message?: string;
+  data?: {
     items: Activity[];
     total: number;
     page: number;
@@ -183,9 +183,7 @@ export class ActivityAPI {
   }
 
   // 获取活动触发规则列表
-  static async getTriggers(
-    activityId: number
-  ): Promise<TriggerListResponse> {
+  static async getTriggers(activityId: number): Promise<TriggerListResponse> {
     return apiRequest(`/admin/activities/${activityId}/triggers`);
   }
 
@@ -229,4 +227,3 @@ export class ActivityAPI {
     return apiRequest(`/admin/activities/${activityId}/statistics`);
   }
 }
-

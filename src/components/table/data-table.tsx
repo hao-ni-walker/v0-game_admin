@@ -14,7 +14,7 @@ import { TableSkeleton } from './table-skeleton';
 
 interface Column<T> {
   key: string;
-  title: string;
+  title: string | React.ReactNode;
   className?: string;
   render?: (value: any, record: T, index: number) => React.ReactNode;
 }

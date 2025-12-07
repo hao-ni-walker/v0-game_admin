@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -28,7 +28,12 @@ import {
 import { Edit, Plus, Settings, BarChart3 } from 'lucide-react';
 import { Activity } from '@/repository/models';
 import { ActivityAPI, EventActivityTrigger } from '@/service/api/activities';
-import { STATUS_COLORS, STATUS_LABELS, TYPE_LABELS, TRIGGER_MODE_LABELS } from '../types';
+import {
+  STATUS_COLORS,
+  STATUS_LABELS,
+  TYPE_LABELS,
+  TRIGGER_MODE_LABELS
+} from '../types';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -66,24 +71,7 @@ export function ActivityDetailDrawer({
   });
   const [savingConfig, setSavingConfig] = useState(false);
 
-  // 加载活动详情
-  useEffect(() => {
-    if (open && activityId) {
-      loadActivity();
-      if (activeTab === 'triggers') {
-        loadTriggers();
-      } else if (activeTab === 'statistics') {
-        loadStatistics();
-      }
-    } else {
-      setActivity(null);
-      setTriggers([]);
-      setStatistics(null);
-      setActiveTab(initialTab);
-    }
-  }, [open, activityId, activeTab]);
-
-  const loadActivity = async () => {
+  const loadActivity = useCallback(async () => {
     if (!activityId) return;
     setLoading(true);
     try {
@@ -91,7 +79,11 @@ export function ActivityDetailDrawer({
       if (response.code === 0) {
         setActivity(response.data);
         setConfigForm({
-          participationConfig: JSON.stringify(response.data.participationConfig, null, 2),
+          participationConfig: JSON.stringify(
+            response.data.participationConfig,
+            null,
+            2
+          ),
           extraConfig: JSON.stringify(response.data.extraConfig, null, 2)
         });
       } else {
@@ -103,9 +95,9 @@ export function ActivityDetailDrawer({
     } finally {
       setLoading(false);
     }
-  };
+  }, [activityId]);
 
-  const loadTriggers = async () => {
+  const loadTriggers = useCallback(async () => {
     if (!activityId) return;
     setTriggersLoading(true);
     try {
@@ -121,9 +113,9 @@ export function ActivityDetailDrawer({
     } finally {
       setTriggersLoading(false);
     }
-  };
+  }, [activityId]);
 
-  const loadStatistics = async () => {
+  const loadStatistics = useCallback(async () => {
     if (!activityId) return;
     setStatisticsLoading(true);
     try {
@@ -139,7 +131,30 @@ export function ActivityDetailDrawer({
     } finally {
       setStatisticsLoading(false);
     }
-  };
+  }, [activityId]);
+
+  // 当打开或活动ID改变时，加载活动详情
+  useEffect(() => {
+    if (open && activityId) {
+      loadActivity();
+    } else {
+      setActivity(null);
+      setTriggers([]);
+      setStatistics(null);
+      setActiveTab(initialTab);
+    }
+  }, [open, activityId, initialTab, loadActivity]);
+
+  // 当切换到 triggers 或 statistics tab 时，加载对应数据
+  useEffect(() => {
+    if (open && activityId) {
+      if (activeTab === 'triggers') {
+        loadTriggers();
+      } else if (activeTab === 'statistics') {
+        loadStatistics();
+      }
+    }
+  }, [open, activityId, activeTab, loadTriggers, loadStatistics]);
 
   const handleSaveConfig = async () => {
     if (!activityId) return;
@@ -184,9 +199,15 @@ export function ActivityDetailDrawer({
     }
   };
 
-  const handleToggleTriggerStatus = async (triggerId: number, isActive: boolean) => {
+  const handleToggleTriggerStatus = async (
+    triggerId: number,
+    isActive: boolean
+  ) => {
     try {
-      const response = await ActivityAPI.updateTriggerStatus(triggerId, !isActive);
+      const response = await ActivityAPI.updateTriggerStatus(
+        triggerId,
+        !isActive
+      );
       if (response.code === 0) {
         toast.success('状态更新成功');
         await loadTriggers();
@@ -221,10 +242,16 @@ export function ActivityDetailDrawer({
           <>
             <SheetHeader>
               <SheetTitle>{activity.name}</SheetTitle>
-              <SheetDescription>活动编码: {activity.activityCode}</SheetDescription>
+              <SheetDescription>
+                活动编码: {activity.activityCode}
+              </SheetDescription>
             </SheetHeader>
 
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className='mt-4'>
+            <Tabs
+              value={activeTab}
+              onValueChange={(v) => setActiveTab(v as any)}
+              className='mt-4'
+            >
               <TabsList className='grid w-full grid-cols-4'>
                 <TabsTrigger value='basic'>基本信息</TabsTrigger>
                 <TabsTrigger value='config'>规则配置</TabsTrigger>
@@ -238,7 +265,11 @@ export function ActivityDetailDrawer({
                   <CardHeader>
                     <div className='flex items-center justify-between'>
                       <CardTitle>基本信息</CardTitle>
-                      <Button variant='outline' size='sm' onClick={() => onEdit(activity)}>
+                      <Button
+                        variant='outline'
+                        size='sm'
+                        onClick={() => onEdit(activity)}
+                      >
                         <Edit className='mr-2 h-4 w-4' />
                         编辑
                       </Button>
@@ -251,12 +282,15 @@ export function ActivityDetailDrawer({
                     </div>
                     <div>
                       <Label>活动编码</Label>
-                      <p className='text-muted-foreground'>{activity.activityCode}</p>
+                      <p className='text-muted-foreground'>
+                        {activity.activityCode}
+                      </p>
                     </div>
                     <div>
                       <Label>活动类型</Label>
                       <Badge variant='outline'>
-                        {TYPE_LABELS[activity.activityType] || activity.activityType}
+                        {TYPE_LABELS[activity.activityType] ||
+                          activity.activityType}
                       </Badge>
                     </div>
                     <div>
@@ -267,12 +301,15 @@ export function ActivityDetailDrawer({
                     </div>
                     <div>
                       <Label>优先级</Label>
-                      <p className='text-muted-foreground'>{activity.priority}</p>
+                      <p className='text-muted-foreground'>
+                        {activity.priority}
+                      </p>
                     </div>
                     <div>
                       <Label>活动时间</Label>
                       <p className='text-muted-foreground text-sm'>
-                        {formatDateTime(activity.startTime)} ~ {formatDateTime(activity.endTime)}
+                        {formatDateTime(activity.startTime)} ~{' '}
+                        {formatDateTime(activity.endTime)}
                       </p>
                     </div>
                     <div>
@@ -285,7 +322,9 @@ export function ActivityDetailDrawer({
                     </div>
                     <div>
                       <Label>描述</Label>
-                      <p className='text-muted-foreground'>{activity.description || '-'}</p>
+                      <p className='text-muted-foreground'>
+                        {activity.description || '-'}
+                      </p>
                     </div>
                     {(activity.iconUrl || activity.bannerUrl) && (
                       <>
@@ -321,11 +360,15 @@ export function ActivityDetailDrawer({
                     )}
                     <div>
                       <Label>创建人</Label>
-                      <p className='text-muted-foreground'>用户 #{activity.createdBy}</p>
+                      <p className='text-muted-foreground'>
+                        用户 #{activity.createdBy}
+                      </p>
                     </div>
                     <div>
                       <Label>更新人</Label>
-                      <p className='text-muted-foreground'>用户 #{activity.updatedBy}</p>
+                      <p className='text-muted-foreground'>
+                        用户 #{activity.updatedBy}
+                      </p>
                     </div>
                     <div>
                       <Label>创建时间</Label>
@@ -355,7 +398,10 @@ export function ActivityDetailDrawer({
                       <Textarea
                         value={configForm.participationConfig}
                         onChange={(e) =>
-                          setConfigForm({ ...configForm, participationConfig: e.target.value })
+                          setConfigForm({
+                            ...configForm,
+                            participationConfig: e.target.value
+                          })
                         }
                         className='font-mono text-sm'
                         rows={10}
@@ -366,7 +412,10 @@ export function ActivityDetailDrawer({
                       <Textarea
                         value={configForm.extraConfig}
                         onChange={(e) =>
-                          setConfigForm({ ...configForm, extraConfig: e.target.value })
+                          setConfigForm({
+                            ...configForm,
+                            extraConfig: e.target.value
+                          })
                         }
                         className='font-mono text-sm'
                         rows={10}
@@ -400,7 +449,7 @@ export function ActivityDetailDrawer({
                   </div>
                 ) : triggers.length === 0 ? (
                   <Card>
-                    <CardContent className='py-8 text-center text-muted-foreground'>
+                    <CardContent className='text-muted-foreground py-8 text-center'>
                       暂无触发规则
                     </CardContent>
                   </Card>
@@ -425,16 +474,22 @@ export function ActivityDetailDrawer({
                           <TableRow key={trigger.id}>
                             <TableCell>#{trigger.id}</TableCell>
                             <TableCell>
-                              <code className='text-xs'>{trigger.event_type}</code>
+                              <code className='text-xs'>
+                                {trigger.event_type}
+                              </code>
                             </TableCell>
                             <TableCell>
-                              {TRIGGER_MODE_LABELS[trigger.trigger_mode] || trigger.trigger_mode}
+                              {TRIGGER_MODE_LABELS[trigger.trigger_mode] ||
+                                trigger.trigger_mode}
                             </TableCell>
                             <TableCell>
                               <Switch
                                 checked={trigger.is_active}
                                 onCheckedChange={() =>
-                                  handleToggleTriggerStatus(trigger.id, trigger.is_active)
+                                  handleToggleTriggerStatus(
+                                    trigger.id,
+                                    trigger.is_active
+                                  )
                                 }
                               />
                             </TableCell>
@@ -452,7 +507,9 @@ export function ActivityDetailDrawer({
                               <Button
                                 variant='ghost'
                                 size='sm'
-                                onClick={() => onConfigureTrigger(activityId, trigger.id)}
+                                onClick={() =>
+                                  onConfigureTrigger(activityId, trigger.id)
+                                }
                               >
                                 <Settings className='h-4 w-4' />
                               </Button>
@@ -510,13 +567,15 @@ export function ActivityDetailDrawer({
                         <CardTitle>近7天发放</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className='text-2xl font-bold'>{statistics.rewards_7d || 0}</div>
+                        <div className='text-2xl font-bold'>
+                          {statistics.rewards_7d || 0}
+                        </div>
                       </CardContent>
                     </Card>
                   </div>
                 ) : (
                   <Card>
-                    <CardContent className='py-8 text-center text-muted-foreground'>
+                    <CardContent className='text-muted-foreground py-8 text-center'>
                       暂无统计数据
                     </CardContent>
                   </Card>
@@ -529,4 +588,3 @@ export function ActivityDetailDrawer({
     </Sheet>
   );
 }
-

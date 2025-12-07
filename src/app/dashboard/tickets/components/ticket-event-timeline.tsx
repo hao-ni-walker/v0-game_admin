@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Circle,
   UserPlus,
@@ -130,7 +130,7 @@ export function TicketEventTimeline({ ticketId }: TicketEventTimelineProps) {
   const [loading, setLoading] = useState(false);
 
   // 获取事件列表
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     setLoading(true);
     try {
       const response = await TicketAPI.getEvents(ticketId);
@@ -151,13 +151,13 @@ export function TicketEventTimeline({ ticketId }: TicketEventTimelineProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [ticketId]);
 
   useEffect(() => {
     if (ticketId) {
       fetchEvents();
     }
-  }, [ticketId]);
+  }, [ticketId, fetchEvents]);
 
   if (loading) {
     return (

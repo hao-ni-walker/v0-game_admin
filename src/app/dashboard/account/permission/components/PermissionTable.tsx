@@ -240,7 +240,13 @@ export function PermissionTable({
             onCheckedChange={handleSelectAll}
             ref={(el) => {
               if (el) {
-                el.indeterminate = isIndeterminate;
+                // 访问底层 DOM 元素设置 indeterminate 状态
+                const input = el.querySelector(
+                  'input'
+                ) as HTMLInputElement | null;
+                if (input) {
+                  input.indeterminate = isIndeterminate;
+                }
               }
             }}
           />

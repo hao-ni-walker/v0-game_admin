@@ -226,7 +226,9 @@ export function PermissionForm({
         <Label htmlFor='parent_id'>父级权限</Label>
         <Select
           value={
-            formData.parent_id === null ? 'none' : formData.parent_id.toString()
+            formData.parent_id === null || formData.parent_id === undefined
+              ? 'none'
+              : formData.parent_id.toString()
           }
           onValueChange={handleParentChange}
           disabled={loading || loadingParents}
