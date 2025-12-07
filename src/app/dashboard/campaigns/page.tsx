@@ -8,13 +8,13 @@ import {
   ActivityPageHeader,
   ActivityDetailDrawer,
   ActivityEditModal,
-  TriggerEditDrawer
+  TriggerEditDrawer,
+  ActivityCreateWizard // Import the wizard
 } from './components';
 import { useActivityFilters, useActivityManagement } from './hooks';
 import { Activity } from '@/repository/models';
 import { Plus, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { usePermissions } from '@/hooks/use-permissions';
 
 export default function CampaignsPage() {
   // 使用自定义hooks
@@ -40,6 +40,7 @@ export default function CampaignsPage() {
   const [detailDrawerOpen, setDetailDrawerOpen] = useState(false);
   const [selectedActivityId, setSelectedActivityId] = useState<number | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [createWizardOpen, setCreateWizardOpen] = useState(false); // New state for wizard
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [triggerDrawerOpen, setTriggerDrawerOpen] = useState(false);
   const [editingTriggerId, setEditingTriggerId] = useState<number | null>(null);
@@ -56,8 +57,8 @@ export default function CampaignsPage() {
    * 打开创建活动对话框
    */
   const handleCreateActivity = () => {
-    setEditingActivity(null);
-    setEditModalOpen(true);
+    // Use wizard for creation
+    setCreateWizardOpen(true);
   };
 
   /**
@@ -160,6 +161,13 @@ export default function CampaignsPage() {
   };
 
   /**
+   * 活动创建成功回调
+   */
+  const handleCreateSuccess = () => {
+    fetchActivities(filters);
+  };
+
+  /**
    * 触发规则编辑成功回调
    */
   const handleTriggerSuccess = () => {
@@ -177,7 +185,7 @@ export default function CampaignsPage() {
       <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
         {/* 页面头部 */}
         <ActivityPageHeader
-          onCreateActivity={canWrite ? handleCreateActivity : undefined}
+          onCreateActivity={handleCreateActivity}
           onRefresh={handleRefresh}
           loading={loading}
         />
@@ -216,7 +224,7 @@ export default function CampaignsPage() {
                   ? '请尝试调整筛选条件以查看更多结果'
                   : '开始创建活动来管理平台营销',
                 action:
-                  !hasActiveFilters && canWrite ? (
+                  !hasActiveFilters ? (
                     <Button
                       onClick={handleCreateActivity}
                       size='sm'
@@ -245,7 +253,14 @@ export default function CampaignsPage() {
           initialTab={detailInitialTab}
         />
 
-        {/* 活动编辑模态框 */}
+        {/* 活动创建向导 */}
+        <ActivityCreateWizard
+          open={createWizardOpen}
+          onClose={() => setCreateWizardOpen(false)}
+          onSuccess={handleCreateSuccess}
+        />
+
+        {/* 活动编辑模态框 (仅用于编辑) */}
         <ActivityEditModal
           open={editModalOpen}
           activity={editingActivity}

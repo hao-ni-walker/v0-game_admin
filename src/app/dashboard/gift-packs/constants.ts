@@ -20,6 +20,11 @@ export const PAGE_SIZE_OPTIONS = [20, 50, 100];
  */
 export const CATEGORY_OPTIONS = [
   { label: '全部', value: 'all' },
+  { label: '系统礼包', value: 'bundle_system' },
+  { label: '日历礼包', value: 'bundle_calendar' },
+  { label: '随机礼包', value: 'bundle_random' },
+  { label: '内购礼包', value: 'bundle_iap' },
+  { label: '充值礼包', value: 'bundle_recharge' },
   { label: '货币', value: 'currency' },
   { label: '增益', value: 'buff' },
   { label: '票券', value: 'ticket' },
@@ -201,6 +206,11 @@ export const MESSAGES = {
  * 类别标签映射
  */
 export const CATEGORY_LABELS: Record<string, string> = {
+  bundle_system: '系统礼包',
+  bundle_calendar: '日历礼包',
+  bundle_random: '随机礼包',
+  bundle_iap: '内购礼包',
+  bundle_recharge: '充值礼包',
   currency: '货币',
   buff: '增益',
   ticket: '票券',
@@ -209,6 +219,11 @@ export const CATEGORY_LABELS: Record<string, string> = {
   material: '材料',
   other: '其他'
 };
+
+/**
+ * 图片基础 URL
+ */
+export const IMAGE_BASE_URL = 'https://cdn.xreddeercasino.com/images/items/';
 
 /**
  * 稀有度标签映射

@@ -2,27 +2,48 @@
  * 礼包道具数据类型
  */
 export interface GiftPack {
-  id: number;
+  id?: number; // 可选，因为API可能不返回id，只有item_id
   item_id: number;
   category: string;
-  name: string;
+  name?: string; // 可选，可能只有name_default
   name_default: string;
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
   stack_limit: number;
   is_consumable: boolean;
   bind_flag: boolean;
   status: 'active' | 'disabled' | 'archived';
-  display_icon?: string;
-  display_color?: string;
+  display_icon?: string | null;
+  display_color?: string | null;
   sort_weight: number;
   expire_days?: number | null;
   usage_limit?: number | null;
-  level_required?: number;
-  vip_required?: number;
-  extra?: Record<string, any>;
+  level_required?: number | null;
+  vip_required?: number | null;
+  extra?: {
+    meta?: Record<string, any>;
+    entries?: Array<{
+      weight?: number;
+      display?: Record<string, any>;
+      rewards?: Array<{
+        type: string;
+        amount: number;
+        ref_id: string;
+        display?: Record<string, any>;
+        metadata?: Record<string, any>;
+        is_premium?: boolean;
+        is_dynamic?: boolean;
+        dynamic_calc?: Record<string, any>;
+      }>;
+      entry_id?: string;
+      conditions?: Record<string, any>;
+    }>;
+    reward_group_type?: string;
+    [key: string]: any;
+  };
   created_at: string;
   updated_at: string;
-  locale?: string;
+  locales?: Array<any>; // API返回的locales数组
+  locale?: string; // 前端使用的locale
   locale_overrides?: {
     name?: string;
     description?: string;

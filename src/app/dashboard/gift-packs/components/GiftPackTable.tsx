@@ -26,7 +26,8 @@ import {
   CATEGORY_LABELS,
   RARITY_LABELS,
   RARITY_COLORS,
-  STATUS_LABELS
+  STATUS_LABELS,
+  IMAGE_BASE_URL
 } from '../constants';
 
 interface EmptyStateProps {
@@ -100,16 +101,21 @@ export function GiftPackTable({
       return {
         ...col,
         render: (value: any, record: GiftPack) => {
-          const displayIcon = record.locale_overrides?.display_icon || record.display_icon;
+          const rawIcon = record.locale_overrides?.display_icon || record.display_icon;
+          const displayIcon = rawIcon 
+            ? (rawIcon.startsWith('http') ? rawIcon : `${IMAGE_BASE_URL}${rawIcon}`) 
+            : null;
+            
           return (
             <div className='flex items-center justify-center'>
               {displayIcon ? (
                 <Image
                   src={displayIcon}
-                  alt={record.name}
+                  alt={record.name_default}
                   width={40}
                   height={40}
                   className='rounded-md object-cover'
+                  unoptimized={true} // 避免 Next.js 图片优化问题，特别是对于外部 CDN
                 />
               ) : (
                 <div

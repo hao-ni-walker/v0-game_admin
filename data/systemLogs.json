@@ -23275,332 +23275,404 @@
   },
   {
     "id": 1323,
-    "createdAt": "2025-12-07T02:12:01.014Z",
+    "createdAt": "2025-12-07T02:12:02.181Z",
     "level": "info",
-    "action": "获取玩家列表",
+    "action": "获取玩家统计",
     "module": "玩家管理",
-    "message": "收到请求",
+    "message": "获取玩家统计成功",
     "details": {
-      "requestBody": {
-        "page": 1,
-        "page_size": 20,
-        "pageSize": 20
-      },
-      "timestamp": "2025-12-07T02:12:00.975Z"
+      "timestamp": "2025-12-07T02:12:02.181Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "a82865b4-4358-498c-816a-c4034355fdb9"
+    "requestId": "ea340d8c-68be-40f1-ba57-70b6ce0d17b4"
   },
   {
     "id": 1324,
-    "createdAt": "2025-12-07T02:12:01.062Z",
+    "createdAt": "2025-12-07T02:13:08.978Z",
     "level": "info",
-    "action": "获取玩家列表",
+    "action": "获取玩家统计",
     "module": "玩家管理",
-    "message": "发送请求到远程API",
+    "message": "获取玩家统计成功",
     "details": {
-      "remoteUrl": "https://api.xreddeercasino.com/api/admin/users?page=1&page_size=20&page_size=20",
-      "method": "GET",
-      "queryParams": "page=1&page_size=20&page_size=20",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "bearer eyJhbGciOiJIUzI1NiIs..."
-      },
-      "timestamp": "2025-12-07T02:12:01.061Z"
+      "timestamp": "2025-12-07T02:13:08.977Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "fb3c75d2-f15c-460b-92b9-d0c03e7c7e5d"
+    "requestId": "180d10eb-8154-4b52-8828-3edd03b4fd70"
   },
   {
     "id": 1325,
-    "createdAt": "2025-12-07T02:12:02.008Z",
+    "createdAt": "2025-12-07T02:13:40.530Z",
     "level": "info",
-    "action": "获取玩家列表",
+    "action": "获取玩家统计",
     "module": "玩家管理",
-    "message": "收到远程API响应",
+    "message": "获取玩家统计成功",
     "details": {
-      "remoteUrl": "https://api.xreddeercasino.com/api/admin/users?page=1&page_size=20&page_size=20",
-      "httpStatus": 200,
-      "httpStatusText": "OK",
-      "responseCode": 200,
-      "responseMsg": "SUCCESS",
-      "responseData": {
-        "total": 38,
-        "page": 1,
-        "page_size": 20,
-        "itemsCount": 20
-      },
-      "timestamp": "2025-12-07T02:12:02.007Z"
+      "timestamp": "2025-12-07T02:13:40.530Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "9894f5fc-cf1b-461d-a950-96abbf31369c"
+    "requestId": "b9607583-9c20-4af4-b371-62e3d1df8b31"
   },
   {
     "id": 1326,
-    "createdAt": "2025-12-07T02:12:02.032Z",
+    "createdAt": "2025-12-07T02:14:11.181Z",
     "level": "info",
-    "action": "获取玩家列表",
+    "action": "获取玩家统计",
     "module": "玩家管理",
-    "message": "返回响应给前端",
+    "message": "获取玩家统计成功",
     "details": {
-      "responseCode": 0,
-      "responseData": {
-        "total": 38,
-        "page": 1,
-        "page_size": 20,
-        "listCount": 20
-      },
-      "requestDuration": "1057ms",
-      "timestamp": "2025-12-07T02:12:02.031Z"
+      "timestamp": "2025-12-07T02:14:11.181Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "05a461e7-3383-4b00-a72e-79e6061f887d"
+    "requestId": "72dec846-9873-4679-9a46-ca05f75fd3d5"
   },
   {
     "id": 1327,
-    "createdAt": "2025-12-07T02:13:07.779Z",
+    "createdAt": "2025-12-07T02:17:40.451Z",
     "level": "info",
-    "action": "获取玩家列表",
+    "action": "获取玩家统计",
     "module": "玩家管理",
-    "message": "收到请求",
+    "message": "获取玩家统计成功",
     "details": {
-      "requestBody": {
-        "page": 1,
-        "page_size": 20,
-        "pageSize": 20
-      },
-      "timestamp": "2025-12-07T02:13:07.778Z"
+      "timestamp": "2025-12-07T02:17:40.449Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "42584e8c-919a-4b91-bb97-701e54a3f78f"
+    "requestId": "3cf2ae20-b6b9-4716-9258-0d3c832da261"
   },
   {
     "id": 1328,
-    "createdAt": "2025-12-07T02:13:07.809Z",
+    "createdAt": "2025-12-07T02:25:54.927Z",
     "level": "info",
-    "action": "获取玩家列表",
+    "action": "获取玩家统计",
     "module": "玩家管理",
-    "message": "发送请求到远程API",
+    "message": "获取玩家统计成功",
     "details": {
-      "remoteUrl": "https://api.xreddeercasino.com/api/admin/users?page=1&page_size=20&page_size=20",
-      "method": "GET",
-      "queryParams": "page=1&page_size=20&page_size=20",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "bearer eyJhbGciOiJIUzI1NiIs..."
-      },
-      "timestamp": "2025-12-07T02:13:07.808Z"
+      "timestamp": "2025-12-07T02:25:54.927Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "ce050d9d-6ad0-4096-8a82-ba82d0e616cb"
+    "requestId": "4b3bd7d3-4580-47ba-86d6-c3172d64322b"
   },
   {
     "id": 1329,
-    "createdAt": "2025-12-07T02:13:09.103Z",
+    "createdAt": "2025-12-07T02:28:16.624Z",
     "level": "info",
-    "action": "获取玩家列表",
+    "action": "获取玩家统计",
     "module": "玩家管理",
-    "message": "收到远程API响应",
+    "message": "获取玩家统计成功",
     "details": {
-      "remoteUrl": "https://api.xreddeercasino.com/api/admin/users?page=1&page_size=20&page_size=20",
-      "httpStatus": 200,
-      "httpStatusText": "OK",
-      "responseCode": 200,
-      "responseMsg": "SUCCESS",
-      "responseData": {
-        "total": 38,
-        "page": 1,
-        "page_size": 20,
-        "itemsCount": 20
-      },
-      "timestamp": "2025-12-07T02:13:09.102Z"
+      "timestamp": "2025-12-07T02:28:16.624Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "0a1eae87-1237-4434-9b1d-6a3c08d8cdf8"
+    "requestId": "2fa02ae9-78dd-4503-b4b7-dd207f709b57"
   },
   {
     "id": 1330,
-    "createdAt": "2025-12-07T02:13:09.131Z",
+    "createdAt": "2025-12-07T02:28:28.076Z",
     "level": "info",
-    "action": "获取玩家列表",
+    "action": "获取玩家统计",
     "module": "玩家管理",
-    "message": "返回响应给前端",
+    "message": "获取玩家统计成功",
     "details": {
-      "responseCode": 0,
-      "responseData": {
-        "total": 38,
-        "page": 1,
-        "page_size": 20,
-        "listCount": 20
-      },
-      "requestDuration": "1352ms",
-      "timestamp": "2025-12-07T02:13:09.131Z"
+      "timestamp": "2025-12-07T02:28:28.076Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "c1ece367-9853-4c6f-8f7d-7e4a2a78922f"
+    "requestId": "05a849b4-6e47-4624-bc58-b629e45b517d"
   },
   {
     "id": 1331,
-    "createdAt": "2025-12-07T02:13:38.724Z",
+    "createdAt": "2025-12-07T03:11:37.115Z",
     "level": "info",
-    "action": "获取玩家列表",
-    "module": "玩家管理",
-    "message": "收到请求",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
     "details": {
-      "requestBody": {
-        "page": 1,
-        "page_size": 20,
-        "pageSize": 20
-      },
-      "timestamp": "2025-12-07T02:13:38.722Z"
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:11:37.098Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "16a930fd-0e98-4d21-8674-87f2eaf3e953"
+    "requestId": "9717b59d-faba-414e-bb31-7916d86ba001"
   },
   {
     "id": 1332,
-    "createdAt": "2025-12-07T02:13:38.756Z",
+    "createdAt": "2025-12-07T03:11:37.582Z",
     "level": "info",
-    "action": "获取玩家列表",
-    "module": "玩家管理",
-    "message": "发送请求到远程API",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
     "details": {
-      "remoteUrl": "https://api.xreddeercasino.com/api/admin/users?page=1&page_size=20&page_size=20",
-      "method": "GET",
-      "queryParams": "page=1&page_size=20&page_size=20",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "bearer eyJhbGciOiJIUzI1NiIs..."
-      },
-      "timestamp": "2025-12-07T02:13:38.756Z"
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:11:37.582Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "b5247a7a-1aa1-44a1-a4b6-82ee17e7dcfe"
+    "requestId": "11d3011b-a7f4-495a-b6fb-7d70360cbd00"
   },
   {
     "id": 1333,
-    "createdAt": "2025-12-07T02:13:39.635Z",
+    "createdAt": "2025-12-07T03:13:09.214Z",
     "level": "info",
-    "action": "获取玩家列表",
-    "module": "玩家管理",
-    "message": "收到远程API响应",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
     "details": {
-      "remoteUrl": "https://api.xreddeercasino.com/api/admin/users?page=1&page_size=20&page_size=20",
-      "httpStatus": 200,
-      "httpStatusText": "OK",
-      "responseCode": 200,
-      "responseMsg": "SUCCESS",
-      "responseData": {
-        "total": 38,
-        "page": 1,
-        "page_size": 20,
-        "itemsCount": 20
-      },
-      "timestamp": "2025-12-07T02:13:39.635Z"
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:13:09.214Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "ec593c59-c8a2-4e1d-9374-184f5b899246"
+    "requestId": "f02d4cf3-f725-4554-aea3-0567c46620f8"
   },
   {
     "id": 1334,
-    "createdAt": "2025-12-07T02:13:39.665Z",
+    "createdAt": "2025-12-07T03:13:09.695Z",
     "level": "info",
-    "action": "获取玩家列表",
-    "module": "玩家管理",
-    "message": "返回响应给前端",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
     "details": {
-      "responseCode": 0,
-      "responseData": {
-        "total": 38,
-        "page": 1,
-        "page_size": 20,
-        "listCount": 20
-      },
-      "requestDuration": "944ms",
-      "timestamp": "2025-12-07T02:13:39.665Z"
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:13:09.695Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "4bf39e1b-5e81-4a20-9a0e-19012fdb18bc"
+    "requestId": "1e5bb38b-eb43-4392-9301-2ee981352cd1"
   },
   {
     "id": 1335,
-    "createdAt": "2025-12-07T02:13:40.582Z",
+    "createdAt": "2025-12-07T03:13:11.452Z",
     "level": "info",
-    "action": "获取玩家详情",
-    "module": "玩家管理",
-    "message": "获取玩家详情成功",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
     "details": {
-      "playerId": "38",
-      "timestamp": "2025-12-07T02:13:40.582Z"
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:13:11.452Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "3ebb9474-e6ed-4f60-abcb-6a2facd91f7f"
+    "requestId": "748a58d6-0ae3-4169-9ab8-91272b78829b"
   },
   {
     "id": 1336,
-    "createdAt": "2025-12-07T02:13:40.611Z",
-    "level": "warn",
-    "action": "获取玩家详情",
-    "module": "玩家管理",
-    "message": "远程API返回错误",
+    "createdAt": "2025-12-07T03:13:11.913Z",
+    "level": "info",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
     "details": {
-      "playerId": "38",
-      "code": 500,
-      "msg": "Failed to get user detail: 'InstrumentedList' object has no attribute 'vip_level'",
-      "timestamp": "2025-12-07T02:13:40.611Z"
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:13:11.913Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "bd7cfe22-1966-4b0a-b935-4d62f8ce63fb"
+    "requestId": "b07608ca-fb84-4cda-80ca-94d1f589a653"
   },
   {
     "id": 1337,
-    "createdAt": "2025-12-07T02:13:42.296Z",
+    "createdAt": "2025-12-07T03:13:26.374Z",
     "level": "info",
-    "action": "获取玩家详情",
-    "module": "玩家管理",
-    "message": "获取玩家详情成功",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
     "details": {
-      "playerId": "38",
-      "timestamp": "2025-12-07T02:13:42.296Z"
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:13:26.374Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "7ba32375-9171-456b-8ea5-23c8e63421bc"
+    "requestId": "f4f9f1c4-e6f6-426f-b6b9-6c1b7b0d5b15"
   },
   {
     "id": 1338,
-    "createdAt": "2025-12-07T02:13:42.324Z",
-    "level": "warn",
-    "action": "获取玩家详情",
-    "module": "玩家管理",
-    "message": "远程API返回错误",
+    "createdAt": "2025-12-07T03:13:26.869Z",
+    "level": "info",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
     "details": {
-      "playerId": "38",
-      "code": 500,
-      "msg": "Failed to get user detail: 'InstrumentedList' object has no attribute 'vip_level'",
-      "timestamp": "2025-12-07T02:13:42.324Z"
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:13:26.869Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "5f6bdbbd-d922-4fa6-91e1-78f57b8aea2e"
+    "requestId": "fae27c70-1c26-47c8-8128-462226bfcf15"
   },
   {
     "id": 1339,
-    "createdAt": "2025-12-07T02:14:09.971Z",
+    "createdAt": "2025-12-07T03:13:29.523Z",
+    "level": "info",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
+    "details": {
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:13:29.522Z"
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "requestId": "eb3ef7af-4cc8-4de7-995d-e7632ed2b0f6"
+  },
+  {
+    "id": 1340,
+    "createdAt": "2025-12-07T03:13:29.987Z",
+    "level": "info",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
+    "details": {
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:13:29.987Z"
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "requestId": "4a513cd6-6cfa-461f-aa41-3f4a454909cc"
+  },
+  {
+    "id": 1341,
+    "createdAt": "2025-12-07T03:15:31.564Z",
+    "level": "info",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
+    "details": {
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:15:31.563Z"
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "requestId": "71f01904-cad9-4765-b398-dd1c5dee5c0a"
+  },
+  {
+    "id": 1342,
+    "createdAt": "2025-12-07T03:15:32.339Z",
+    "level": "info",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
+    "details": {
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:15:32.338Z"
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "requestId": "e9fb15e4-a39c-43fb-96fd-0600c8fecd25"
+  },
+  {
+    "id": 1343,
+    "createdAt": "2025-12-07T03:15:51.669Z",
+    "level": "info",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
+    "details": {
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:15:51.669Z"
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "requestId": "1e3d2593-2378-46f3-91cc-107b5e7791da"
+  },
+  {
+    "id": 1344,
+    "createdAt": "2025-12-07T03:15:56.106Z",
+    "level": "info",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
+    "details": {
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:15:56.106Z"
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "requestId": "3402359c-a696-4209-aaec-c0d9272a14e3"
+  },
+  {
+    "id": 1345,
+    "createdAt": "2025-12-07T03:15:56.593Z",
+    "level": "info",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
+    "details": {
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:15:56.593Z"
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "requestId": "2dac0277-42f8-455b-baa5-f596bd5ac318"
+  },
+  {
+    "id": 1346,
+    "createdAt": "2025-12-07T03:17:42.067Z",
+    "level": "info",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
+    "details": {
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:17:42.067Z"
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "requestId": "4dfb00db-e5cf-4619-9e2f-19520b0a3fc5"
+  },
+  {
+    "id": 1347,
+    "createdAt": "2025-12-07T03:17:42.561Z",
+    "level": "info",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
+    "details": {
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:17:42.561Z"
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "requestId": "f96fd00f-f7a3-4bf9-a0ef-0eb9d6672db4"
+  },
+  {
+    "id": 1348,
+    "createdAt": "2025-12-07T03:18:13.738Z",
+    "level": "info",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
+    "details": {
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:18:13.738Z"
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "requestId": "6ea95973-4e89-4ce7-ba4a-31d2e7e27649"
+  },
+  {
+    "id": 1349,
+    "createdAt": "2025-12-07T03:18:14.203Z",
+    "level": "info",
+    "action": "获取礼包列表",
+    "module": "礼包管理",
+    "message": "获取礼包列表成功",
+    "details": {
+      "queryParams": "limit=20&offset=0&status=active&sort_by=sort_weight&sort_dir=desc",
+      "timestamp": "2025-12-07T03:18:14.203Z"
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "requestId": "3a19ddf9-dcff-4282-92c1-1e8b9ac1a83d"
+  },
+  {
+    "id": 1350,
+    "createdAt": "2025-12-07T03:19:01.128Z",
     "level": "info",
     "action": "获取玩家列表",
     "module": "玩家管理",
@@ -23611,15 +23683,15 @@
         "page_size": 20,
         "pageSize": 20
       },
-      "timestamp": "2025-12-07T02:14:09.971Z"
+      "timestamp": "2025-12-07T03:19:01.128Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "b2f5e568-fe25-4397-9c4b-d1d869058778"
+    "requestId": "238d032f-e2f0-416b-9d43-8e3f41e691a5"
   },
   {
-    "id": 1340,
-    "createdAt": "2025-12-07T02:14:10.002Z",
+    "id": 1351,
+    "createdAt": "2025-12-07T03:19:01.158Z",
     "level": "info",
     "action": "获取玩家列表",
     "module": "玩家管理",
@@ -23632,15 +23704,15 @@
         "Content-Type": "application/json",
         "Authorization": "bearer eyJhbGciOiJIUzI1NiIs..."
       },
-      "timestamp": "2025-12-07T02:14:10.002Z"
+      "timestamp": "2025-12-07T03:19:01.158Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "038dc166-4397-49d1-9f4f-f716a5e5a58f"
+    "requestId": "8023bc47-7017-4c6f-b102-1684f51e4bfc"
   },
   {
-    "id": 1341,
-    "createdAt": "2025-12-07T02:14:11.744Z",
+    "id": 1352,
+    "createdAt": "2025-12-07T03:19:02.116Z",
     "level": "info",
     "action": "获取玩家列表",
     "module": "玩家管理",
@@ -23657,15 +23729,15 @@
         "page_size": 20,
         "itemsCount": 20
       },
-      "timestamp": "2025-12-07T02:14:11.744Z"
+      "timestamp": "2025-12-07T03:19:02.116Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "4ea6bef4-7f00-4499-b787-cbe5658df7a8"
+    "requestId": "8e426982-2409-4a2c-af1e-6c731f89ea67"
   },
   {
-    "id": 1342,
-    "createdAt": "2025-12-07T02:14:11.776Z",
+    "id": 1353,
+    "createdAt": "2025-12-07T03:19:02.147Z",
     "level": "info",
     "action": "获取玩家列表",
     "module": "玩家管理",
@@ -23678,11 +23750,25 @@
         "page_size": 20,
         "listCount": 20
       },
-      "requestDuration": "1805ms",
-      "timestamp": "2025-12-07T02:14:11.776Z"
+      "requestDuration": "1019ms",
+      "timestamp": "2025-12-07T03:19:02.147Z"
     },
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
-    "requestId": "b560a10f-8f46-4bb7-93be-cf62baaf6093"
+    "requestId": "430d316c-c4be-453a-95a8-334fb8a33e72"
+  },
+  {
+    "id": 1354,
+    "createdAt": "2025-12-07T03:19:02.387Z",
+    "level": "info",
+    "action": "获取玩家统计",
+    "module": "玩家管理",
+    "message": "获取玩家统计成功",
+    "details": {
+      "timestamp": "2025-12-07T03:19:02.387Z"
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "requestId": "f0504b6e-2f29-435f-b2ff-3cd5846bb79a"
   }
 ]

@@ -69,7 +69,8 @@ export default function GiftPacksPage() {
    * 删除礼包
    */
   const handleDeleteGiftPack = async (giftPack: GiftPack) => {
-    const success = await deleteGiftPack(giftPack.id);
+    const itemId = giftPack.id || giftPack.item_id;
+    const success = await deleteGiftPack(itemId);
     if (success) {
       fetchGiftPacks(filters);
     }

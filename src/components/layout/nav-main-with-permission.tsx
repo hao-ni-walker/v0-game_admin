@@ -132,18 +132,88 @@ export function NavMainWithPermission() {
                       </CollapsibleTrigger>
                       <CollapsibleContent>
                         <SidebarMenuSub>
-                          {item.items?.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.title}>
-                              <SidebarMenuSubButton
-                                asChild
-                                isActive={isActivePath(subItem.url)}
-                              >
-                                <Link href={subItem.url}>
-                                  <span>{subItem.title}</span>
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
+                          {item.items?.map((subItem) => {
+                            // 检查子项是否有三级菜单
+                            const hasSubItems = subItem.items && subItem.items.length > 0;
+                            const isSubItemActive = isActivePath(subItem.url);
+                            const hasActiveSubSubItem = hasSubItems
+                              ? hasActiveChild(subItem.items)
+                              : false;
+                            const shouldOpenSub = isSubItemActive || hasActiveSubSubItem;
+
+                            // 如果有三级菜单，需要渲染为可折叠的菜单项
+                            if (hasSubItems) {
+                              return (
+                                <Collapsible
+                                  key={subItem.title}
+                                  asChild
+                                  defaultOpen={shouldOpenSub}
+                                >
+                                  <SidebarMenuSubItem>
+                                    <div className='flex items-center'>
+                                      <SidebarMenuSubButton
+                                        asChild
+                                        isActive={isSubItemActive}
+                                        className='flex-1'
+                                      >
+                                        {subItem.url === '#' ? (
+                                          <div className='flex items-center gap-2'>
+                                            {subItem.icon && <subItem.icon className='h-4 w-4' />}
+                                            <span>{subItem.title}</span>
+                                          </div>
+                                        ) : (
+                                          <Link href={subItem.url} className='flex items-center gap-2'>
+                                            {subItem.icon && <subItem.icon className='h-4 w-4' />}
+                                            <span>{subItem.title}</span>
+                                          </Link>
+                                        )}
+                                      </SidebarMenuSubButton>
+                                      <CollapsibleTrigger asChild>
+                                        <SidebarMenuAction className='data-[state=open]:rotate-90 relative'>
+                                          <ChevronRight className='h-3 w-3' />
+                                          <span className='sr-only'>Toggle</span>
+                                        </SidebarMenuAction>
+                                      </CollapsibleTrigger>
+                                    </div>
+                                    <CollapsibleContent>
+                                      <SidebarMenuSub>
+                                        {subItem.items?.map((subSubItem) => (
+                                          <SidebarMenuSubItem key={subSubItem.title}>
+                                            <SidebarMenuSubButton
+                                              asChild
+                                              isActive={isActivePath(subSubItem.url)}
+                                            >
+                                              <Link href={subSubItem.url} className='flex items-center gap-2'>
+                                                {subSubItem.icon && (
+                                                  <subSubItem.icon className='h-4 w-4' />
+                                                )}
+                                                <span>{subSubItem.title}</span>
+                                              </Link>
+                                            </SidebarMenuSubButton>
+                                          </SidebarMenuSubItem>
+                                        ))}
+                                      </SidebarMenuSub>
+                                    </CollapsibleContent>
+                                  </SidebarMenuSubItem>
+                                </Collapsible>
+                              );
+                            }
+
+                            // 没有三级菜单，直接渲染为链接
+                            return (
+                              <SidebarMenuSubItem key={subItem.title}>
+                                <SidebarMenuSubButton
+                                  asChild
+                                  isActive={isSubItemActive}
+                                >
+                                  <Link href={subItem.url} className='flex items-center gap-2'>
+                                    {subItem.icon && <subItem.icon className='h-4 w-4' />}
+                                    <span>{subItem.title}</span>
+                                  </Link>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            );
+                          })}
                         </SidebarMenuSub>
                       </CollapsibleContent>
                     </>

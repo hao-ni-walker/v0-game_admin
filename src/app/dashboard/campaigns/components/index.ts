@@ -4,3 +4,4 @@ export * from './activity-table';
 export * from './activity-detail-drawer';
 export * from './activity-edit-modal';
 export * from './trigger-edit-drawer';
+export * from './activity-create-wizard';

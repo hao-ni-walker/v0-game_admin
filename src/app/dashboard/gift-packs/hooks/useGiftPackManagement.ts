@@ -18,60 +18,93 @@ export function useGiftPackManagement() {
   const fetchGiftPacks = useCallback(async (filters: GiftPackFilters) => {
     setLoading(true);
     try {
-      // 构建请求体
-      const requestBody: any = {
-        page: filters.page || 1,
-        page_size: filters.page_size || 20
-      };
+      // 构建查询参数
+      const page = filters.page || 1;
+      const page_size = filters.page_size || 20;
+      const params = new URLSearchParams();
+      
+      // 分页参数（转换为 limit 和 offset）
+      params.append('limit', String(page_size));
+      params.append('offset', String((page - 1) * page_size));
 
       // 添加筛选条件
-      if (filters.keyword) requestBody.keyword = filters.keyword;
-      if (filters.locale && filters.locale !== 'default') requestBody.locale = filters.locale;
+      if (filters.keyword) params.append('keyword', filters.keyword);
+      if (filters.locale && filters.locale !== 'default') {
+        params.append('locale', filters.locale);
+      }
       if (filters.categories && filters.categories.length > 0) {
-        requestBody.categories = filters.categories;
+        filters.categories.forEach(cat => params.append('category', cat));
       }
       if (filters.rarities && filters.rarities.length > 0) {
-        requestBody.rarities = filters.rarities;
+        filters.rarities.forEach(rarity => params.append('rarity', rarity));
       }
       if (filters.statuses && filters.statuses.length > 0) {
-        requestBody.statuses = filters.statuses;
+        filters.statuses.forEach(status => params.append('status', status));
       }
-      if (filters.is_consumable !== undefined) requestBody.is_consumable = filters.is_consumable;
-      if (filters.bind_flag !== undefined) requestBody.bind_flag = filters.bind_flag;
-      if (filters.vip_min !== undefined) requestBody.vip_min = filters.vip_min;
-      if (filters.vip_max !== undefined) requestBody.vip_max = filters.vip_max;
-      if (filters.level_min !== undefined) requestBody.level_min = filters.level_min;
-      if (filters.level_max !== undefined) requestBody.level_max = filters.level_max;
-      if (filters.expire_days_max !== undefined) requestBody.expire_days_max = filters.expire_days_max;
-      if (filters.usage_limit_max !== undefined) requestBody.usage_limit_max = filters.usage_limit_max;
-      if (filters.created_from) requestBody.created_from = filters.created_from;
-      if (filters.created_to) requestBody.created_to = filters.created_to;
-      if (filters.updated_from) requestBody.updated_from = filters.updated_from;
-      if (filters.updated_to) requestBody.updated_to = filters.updated_to;
-      if (filters.sort_by) requestBody.sort_by = filters.sort_by;
-      if (filters.sort_dir) requestBody.sort_dir = filters.sort_dir;
+      if (filters.is_consumable !== undefined) {
+        params.append('is_consumable', String(filters.is_consumable));
+      }
+      if (filters.bind_flag !== undefined) {
+        params.append('bind_flag', String(filters.bind_flag));
+      }
+      if (filters.vip_min !== undefined) {
+        params.append('vip_required_min', String(filters.vip_min));
+      }
+      if (filters.vip_max !== undefined) {
+        params.append('vip_required_max', String(filters.vip_max));
+      }
+      if (filters.level_min !== undefined) {
+        params.append('level_required_min', String(filters.level_min));
+      }
+      if (filters.level_max !== undefined) {
+        params.append('level_required_max', String(filters.level_max));
+      }
+      if (filters.expire_days_max !== undefined) {
+        params.append('expire_days_max', String(filters.expire_days_max));
+      }
+      if (filters.usage_limit_max !== undefined) {
+        params.append('usage_limit_max', String(filters.usage_limit_max));
+      }
+      if (filters.created_from) params.append('created_from', filters.created_from);
+      if (filters.created_to) params.append('created_to', filters.created_to);
+      if (filters.updated_from) params.append('updated_from', filters.updated_from);
+      if (filters.updated_to) params.append('updated_to', filters.updated_to);
+      if (filters.sort_by) params.append('sort_by', filters.sort_by);
+      if (filters.sort_dir) params.append('sort_dir', filters.sort_dir);
 
-      const response = await fetch('/api/items/list', {
-        method: 'POST',
+      const response = await fetch(`/api/items?${params.toString()}`, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
+        }
       });
 
       if (!response.ok) {
         throw new Error('获取礼包列表失败');
       }
 
-      const data = await response.json();
+      const result = await response.json();
       
-      setGiftPacks(data.list || []);
-      setPagination({
-        page: data.page || 1,
-        page_size: data.page_size || 20,
-        total: data.total || 0,
-        totalPages: Math.ceil((data.total || 0) / (data.page_size || 20))
-      });
+      // 处理响应格式：{ code: 0, data: { total, page, page_size, list: [...] } }
+      if (result.code === 0 && result.data) {
+        const { total, page: responsePage, page_size: responsePageSize, list } = result.data;
+        
+        // 为每个礼包添加 id 字段（如果没有的话，使用 item_id）
+        const giftPacksWithId = (list || []).map((item: GiftPack) => ({
+          ...item,
+          id: item.id || item.item_id
+        }));
+        
+        setGiftPacks(giftPacksWithId);
+        setPagination({
+          page: responsePage || page,
+          page_size: responsePageSize || page_size,
+          total: total || 0,
+          totalPages: Math.ceil((total || 0) / (responsePageSize || page_size))
+        });
+      } else {
+        throw new Error(result.message || '获取礼包列表失败');
+      }
     } catch (error) {
       console.error('获取礼包列表失败:', error);
       toast.error(MESSAGES.ERROR.FETCH);
@@ -175,7 +208,8 @@ export function useGiftPackManagement() {
   const toggleGiftPackStatus = useCallback(
     async (giftPack: GiftPack): Promise<boolean> => {
       const newStatus = giftPack.status === 'active' ? 'disabled' : 'active';
-      const success = await updateGiftPack(giftPack.id, { status: newStatus });
+      const itemId = giftPack.id || giftPack.item_id;
+      const success = await updateGiftPack(itemId, { status: newStatus });
       if (success) {
         toast.success(newStatus === 'active' ? MESSAGES.SUCCESS.ENABLE : MESSAGES.SUCCESS.DISABLE);
       }
@@ -189,7 +223,8 @@ export function useGiftPackManagement() {
    */
   const archiveGiftPack = useCallback(
     async (giftPack: GiftPack): Promise<boolean> => {
-      const success = await updateGiftPack(giftPack.id, { status: 'archived' });
+      const itemId = giftPack.id || giftPack.item_id;
+      const success = await updateGiftPack(itemId, { status: 'archived' });
       if (success) {
         toast.success(MESSAGES.SUCCESS.ARCHIVE);
       }
