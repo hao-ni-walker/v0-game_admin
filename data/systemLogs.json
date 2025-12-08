@@ -23770,5 +23770,37 @@
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
     "ip": "::1",
     "requestId": "f0504b6e-2f29-435f-b2ff-3cd5846bb79a"
+  },
+  {
+    "id": 1355,
+    "createdAt": "2025-12-08T11:09:52.842Z",
+    "level": "info",
+    "action": "用户登录",
+    "module": "用户认证",
+    "message": "远程API响应",
+    "details": {
+      "username": "test",
+      "responseCode": 200,
+      "hasData": true,
+      "timestamp": "2025-12-08T11:09:52.815Z"
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "requestId": "baf213a5-fb33-4e0a-acaf-28fe0dd67645"
+  },
+  {
+    "id": 1356,
+    "createdAt": "2025-12-08T11:09:52.988Z",
+    "level": "info",
+    "action": "用户登录",
+    "module": "用户认证",
+    "message": "用户登录成功",
+    "details": {
+      "username": "test",
+      "loginTime": "2025-12-08T11:09:52.988Z"
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "requestId": "b5709b00-39b6-4339-87cf-73520943780d"
   }
 ]

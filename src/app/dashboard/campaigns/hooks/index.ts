@@ -9,7 +9,9 @@ import { toast } from 'sonner';
 import { usePermissions } from '@/hooks/use-permissions';
 
 // 将前端筛选条件转换为后端 API 参数
-const convertFiltersToApiParams = (filters: ActivityFilters): ActivityListParams => {
+const convertFiltersToApiParams = (
+  filters: ActivityFilters
+): ActivityListParams => {
   const params: ActivityListParams = {
     page: filters.page || 1,
     page_size: filters.page_size || 20
@@ -22,7 +24,8 @@ const convertFiltersToApiParams = (filters: ActivityFilters): ActivityListParams
   if (filters.statuses && filters.statuses.length > 0) {
     params.status_in = filters.statuses.join(',');
   }
-  if (filters.start_time_start) params.start_time_start = filters.start_time_start;
+  if (filters.start_time_start)
+    params.start_time_start = filters.start_time_start;
   if (filters.start_time_end) params.start_time_end = filters.start_time_end;
   if (filters.end_time_start) params.end_time_start = filters.end_time_start;
   if (filters.end_time_end) params.end_time_end = filters.end_time_end;
@@ -39,7 +42,9 @@ const convertFiltersToApiParams = (filters: ActivityFilters): ActivityListParams
 };
 
 // 从 URL 查询参数构建筛选条件
-const buildFiltersFromSearchParams = (searchParams: URLSearchParams): ActivityFilters => {
+const buildFiltersFromSearchParams = (
+  searchParams: URLSearchParams
+): ActivityFilters => {
   const filters: ActivityFilters = {
     page: parseInt(searchParams.get('page') || '1', 10),
     page_size: parseInt(searchParams.get('page_size') || '20', 10)
@@ -211,7 +216,7 @@ export const useActivityManagement = () => {
         }
 
         const response = await ActivityAPI.getActivities(apiParams);
-        if (response.code === 0) {
+        if (response.code === 0 && response.data) {
           setActivities(response.data.items || []);
           setPagination({
             page: response.data.page || 1,
@@ -260,10 +265,13 @@ export const useActivityManagement = () => {
     []
   );
 
-  const handleSort = useCallback((newSortBy: string, newSortOrder: 'asc' | 'desc') => {
-    setSortBy(newSortBy);
-    setSortOrder(newSortOrder);
-  }, []);
+  const handleSort = useCallback(
+    (newSortBy: string, newSortOrder: 'asc' | 'desc') => {
+      setSortBy(newSortBy);
+      setSortOrder(newSortOrder);
+    },
+    []
+  );
 
   // 权限检查
   const canWrite = hasPermission('activities:write');
