@@ -65,12 +65,12 @@ export const businessNavList: NavItem[] = [
         description: '订单管理',
         items: [
           {
-            title: '储值管理',
+            title: '储值订单',
             url: '/dashboard/orders/deposits',
             icon: Wallet,
-            description: '储值管理',
+            description: '储值订单',
             searchConfig: {
-              keywords: 'deposit 储值 充值 管理',
+              keywords: 'deposit 储值 充值 订单 管理',
               searchShortcut: ['d'],
               searchSection: '订单管理',
               searchPriority: 11
