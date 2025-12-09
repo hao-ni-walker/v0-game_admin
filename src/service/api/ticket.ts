@@ -142,22 +142,22 @@ export class TicketAPI {
   }
 
   // 获取评论列表
-  static async getComments(
-    ticketId: number
-  ): Promise<
-    | { success: true; data: TicketComment[] }
-    | { success: false; message: string }
-  > {
+  static async getComments(ticketId: number): Promise<{
+    code: number;
+    data?: TicketComment[];
+    message?: string;
+    success: boolean;
+  }> {
     return apiRequest(`/tickets/${ticketId}/comments`);
   }
 
   // 获取附件列表
-  static async getAttachments(
-    ticketId: number
-  ): Promise<
-    | { success: true; data: TicketAttachment[] }
-    | { success: false; message: string }
-  > {
+  static async getAttachments(ticketId: number): Promise<{
+    code: number;
+    data?: TicketAttachment[];
+    message?: string;
+    success: boolean;
+  }> {
     return apiRequest(`/tickets/${ticketId}/attachments`);
   }
 
@@ -184,11 +184,12 @@ export class TicketAPI {
   }
 
   // 获取事件列表
-  static async getEvents(
-    ticketId: number
-  ): Promise<
-    { success: true; data: TicketEvent[] } | { success: false; message: string }
-  > {
+  static async getEvents(ticketId: number): Promise<{
+    code: number;
+    data?: TicketEvent[];
+    message?: string;
+    success: boolean;
+  }> {
     return apiRequest(`/tickets/${ticketId}/events`);
   }
 }

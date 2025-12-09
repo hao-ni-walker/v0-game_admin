@@ -35,8 +35,8 @@ export interface ActivityListResponse {
 // 活动详情响应
 export interface ActivityDetailResponse {
   code: number;
-  message: string;
-  data: Activity;
+  message?: string;
+  data?: Activity;
 }
 
 // 创建活动参数
@@ -88,8 +88,8 @@ export interface EventActivityTrigger {
 // 触发规则列表响应
 export interface TriggerListResponse {
   code: number;
-  message: string;
-  data: {
+  message?: string;
+  data?: {
     items: EventActivityTrigger[];
     total: number;
   };
@@ -123,8 +123,8 @@ export interface UpdateTriggerStatusParams {
 // 活动统计响应
 export interface ActivityStatisticsResponse {
   code: number;
-  message: string;
-  data: {
+  message?: string;
+  data?: {
     total_participants: number;
     total_rewards_given: number;
     participants_7d: number;
@@ -175,7 +175,7 @@ export class ActivityAPI {
   static async updateActivityStatus(
     id: number,
     status: string
-  ): Promise<{ code: number; message: string; data: Activity }> {
+  ): Promise<{ code: number; message?: string; data?: Activity }> {
     return apiRequest(`/admin/activities/${id}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ status })
@@ -191,7 +191,7 @@ export class ActivityAPI {
   static async createTrigger(
     activityId: number,
     data: CreateTriggerParams
-  ): Promise<{ code: number; message: string; data: EventActivityTrigger }> {
+  ): Promise<{ code: number; message?: string; data?: EventActivityTrigger }> {
     return apiRequest(`/admin/activities/${activityId}/triggers`, {
       method: 'POST',
       body: JSON.stringify(data)
@@ -202,7 +202,7 @@ export class ActivityAPI {
   static async updateTrigger(
     triggerId: number,
     data: Partial<CreateTriggerParams>
-  ): Promise<{ code: number; message: string; data: EventActivityTrigger }> {
+  ): Promise<{ code: number; message?: string; data?: EventActivityTrigger }> {
     return apiRequest(`/admin/event-triggers/${triggerId}`, {
       method: 'PATCH',
       body: JSON.stringify(data)
@@ -213,7 +213,7 @@ export class ActivityAPI {
   static async updateTriggerStatus(
     triggerId: number,
     isActive: boolean
-  ): Promise<{ code: number; message: string; data: EventActivityTrigger }> {
+  ): Promise<{ code: number; message?: string; data?: EventActivityTrigger }> {
     return apiRequest(`/admin/event-triggers/${triggerId}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ is_active: isActive })

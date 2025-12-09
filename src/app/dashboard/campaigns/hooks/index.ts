@@ -216,13 +216,22 @@ export const useActivityManagement = () => {
         }
 
         const response = await ActivityAPI.getActivities(apiParams);
-        if (response.code === 0 && response.data) {
-          setActivities(response.data.items || []);
-          setPagination({
-            page: response.data.page || 1,
-            page_size: response.data.page_size || 20,
-            total: response.data.total || 0
-          });
+        if (response.code === 0) {
+          if (response.data) {
+            setActivities(response.data.items || []);
+            setPagination({
+              page: response.data.page || 1,
+              page_size: response.data.page_size || 20,
+              total: response.data.total || 0
+            });
+          } else {
+            setActivities([]);
+            setPagination({
+              page: 1,
+              page_size: 20,
+              total: 0
+            });
+          }
         } else {
           toast.error(response.message || '获取活动列表失败');
           setActivities([]);

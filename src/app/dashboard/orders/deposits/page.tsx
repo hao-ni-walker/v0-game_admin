@@ -140,10 +140,12 @@ export default function DepositOrdersPage() {
           {/* 分页 */}
           <div className='bg-card mt-auto border-t pt-4'>
             <Pagination
-              currentPage={pagination.page}
-              totalPages={pagination.totalPages}
-              pageSize={pagination.pageSize}
-              total={pagination.total}
+              pagination={{
+                page: pagination.page,
+                limit: pagination.pageSize,
+                total: pagination.total,
+                totalPages: pagination.totalPages
+              }}
               onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
               pageSizeOptions={[20, 50, 100]}

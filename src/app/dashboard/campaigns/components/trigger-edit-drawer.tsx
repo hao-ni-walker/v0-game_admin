@@ -77,7 +77,7 @@ export function TriggerEditDrawer({
       // 这里需要从触发规则列表获取，或者添加一个获取单个触发规则的 API
       // 暂时通过列表 API 获取
       const response = await ActivityAPI.getTriggers(activityId);
-      if (response.code === 0) {
+      if (response.code === 0 && response.data) {
         const trigger = response.data.items.find((t) => t.id === triggerId);
         if (trigger) {
           setFormData({

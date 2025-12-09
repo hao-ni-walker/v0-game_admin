@@ -76,7 +76,7 @@ export function ActivityDetailDrawer({
     setLoading(true);
     try {
       const response = await ActivityAPI.getActivity(activityId);
-      if (response.code === 0) {
+      if (response.code === 0 && response.data) {
         setActivity(response.data);
         setConfigForm({
           participationConfig: JSON.stringify(
@@ -102,7 +102,7 @@ export function ActivityDetailDrawer({
     setTriggersLoading(true);
     try {
       const response = await ActivityAPI.getTriggers(activityId);
-      if (response.code === 0) {
+      if (response.code === 0 && response.data) {
         setTriggers(response.data.items || []);
       } else {
         toast.error(response.message || '获取触发规则失败');

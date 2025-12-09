@@ -31,7 +31,11 @@ import { CalendarIcon, Check, ChevronRight, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { ActivityAPI, CreateActivityParams, CreateTriggerParams } from '@/service/api/activities';
+import {
+  ActivityAPI,
+  CreateActivityParams,
+  CreateTriggerParams
+} from '@/service/api/activities';
 import { TYPE_LABELS, STATUS_LABELS, TRIGGER_MODE_LABELS } from '../types';
 import { toast } from 'sonner';
 
@@ -67,7 +71,9 @@ export function ActivityCreateWizard({
   const [activityId, setActivityId] = useState<number | null>(null);
 
   // Step 1 Data
-  const [activityForm, setActivityForm] = useState<Partial<CreateActivityParams>>({
+  const [activityForm, setActivityForm] = useState<
+    Partial<CreateActivityParams>
+  >({
     activity_code: '',
     activity_type: '',
     name: '',
@@ -130,7 +136,11 @@ export function ActivityCreateWizard({
   }, [open]);
 
   const handleStep1Submit = async () => {
-    if (!activityForm.activity_code || !activityForm.activity_type || !activityForm.name) {
+    if (
+      !activityForm.activity_code ||
+      !activityForm.activity_type ||
+      !activityForm.name
+    ) {
       toast.error('请填写必填字段');
       return;
     }
@@ -163,23 +173,26 @@ export function ActivityCreateWizard({
       let currentId = activityId;
       if (!currentId) {
         const response = await ActivityAPI.createActivity(submitData);
-        if (response.code === 0) {
-             // response.data 是 Activity 对象，包含 id
-             currentId = response.data.id;
-             setActivityId(currentId);
-             toast.success('活动基本信息已保存');
-             setStep(2);
+        if (response.code === 0 && response.data) {
+          // response.data 是 Activity 对象，包含 id
+          currentId = response.data.id;
+          setActivityId(currentId);
+          toast.success('活动基本信息已保存');
+          setStep(2);
         } else {
-             toast.error(response.message || '创建活动失败');
+          toast.error(response.message || '创建活动失败');
         }
       } else {
         // 更新现有的（如果用户返回并修改）
-        const response = await ActivityAPI.updateActivity(currentId, submitData);
+        const response = await ActivityAPI.updateActivity(
+          currentId,
+          submitData
+        );
         if (response.code === 0) {
-            toast.success('活动基本信息已更新');
-            setStep(2);
+          toast.success('活动基本信息已更新');
+          setStep(2);
         } else {
-            toast.error(response.message || '更新活动失败');
+          toast.error(response.message || '更新活动失败');
         }
       }
     } catch (error) {
@@ -206,8 +219,8 @@ export function ActivityCreateWizard({
 
   const handleStep3Submit = async () => {
     if (!activityId) {
-        toast.error('未找到活动 ID');
-        return;
+      toast.error('未找到活动 ID');
+      return;
     }
     try {
       JSON.parse(rewardItemsJson);
@@ -265,43 +278,47 @@ export function ActivityCreateWizard({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !loading && onClose()}>
-      <DialogContent className='max-w-3xl max-h-[90vh] overflow-y-auto'>
+      <DialogContent className='max-h-[90vh] max-w-3xl overflow-y-auto'>
         <DialogHeader>
           <DialogTitle>创建活动</DialogTitle>
-          <DialogDescription>
-            请按照步骤完成活动创建
-          </DialogDescription>
+          <DialogDescription>请按照步骤完成活动创建</DialogDescription>
         </DialogHeader>
 
         {/* 步骤指示器 */}
-        <div className="flex items-center justify-center mb-6">
+        <div className='mb-6 flex items-center justify-center'>
           {STEPS.map((s, index) => (
-            <div key={s.id} className="flex items-center">
-              <div className={cn(
-                "flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium border-2",
-                step >= s.id 
-                  ? "bg-primary text-primary-foreground border-primary" 
-                  : "bg-muted text-muted-foreground border-muted-foreground/30"
-              )}>
-                {step > s.id ? <Check className="w-4 h-4" /> : s.id}
+            <div key={s.id} className='flex items-center'>
+              <div
+                className={cn(
+                  'flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-medium',
+                  step >= s.id
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-muted text-muted-foreground border-muted-foreground/30'
+                )}
+              >
+                {step > s.id ? <Check className='h-4 w-4' /> : s.id}
               </div>
-              <span className={cn(
-                "ml-2 text-sm font-medium",
-                step >= s.id ? "text-foreground" : "text-muted-foreground"
-              )}>
+              <span
+                className={cn(
+                  'ml-2 text-sm font-medium',
+                  step >= s.id ? 'text-foreground' : 'text-muted-foreground'
+                )}
+              >
                 {s.title}
               </span>
               {index < STEPS.length - 1 && (
-                <div className={cn(
-                  "w-12 h-0.5 mx-4",
-                  step > index + 1 ? "bg-primary" : "bg-muted"
-                )} />
+                <div
+                  className={cn(
+                    'mx-4 h-0.5 w-12',
+                    step > index + 1 ? 'bg-primary' : 'bg-muted'
+                  )}
+                />
               )}
             </div>
           ))}
         </div>
 
-        <div className="space-y-6 py-4">
+        <div className='space-y-6 py-4'>
           {/* Step 1: 基本信息 */}
           {step === 1 && (
             <div className='grid gap-4 md:grid-cols-2'>
@@ -313,7 +330,10 @@ export function ActivityCreateWizard({
                   id='activity_code'
                   value={activityForm.activity_code}
                   onChange={(e) =>
-                    setActivityForm({ ...activityForm, activity_code: e.target.value })
+                    setActivityForm({
+                      ...activityForm,
+                      activity_code: e.target.value
+                    })
                   }
                   placeholder='请输入活动编码'
                   required
@@ -351,7 +371,9 @@ export function ActivityCreateWizard({
                 <Input
                   id='name'
                   value={activityForm.name}
-                  onChange={(e) => setActivityForm({ ...activityForm, name: e.target.value })}
+                  onChange={(e) =>
+                    setActivityForm({ ...activityForm, name: e.target.value })
+                  }
                   placeholder='请输入活动名称'
                   required
                 />
@@ -363,7 +385,10 @@ export function ActivityCreateWizard({
                   id='description'
                   value={activityForm.description}
                   onChange={(e) =>
-                    setActivityForm({ ...activityForm, description: e.target.value })
+                    setActivityForm({
+                      ...activityForm,
+                      description: e.target.value
+                    })
                   }
                   placeholder='请输入活动描述'
                   rows={3}
@@ -385,7 +410,9 @@ export function ActivityCreateWizard({
                     >
                       <CalendarIcon className='mr-2 h-4 w-4' />
                       {dates.start ? (
-                        format(dates.start, 'yyyy-MM-dd HH:mm', { locale: zhCN })
+                        format(dates.start, 'yyyy-MM-dd HH:mm', {
+                          locale: zhCN
+                        })
                       ) : (
                         <span>选择开始时间</span>
                       )}
@@ -449,7 +476,9 @@ export function ActivityCreateWizard({
                     >
                       <CalendarIcon className='mr-2 h-4 w-4' />
                       {dates.displayStart ? (
-                        format(dates.displayStart, 'yyyy-MM-dd HH:mm', { locale: zhCN })
+                        format(dates.displayStart, 'yyyy-MM-dd HH:mm', {
+                          locale: zhCN
+                        })
                       ) : (
                         <span>选择展示开始时间</span>
                       )}
@@ -459,7 +488,9 @@ export function ActivityCreateWizard({
                     <Calendar
                       mode='single'
                       selected={dates.displayStart}
-                      onSelect={(date) => setDates({ ...dates, displayStart: date })}
+                      onSelect={(date) =>
+                        setDates({ ...dates, displayStart: date })
+                      }
                       locale={zhCN}
                       initialFocus
                     />
@@ -480,7 +511,9 @@ export function ActivityCreateWizard({
                     >
                       <CalendarIcon className='mr-2 h-4 w-4' />
                       {dates.displayEnd ? (
-                        format(dates.displayEnd, 'yyyy-MM-dd HH:mm', { locale: zhCN })
+                        format(dates.displayEnd, 'yyyy-MM-dd HH:mm', {
+                          locale: zhCN
+                        })
                       ) : (
                         <span>选择展示结束时间</span>
                       )}
@@ -490,7 +523,9 @@ export function ActivityCreateWizard({
                     <Calendar
                       mode='single'
                       selected={dates.displayEnd}
-                      onSelect={(date) => setDates({ ...dates, displayEnd: date })}
+                      onSelect={(date) =>
+                        setDates({ ...dates, displayEnd: date })
+                      }
                       locale={zhCN}
                       initialFocus
                     />
@@ -526,7 +561,10 @@ export function ActivityCreateWizard({
                   type='number'
                   value={activityForm.priority}
                   onChange={(e) =>
-                    setActivityForm({ ...activityForm, priority: parseInt(e.target.value) || 0 })
+                    setActivityForm({
+                      ...activityForm,
+                      priority: parseInt(e.target.value) || 0
+                    })
                   }
                   placeholder='0'
                 />
@@ -538,7 +576,10 @@ export function ActivityCreateWizard({
                   id='icon_url'
                   value={activityForm.icon_url}
                   onChange={(e) =>
-                    setActivityForm({ ...activityForm, icon_url: e.target.value })
+                    setActivityForm({
+                      ...activityForm,
+                      icon_url: e.target.value
+                    })
                   }
                   placeholder='https://...'
                 />
@@ -550,7 +591,10 @@ export function ActivityCreateWizard({
                   id='banner_url'
                   value={activityForm.banner_url}
                   onChange={(e) =>
-                    setActivityForm({ ...activityForm, banner_url: e.target.value })
+                    setActivityForm({
+                      ...activityForm,
+                      banner_url: e.target.value
+                    })
                   }
                   placeholder='https://...'
                 />
@@ -560,7 +604,7 @@ export function ActivityCreateWizard({
 
           {/* Step 2: 规则配置 */}
           {step === 2 && (
-            <div className="space-y-4">
+            <div className='space-y-4'>
               <div className='space-y-2'>
                 <Label htmlFor='event_type'>
                   事件类型 <span className='text-red-500'>*</span>
@@ -588,19 +632,21 @@ export function ActivityCreateWizard({
                 <Label htmlFor='trigger_mode'>触发模式</Label>
                 <Select
                   value={triggerForm.trigger_mode}
-                  onValueChange={(value: 'enqueue' | 'immediate' | 'suppress') =>
-                    setTriggerForm({ ...triggerForm, trigger_mode: value })
-                  }
+                  onValueChange={(
+                    value: 'enqueue' | 'immediate' | 'suppress'
+                  ) => setTriggerForm({ ...triggerForm, trigger_mode: value })}
                 >
                   <SelectTrigger id='trigger_mode'>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(TRIGGER_MODE_LABELS).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
+                    {Object.entries(TRIGGER_MODE_LABELS).map(
+                      ([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      )
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -615,7 +661,9 @@ export function ActivityCreateWizard({
                   rows={6}
                   placeholder='{"min_amount": 100, "channel": "alipay"}'
                 />
-                <p className="text-xs text-muted-foreground">请输入有效的 JSON 格式</p>
+                <p className='text-muted-foreground text-xs'>
+                  请输入有效的 JSON 格式
+                </p>
               </div>
 
               <div className='grid gap-4 md:grid-cols-3'>
@@ -628,7 +676,9 @@ export function ActivityCreateWizard({
                     onChange={(e) =>
                       setTriggerForm({
                         ...triggerForm,
-                        cooldown_seconds: e.target.value ? parseInt(e.target.value) : null
+                        cooldown_seconds: e.target.value
+                          ? parseInt(e.target.value)
+                          : null
                       })
                     }
                     placeholder='无限制'
@@ -645,7 +695,9 @@ export function ActivityCreateWizard({
                     onChange={(e) =>
                       setTriggerForm({
                         ...triggerForm,
-                        daily_limit_per_user: e.target.value ? parseInt(e.target.value) : null
+                        daily_limit_per_user: e.target.value
+                          ? parseInt(e.target.value)
+                          : null
                       })
                     }
                     placeholder='无限制'
@@ -662,7 +714,9 @@ export function ActivityCreateWizard({
                     onChange={(e) =>
                       setTriggerForm({
                         ...triggerForm,
-                        total_limit: e.target.value ? parseInt(e.target.value) : null
+                        total_limit: e.target.value
+                          ? parseInt(e.target.value)
+                          : null
                       })
                     }
                     placeholder='无限制'
@@ -688,7 +742,7 @@ export function ActivityCreateWizard({
 
           {/* Step 3: 奖励配置 */}
           {step === 3 && (
-            <div className="space-y-4">
+            <div className='space-y-4'>
               <div className='space-y-2'>
                 <Label htmlFor='reward_items'>奖励配置 (JSON)</Label>
                 <Textarea
@@ -699,18 +753,26 @@ export function ActivityCreateWizard({
                   rows={10}
                   placeholder='{"type": "balance", "amount": 10, "currency": "CNY"}'
                 />
-                <p className="text-xs text-muted-foreground">请输入有效的 JSON 格式</p>
+                <p className='text-muted-foreground text-xs'>
+                  请输入有效的 JSON 格式
+                </p>
               </div>
-              
-              <div className="bg-muted/50 p-4 rounded-md text-sm">
-                <h4 className="font-medium mb-2">确认信息</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <span className="text-muted-foreground">活动名称:</span>
+
+              <div className='bg-muted/50 rounded-md p-4 text-sm'>
+                <h4 className='mb-2 font-medium'>确认信息</h4>
+                <div className='grid grid-cols-2 gap-2'>
+                  <span className='text-muted-foreground'>活动名称:</span>
                   <span>{activityForm.name}</span>
-                  <span className="text-muted-foreground">事件类型:</span>
+                  <span className='text-muted-foreground'>事件类型:</span>
                   <span>{triggerForm.event_type}</span>
-                  <span className="text-muted-foreground">触发模式:</span>
-                  <span>{TRIGGER_MODE_LABELS[triggerForm.trigger_mode as keyof typeof TRIGGER_MODE_LABELS]}</span>
+                  <span className='text-muted-foreground'>触发模式:</span>
+                  <span>
+                    {
+                      TRIGGER_MODE_LABELS[
+                        triggerForm.trigger_mode as keyof typeof TRIGGER_MODE_LABELS
+                      ]
+                    }
+                  </span>
                 </div>
               </div>
             </div>
@@ -718,34 +780,30 @@ export function ActivityCreateWizard({
         </div>
 
         <DialogFooter>
-          <div className="flex w-full justify-between">
-             <Button 
-               type='button' 
-               variant='outline' 
-               onClick={onClose} 
-               disabled={loading}
-             >
+          <div className='flex w-full justify-between'>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={onClose}
+              disabled={loading}
+            >
               取消
             </Button>
-            <div className="flex gap-2">
+            <div className='flex gap-2'>
               {step > 1 && (
-                <Button 
-                  type='button' 
-                  variant='outline' 
+                <Button
+                  type='button'
+                  variant='outline'
                   onClick={handleBack}
                   disabled={loading}
                 >
                   上一步
                 </Button>
               )}
-              <Button 
-                type='button' 
-                onClick={handleNext} 
-                disabled={loading}
-              >
+              <Button type='button' onClick={handleNext} disabled={loading}>
                 {loading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                     保存中...
                   </>
                 ) : step === 3 ? (
@@ -753,7 +811,7 @@ export function ActivityCreateWizard({
                 ) : (
                   <>
                     下一步
-                    <ChevronRight className="ml-2 h-4 w-4" />
+                    <ChevronRight className='ml-2 h-4 w-4' />
                   </>
                 )}
               </Button>
@@ -764,4 +822,3 @@ export function ActivityCreateWizard({
     </Dialog>
   );
 }
-
