@@ -1,7 +1,13 @@
-import React, { useState } from 'react';
-import { Search, Filter, X } from 'lucide-react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { Search, Filter, X, Calendar } from 'lucide-react';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -9,7 +15,13 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { AdvancedFilterContainer } from '@/components/shared/advanced-filter-container';
 import { GameFilters as GameFiltersType } from '../types';
 import {
   CATEGORY_OPTIONS,
@@ -17,7 +29,8 @@ import {
   LANGUAGE_OPTIONS,
   STATUS_OPTIONS,
   BOOLEAN_OPTIONS,
-  SORT_OPTIONS
+  SORT_OPTIONS,
+  CURRENCY_OPTIONS
 } from '../constants';
 
 interface GameFiltersProps {
@@ -36,21 +49,37 @@ export function GameFilters({
   onReset,
   loading = false
 }: GameFiltersProps) {
-  const [localFilters, setLocalFilters] = useState<GameFiltersType>(filters);
+  // 本地表单状态（用于高级筛选弹窗）
+  const [formData, setFormData] = useState<Partial<GameFiltersType>>({});
+  const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
 
-  // 更新本地筛选条件
-  const updateLocalFilter = (key: keyof GameFiltersType, value: any) => {
-    setLocalFilters((prev) => ({ ...prev, [key]: value }));
+  // 同步 filters 到本地表单状态
+  useEffect(() => {
+    setFormData(filters);
+  }, [filters]);
+
+  /**
+   * 更新表单字段值
+   */
+  const updateFormField = (key: keyof GameFiltersType, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [key]: value
+    }));
   };
 
-  // 处理搜索
+  /**
+   * 执行查询
+   */
   const handleSearch = () => {
-    onSearch(localFilters);
+    onSearch(formData);
   };
 
-  // 处理重置
+  /**
+   * 重置筛选条件
+   */
   const handleReset = () => {
-    setLocalFilters({
+    setFormData({
       keyword: '',
       provider_codes: [],
       categories: [],
@@ -69,9 +98,18 @@ export function GameFilters({
     onReset();
   };
 
-  // 处理多选
+  /**
+   * 快速搜索（关键词）
+   */
+  const handleQuickSearch = (value: string) => {
+    onSearch({ keyword: value || undefined });
+  };
+
+  /**
+   * 处理多选
+   */
   const handleMultiSelect = (key: 'provider_codes' | 'categories', value: string) => {
-    const currentValues = localFilters[key] || [];
+    const currentValues = (formData[key] as string[]) || [];
     let newValues: string[];
     
     if (value === 'all') {
@@ -82,112 +120,78 @@ export function GameFilters({
       newValues = [...currentValues, value];
     }
     
-    updateLocalFilter(key, newValues);
+    updateFormField(key, newValues);
   };
 
-  // 计算激活的筛选条件数量
-  const activeFiltersCount = [
-    filters.keyword,
-    filters.provider_codes && filters.provider_codes.length > 0,
-    filters.categories && filters.categories.length > 0,
-    filters.lang,
-    filters.status !== 'all',
-    filters.is_new,
-    filters.is_featured,
-    filters.is_mobile_supported,
-    filters.is_demo_available,
-    filters.has_jackpot
-  ].filter(Boolean).length;
+  /**
+   * 检查是否有激活的筛选条件
+   */
+  const hasActiveFilters = Boolean(
+    filters.keyword ||
+      (filters.provider_codes && filters.provider_codes.length > 0) ||
+      (filters.categories && filters.categories.length > 0) ||
+      filters.lang ||
+      (filters.status && filters.status !== 'all') ||
+      filters.is_new !== undefined ||
+      filters.is_featured !== undefined ||
+      filters.is_mobile_supported !== undefined ||
+      filters.is_demo_available !== undefined ||
+      filters.has_jackpot !== undefined ||
+      filters.min_bet_min ||
+      filters.min_bet_max ||
+      filters.max_bet_min ||
+      filters.max_bet_max ||
+      filters.rtp_min ||
+      filters.rtp_max ||
+      filters.supported_language ||
+      filters.supported_currency ||
+      filters.created_from ||
+      filters.created_to ||
+      filters.updated_from ||
+      filters.updated_to ||
+      filters.last_played_from ||
+      filters.last_played_to
+  );
 
-  return (
-    <div className='space-y-4 rounded-lg border bg-card p-4'>
-      {/* 第一行：关键词搜索 */}
-      <div className='flex gap-2'>
-        <div className='relative flex-1'>
-          <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+  /**
+   * 计算激活的筛选条件数量（与玩家列表保持一致的计算方式）
+   */
+  const activeFiltersCount = Object.keys(filters).filter(
+    (k) => {
+      const value = filters[k as keyof GameFiltersType];
+      if (value === undefined || value === null) return false;
+      if (value === '') return false;
+      if (value === 'all') return false;
+      if (Array.isArray(value) && value.length === 0) return false;
+      return true;
+    }
+  ).length;
+
+  /**
+   * 渲染高级筛选表单
+   */
+  const renderAdvancedFilterForm = () => (
+    <div className='grid gap-4'>
+      {/* 第一行：基础信息 */}
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+        <div className='space-y-2'>
+          <Label>游戏名称/标识</Label>
           <Input
             placeholder='搜索游戏名称或游戏标识...'
-            value={localFilters.keyword || ''}
-            onChange={(e) => updateLocalFilter('keyword', e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className='pl-9'
+            value={formData.keyword || ''}
+            onChange={(e) => updateFormField('keyword', e.target.value || undefined)}
           />
         </div>
-        <Button onClick={handleSearch} disabled={loading}>
-          <Search className='mr-2 h-4 w-4' />
-          搜索
-        </Button>
-        <Button variant='outline' onClick={handleReset} disabled={loading}>
-          <X className='mr-2 h-4 w-4' />
-          重置
-        </Button>
-      </div>
-
-      {/* 第二行：基础筛选 */}
-      <div className='grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-6'>
-        {/* 分类 */}
-        <div>
-          <label className='mb-1.5 block text-sm font-medium'>分类</label>
+        <div className='space-y-2'>
+          <Label>语言</Label>
           <Select
-            value={localFilters.categories && localFilters.categories.length > 0 ? localFilters.categories[0] : 'all'}
-            onValueChange={(value) => {
-              if (value === 'all') {
-                updateLocalFilter('categories', []);
-              } else {
-                updateLocalFilter('categories', [value]);
-              }
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {CATEGORY_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* 供应商 */}
-        <div>
-          <label className='mb-1.5 block text-sm font-medium'>供应商</label>
-          <Select
-            value={localFilters.provider_codes && localFilters.provider_codes.length > 0 ? localFilters.provider_codes[0] : 'all'}
-            onValueChange={(value) => {
-              if (value === 'all') {
-                updateLocalFilter('provider_codes', []);
-              } else {
-                updateLocalFilter('provider_codes', [value]);
-              }
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PROVIDER_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* 语言 */}
-        <div>
-          <label className='mb-1.5 block text-sm font-medium'>语言</label>
-          <Select
-            value={localFilters.lang || 'all'}
+            value={formData.lang || 'all'}
             onValueChange={(value) =>
-              updateLocalFilter('lang', value === 'all' ? '' : value)
+              updateFormField('lang', value === 'all' ? undefined : value)
             }
           >
             <SelectTrigger>
-              <SelectValue />
+              <SelectValue placeholder='全部语言' />
             </SelectTrigger>
             <SelectContent>
               {LANGUAGE_OPTIONS.map((option) => (
@@ -198,27 +202,89 @@ export function GameFilters({
             </SelectContent>
           </Select>
         </div>
+      </div>
 
-        {/* 状态 */}
-        <div>
-          <label className='mb-1.5 block text-sm font-medium'>状态</label>
+      {/* 第二行：分类和供应商 */}
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+        <div className='space-y-2'>
+          <Label>分类</Label>
           <Select
             value={
-              localFilters.status === true
+              formData.categories && formData.categories.length > 0
+                ? formData.categories[0]
+                : 'all'
+            }
+            onValueChange={(value) => {
+              if (value === 'all') {
+                updateFormField('categories', []);
+              } else {
+                updateFormField('categories', [value]);
+              }
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder='全部分类' />
+            </SelectTrigger>
+            <SelectContent>
+              {CATEGORY_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className='space-y-2'>
+          <Label>供应商</Label>
+          <Select
+            value={
+              formData.provider_codes && formData.provider_codes.length > 0
+                ? formData.provider_codes[0]
+                : 'all'
+            }
+            onValueChange={(value) => {
+              if (value === 'all') {
+                updateFormField('provider_codes', []);
+              } else {
+                updateFormField('provider_codes', [value]);
+              }
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder='全部供应商' />
+            </SelectTrigger>
+            <SelectContent>
+              {PROVIDER_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* 第三行：状态和特性 */}
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+        <div className='space-y-2'>
+          <Label>状态</Label>
+          <Select
+            value={
+              formData.status === true
                 ? 'true'
-                : localFilters.status === false
+                : formData.status === false
                   ? 'false'
                   : 'all'
             }
             onValueChange={(value) =>
-              updateLocalFilter(
+              updateFormField(
                 'status',
                 value === 'all' ? 'all' : value === 'true'
               )
             }
           >
             <SelectTrigger>
-              <SelectValue />
+              <SelectValue placeholder='全部状态' />
             </SelectTrigger>
             <SelectContent>
               {STATUS_OPTIONS.map((option) => (
@@ -229,168 +295,11 @@ export function GameFilters({
             </SelectContent>
           </Select>
         </div>
-
-        {/* 推荐 */}
-        <div>
-          <label className='mb-1.5 block text-sm font-medium'>推荐</label>
+        <div className='space-y-2'>
+          <Label>排序方式</Label>
           <Select
-            value={
-              localFilters.is_featured === true
-                ? 'true'
-                : localFilters.is_featured === false
-                  ? 'false'
-                  : 'all'
-            }
-            onValueChange={(value) =>
-              updateLocalFilter(
-                'is_featured',
-                value === 'all' ? undefined : value === 'true'
-              )
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {BOOLEAN_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* 新品 */}
-        <div>
-          <label className='mb-1.5 block text-sm font-medium'>新品</label>
-          <Select
-            value={
-              localFilters.is_new === true
-                ? 'true'
-                : localFilters.is_new === false
-                  ? 'false'
-                  : 'all'
-            }
-            onValueChange={(value) =>
-              updateLocalFilter('is_new', value === 'all' ? undefined : value === 'true')
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {BOOLEAN_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* 第三行：高级筛选 */}
-      <div className='grid grid-cols-2 gap-2 md:grid-cols-4'>
-        {/* 移动端支持 */}
-        <div>
-          <label className='mb-1.5 block text-sm font-medium'>移动端</label>
-          <Select
-            value={
-              localFilters.is_mobile_supported === true
-                ? 'true'
-                : localFilters.is_mobile_supported === false
-                  ? 'false'
-                  : 'all'
-            }
-            onValueChange={(value) =>
-              updateLocalFilter(
-                'is_mobile_supported',
-                value === 'all' ? undefined : value === 'true'
-              )
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {BOOLEAN_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* 试玩 */}
-        <div>
-          <label className='mb-1.5 block text-sm font-medium'>试玩</label>
-          <Select
-            value={
-              localFilters.is_demo_available === true
-                ? 'true'
-                : localFilters.is_demo_available === false
-                  ? 'false'
-                  : 'all'
-            }
-            onValueChange={(value) =>
-              updateLocalFilter(
-                'is_demo_available',
-                value === 'all' ? undefined : value === 'true'
-              )
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {BOOLEAN_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* 累积奖池 */}
-        <div>
-          <label className='mb-1.5 block text-sm font-medium'>累积奖池</label>
-          <Select
-            value={
-              localFilters.has_jackpot === true
-                ? 'true'
-                : localFilters.has_jackpot === false
-                  ? 'false'
-                  : 'all'
-            }
-            onValueChange={(value) =>
-              updateLocalFilter(
-                'has_jackpot',
-                value === 'all' ? undefined : value === 'true'
-              )
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {BOOLEAN_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* 排序 */}
-        <div>
-          <label className='mb-1.5 block text-sm font-medium'>排序方式</label>
-          <Select
-            value={localFilters.sort_by || 'sort_order'}
-            onValueChange={(value) => updateLocalFilter('sort_by', value)}
+            value={formData.sort_by || 'sort_order'}
+            onValueChange={(value) => updateFormField('sort_by', value)}
           >
             <SelectTrigger>
               <SelectValue />
@@ -406,15 +315,490 @@ export function GameFilters({
         </div>
       </div>
 
-      {/* 激活的筛选条件提示 */}
-      {activeFiltersCount > 0 && (
-        <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-          <Filter className='h-4 w-4' />
-          <span>
-            当前有 <Badge variant='secondary'>{activeFiltersCount}</Badge> 个筛选条件激活
-          </span>
+      {/* 第四行：布尔特性 */}
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+        <div className='space-y-2'>
+          <Label>推荐</Label>
+          <Select
+            value={
+              formData.is_featured === true
+                ? 'true'
+                : formData.is_featured === false
+                  ? 'false'
+                  : 'all'
+            }
+            onValueChange={(value) =>
+              updateFormField(
+                'is_featured',
+                value === 'all' ? undefined : value === 'true'
+              )
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder='全部' />
+            </SelectTrigger>
+            <SelectContent>
+              {BOOLEAN_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-      )}
+        <div className='space-y-2'>
+          <Label>新品</Label>
+          <Select
+            value={
+              formData.is_new === true
+                ? 'true'
+                : formData.is_new === false
+                  ? 'false'
+                  : 'all'
+            }
+            onValueChange={(value) =>
+              updateFormField('is_new', value === 'all' ? undefined : value === 'true')
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder='全部' />
+            </SelectTrigger>
+            <SelectContent>
+              {BOOLEAN_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className='space-y-2'>
+          <Label>移动端支持</Label>
+          <Select
+            value={
+              formData.is_mobile_supported === true
+                ? 'true'
+                : formData.is_mobile_supported === false
+                  ? 'false'
+                  : 'all'
+            }
+            onValueChange={(value) =>
+              updateFormField(
+                'is_mobile_supported',
+                value === 'all' ? undefined : value === 'true'
+              )
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder='全部' />
+            </SelectTrigger>
+            <SelectContent>
+              {BOOLEAN_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className='space-y-2'>
+          <Label>试玩</Label>
+          <Select
+            value={
+              formData.is_demo_available === true
+                ? 'true'
+                : formData.is_demo_available === false
+                  ? 'false'
+                  : 'all'
+            }
+            onValueChange={(value) =>
+              updateFormField(
+                'is_demo_available',
+                value === 'all' ? undefined : value === 'true'
+              )
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder='全部' />
+            </SelectTrigger>
+            <SelectContent>
+              {BOOLEAN_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className='space-y-2'>
+          <Label>累积奖池</Label>
+          <Select
+            value={
+              formData.has_jackpot === true
+                ? 'true'
+                : formData.has_jackpot === false
+                  ? 'false'
+                  : 'all'
+            }
+            onValueChange={(value) =>
+              updateFormField(
+                'has_jackpot',
+                value === 'all' ? undefined : value === 'true'
+              )
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder='全部' />
+            </SelectTrigger>
+            <SelectContent>
+              {BOOLEAN_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* 第五行：下注范围 */}
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+        <div className='space-y-2'>
+          <Label>最小下注范围</Label>
+          <div className='flex gap-2'>
+            <Input
+              type='number'
+              step='0.01'
+              placeholder='最小值'
+              value={formData.min_bet_min || ''}
+              onChange={(e) =>
+                updateFormField(
+                  'min_bet_min',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+            />
+            <span className='self-center text-muted-foreground'>-</span>
+            <Input
+              type='number'
+              step='0.01'
+              placeholder='最大值'
+              value={formData.min_bet_max || ''}
+              onChange={(e) =>
+                updateFormField(
+                  'min_bet_max',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+            />
+          </div>
+        </div>
+        <div className='space-y-2'>
+          <Label>最大下注范围</Label>
+          <div className='flex gap-2'>
+            <Input
+              type='number'
+              step='0.01'
+              placeholder='最小值'
+              value={formData.max_bet_min || ''}
+              onChange={(e) =>
+                updateFormField(
+                  'max_bet_min',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+            />
+            <span className='self-center text-muted-foreground'>-</span>
+            <Input
+              type='number'
+              step='0.01'
+              placeholder='最大值'
+              value={formData.max_bet_max || ''}
+              onChange={(e) =>
+                updateFormField(
+                  'max_bet_max',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+            />
+          </div>
+        </div>
+        <div className='space-y-2'>
+          <Label>RTP范围</Label>
+          <div className='flex gap-2'>
+            <Input
+              type='number'
+              step='0.01'
+              placeholder='最小值'
+              value={formData.rtp_min || ''}
+              onChange={(e) =>
+                updateFormField(
+                  'rtp_min',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+            />
+            <span className='self-center text-muted-foreground'>-</span>
+            <Input
+              type='number'
+              step='0.01'
+              placeholder='最大值'
+              value={formData.rtp_max || ''}
+              onChange={(e) =>
+                updateFormField(
+                  'rtp_max',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 第六行：支持的语言和货币 */}
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+        <div className='space-y-2'>
+          <Label>支持的语言</Label>
+          <Input
+            placeholder='支持的语言'
+            value={formData.supported_language || ''}
+            onChange={(e) =>
+              updateFormField('supported_language', e.target.value || undefined)
+            }
+          />
+        </div>
+        <div className='space-y-2'>
+          <Label>支持的货币</Label>
+          <Select
+            value={formData.supported_currency || 'all'}
+            onValueChange={(value) =>
+              updateFormField(
+                'supported_currency',
+                value === 'all' ? undefined : value
+              )
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder='全部货币' />
+            </SelectTrigger>
+            <SelectContent>
+              {CURRENCY_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* 第七行：时间范围 */}
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+        <div className='space-y-2'>
+          <Label>创建时间</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant='outline'
+                className={cn(
+                  'w-full justify-start text-left font-normal',
+                  (!formData.created_from || !formData.created_to) &&
+                    'text-muted-foreground'
+                )}
+              >
+                <Calendar className='mr-2 h-4 w-4' />
+                {formData.created_from && formData.created_to
+                  ? `${formData.created_from} - ${formData.created_to}`
+                  : '选择日期范围'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className='w-auto p-0' align='start'>
+              <CalendarComponent
+                mode='range'
+                selected={
+                  formData.created_from && formData.created_to
+                    ? {
+                        from: new Date(formData.created_from),
+                        to: new Date(formData.created_to)
+                      }
+                    : undefined
+                }
+                onSelect={(range) => {
+                  if (range?.from && range?.to) {
+                    updateFormField(
+                      'created_from',
+                      format(range.from, 'yyyy-MM-dd')
+                    );
+                    updateFormField(
+                      'created_to',
+                      format(range.to, 'yyyy-MM-dd')
+                    );
+                  } else {
+                    updateFormField('created_from', undefined);
+                    updateFormField('created_to', undefined);
+                  }
+                }}
+                numberOfMonths={2}
+                locale={zhCN}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className='space-y-2'>
+          <Label>更新时间</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant='outline'
+                className={cn(
+                  'w-full justify-start text-left font-normal',
+                  (!formData.updated_from || !formData.updated_to) &&
+                    'text-muted-foreground'
+                )}
+              >
+                <Calendar className='mr-2 h-4 w-4' />
+                {formData.updated_from && formData.updated_to
+                  ? `${formData.updated_from} - ${formData.updated_to}`
+                  : '选择日期范围'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className='w-auto p-0' align='start'>
+              <CalendarComponent
+                mode='range'
+                selected={
+                  formData.updated_from && formData.updated_to
+                    ? {
+                        from: new Date(formData.updated_from),
+                        to: new Date(formData.updated_to)
+                      }
+                    : undefined
+                }
+                onSelect={(range) => {
+                  if (range?.from && range?.to) {
+                    updateFormField(
+                      'updated_from',
+                      format(range.from, 'yyyy-MM-dd')
+                    );
+                    updateFormField(
+                      'updated_to',
+                      format(range.to, 'yyyy-MM-dd')
+                    );
+                  } else {
+                    updateFormField('updated_from', undefined);
+                    updateFormField('updated_to', undefined);
+                  }
+                }}
+                numberOfMonths={2}
+                locale={zhCN}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className='space-y-2'>
+          <Label>最后游玩时间</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant='outline'
+                className={cn(
+                  'w-full justify-start text-left font-normal',
+                  (!formData.last_played_from || !formData.last_played_to) &&
+                    'text-muted-foreground'
+                )}
+              >
+                <Calendar className='mr-2 h-4 w-4' />
+                {formData.last_played_from && formData.last_played_to
+                  ? `${formData.last_played_from} - ${formData.last_played_to}`
+                  : '选择日期范围'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className='w-auto p-0' align='start'>
+              <CalendarComponent
+                mode='range'
+                selected={
+                  formData.last_played_from && formData.last_played_to
+                    ? {
+                        from: new Date(formData.last_played_from),
+                        to: new Date(formData.last_played_to)
+                      }
+                    : undefined
+                }
+                onSelect={(range) => {
+                  if (range?.from && range?.to) {
+                    updateFormField(
+                      'last_played_from',
+                      format(range.from, 'yyyy-MM-dd')
+                    );
+                    updateFormField(
+                      'last_played_to',
+                      format(range.to, 'yyyy-MM-dd')
+                    );
+                  } else {
+                    updateFormField('last_played_from', undefined);
+                    updateFormField('last_played_to', undefined);
+                  }
+                }}
+                numberOfMonths={2}
+                locale={zhCN}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className='space-y-4'>
+      {/* 快速搜索栏 */}
+      <div className='flex items-center gap-2'>
+        <div className='relative flex-1'>
+          <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+          <Input
+            placeholder='搜索游戏名称或游戏标识...'
+            className='pl-9'
+            value={filters.keyword || ''}
+            onChange={(e) => handleQuickSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleQuickSearch(e.currentTarget.value);
+              }
+            }}
+          />
+        </div>
+        <Button
+          variant='outline'
+          onClick={() => setIsAdvancedFilterOpen(true)}
+          className={hasActiveFilters ? 'border-primary' : ''}
+        >
+          <Filter className='mr-2 h-4 w-4' />
+          高级筛选
+          {hasActiveFilters && (
+            <span className='ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground'>
+              {activeFiltersCount}
+            </span>
+          )}
+        </Button>
+        {hasActiveFilters && (
+          <Button variant='ghost' size='sm' onClick={handleReset}>
+            <X className='mr-1 h-4 w-4' />
+            清空
+          </Button>
+        )}
+      </div>
+
+      {/* 高级筛选弹窗 */}
+      <AdvancedFilterContainer
+        open={isAdvancedFilterOpen}
+        onClose={() => setIsAdvancedFilterOpen(false)}
+        title='游戏筛选'
+        hasActiveFilters={hasActiveFilters}
+        onSearch={handleSearch}
+        onReset={handleReset}
+        loading={loading}
+      >
+        {renderAdvancedFilterForm()}
+      </AdvancedFilterContainer>
     </div>
   );
 }
