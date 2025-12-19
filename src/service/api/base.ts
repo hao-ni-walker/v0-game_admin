@@ -87,7 +87,14 @@ export function buildSearchParams(params: Record<string, any>): string {
 
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
-      searchParams.append(key, String(value));
+      // 处理数组参数
+      if (Array.isArray(value)) {
+        value.forEach((item) => {
+          searchParams.append(key, String(item));
+        });
+      } else {
+        searchParams.append(key, String(value));
+      }
     }
   });
 
