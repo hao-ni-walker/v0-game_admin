@@ -31,7 +31,8 @@ export function VipLevelFilters({
   onReset,
   loading = false
 }: VipLevelFiltersProps) {
-  const [localFilters, setLocalFilters] = useState<VipLevelFiltersType>(filters);
+  const [localFilters, setLocalFilters] =
+    useState<VipLevelFiltersType>(filters);
   const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
 
   // 同步外部 filters 到本地表单状态
@@ -152,7 +153,10 @@ export function VipLevelFilters({
             placeholder='最小等级'
             value={localFilters.level_min ?? ''}
             onChange={(e) =>
-              updateLocalFilter('level_min', e.target.value ? parseInt(e.target.value) : undefined)
+              updateLocalFilter(
+                'level_min',
+                e.target.value ? parseInt(e.target.value) : undefined
+              )
             }
             min={0}
           />
@@ -164,7 +168,10 @@ export function VipLevelFilters({
             placeholder='最大等级'
             value={localFilters.level_max ?? ''}
             onChange={(e) =>
-              updateLocalFilter('level_max', e.target.value ? parseInt(e.target.value) : undefined)
+              updateLocalFilter(
+                'level_max',
+                e.target.value ? parseInt(e.target.value) : undefined
+              )
             }
             min={0}
           />
@@ -229,7 +236,9 @@ export function VipLevelFilters({
           <Label>排序方向</Label>
           <Select
             value={localFilters.sort_dir || 'asc'}
-            onValueChange={(value) => updateLocalFilter('sort_dir', value as 'asc' | 'desc')}
+            onValueChange={(value) =>
+              updateLocalFilter('sort_dir', value as 'asc' | 'desc')
+            }
           >
             <SelectTrigger className='w-full'>
               <SelectValue placeholder='选择排序方向' />
@@ -249,9 +258,14 @@ export function VipLevelFilters({
             <Checkbox
               id='disabled'
               checked={localFilters.disabled || false}
-              onCheckedChange={(checked) => updateLocalFilter('disabled', checked)}
+              onCheckedChange={(checked) =>
+                updateLocalFilter('disabled', checked)
+              }
             />
-            <Label htmlFor='disabled' className='cursor-pointer text-sm font-normal'>
+            <Label
+              htmlFor='disabled'
+              className='cursor-pointer text-sm font-normal'
+            >
               显示禁用
             </Label>
           </div>
@@ -259,9 +273,14 @@ export function VipLevelFilters({
             <Checkbox
               id='show_removed'
               checked={localFilters.show_removed || false}
-              onCheckedChange={(checked) => updateLocalFilter('show_removed', checked)}
+              onCheckedChange={(checked) =>
+                updateLocalFilter('show_removed', checked)
+              }
             />
-            <Label htmlFor='show_removed' className='cursor-pointer text-sm font-normal'>
+            <Label
+              htmlFor='show_removed'
+              className='cursor-pointer text-sm font-normal'
+            >
               显示已删除
             </Label>
           </div>

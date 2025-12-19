@@ -148,7 +148,11 @@ export function BannerFilters({
         <div className='space-y-2'>
           <Label>位置</Label>
           <Select
-            value={localFilters.positions && localFilters.positions.length > 0 ? localFilters.positions[0] : 'all'}
+            value={
+              localFilters.positions && localFilters.positions.length > 0
+                ? localFilters.positions[0]
+                : 'all'
+            }
             onValueChange={(value) => {
               if (value === 'all') {
                 updateLocalFilter('positions', []);
@@ -228,7 +232,9 @@ export function BannerFilters({
           <Label>排序方向</Label>
           <Select
             value={localFilters.sort_dir || 'desc'}
-            onValueChange={(value) => updateLocalFilter('sort_dir', value as 'asc' | 'desc')}
+            onValueChange={(value) =>
+              updateLocalFilter('sort_dir', value as 'asc' | 'desc')
+            }
           >
             <SelectTrigger className='w-full'>
               <SelectValue placeholder='选择排序方向' />
@@ -248,9 +254,14 @@ export function BannerFilters({
             <Checkbox
               id='disabled'
               checked={localFilters.disabled || false}
-              onCheckedChange={(checked) => updateLocalFilter('disabled', checked)}
+              onCheckedChange={(checked) =>
+                updateLocalFilter('disabled', checked)
+              }
             />
-            <Label htmlFor='disabled' className='cursor-pointer text-sm font-normal'>
+            <Label
+              htmlFor='disabled'
+              className='cursor-pointer text-sm font-normal'
+            >
               仅显示禁用
             </Label>
           </div>
@@ -258,9 +269,14 @@ export function BannerFilters({
             <Checkbox
               id='show_removed'
               checked={localFilters.show_removed || false}
-              onCheckedChange={(checked) => updateLocalFilter('show_removed', checked)}
+              onCheckedChange={(checked) =>
+                updateLocalFilter('show_removed', checked)
+              }
             />
-            <Label htmlFor='show_removed' className='cursor-pointer text-sm font-normal'>
+            <Label
+              htmlFor='show_removed'
+              className='cursor-pointer text-sm font-normal'
+            >
               显示已删除
             </Label>
           </div>
@@ -268,9 +284,14 @@ export function BannerFilters({
             <Checkbox
               id='active_only'
               checked={localFilters.active_only || false}
-              onCheckedChange={(checked) => updateLocalFilter('active_only', checked)}
+              onCheckedChange={(checked) =>
+                updateLocalFilter('active_only', checked)
+              }
             />
-            <Label htmlFor='active_only' className='cursor-pointer text-sm font-normal'>
+            <Label
+              htmlFor='active_only'
+              className='cursor-pointer text-sm font-normal'
+            >
               仅生效中
             </Label>
           </div>

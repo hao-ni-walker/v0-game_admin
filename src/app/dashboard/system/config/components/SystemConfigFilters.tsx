@@ -35,7 +35,8 @@ export function SystemConfigFilters({
   onReset,
   loading = false
 }: SystemConfigFiltersProps) {
-  const [localFilters, setLocalFilters] = useState<SystemConfigFiltersType>(filters);
+  const [localFilters, setLocalFilters] =
+    useState<SystemConfigFiltersType>(filters);
   const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
 
   // 同步外部 filters 到本地表单状态
@@ -44,7 +45,10 @@ export function SystemConfigFilters({
   }, [filters]);
 
   // 更新本地筛选条件
-  const updateLocalFilter = (key: keyof SystemConfigFiltersType, value: any) => {
+  const updateLocalFilter = (
+    key: keyof SystemConfigFiltersType,
+    value: any
+  ) => {
     setLocalFilters((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -146,7 +150,11 @@ export function SystemConfigFilters({
         <div className='space-y-2'>
           <Label>类型</Label>
           <Select
-            value={localFilters.config_types && localFilters.config_types.length > 0 ? localFilters.config_types[0] : 'all'}
+            value={
+              localFilters.config_types && localFilters.config_types.length > 0
+                ? localFilters.config_types[0]
+                : 'all'
+            }
             onValueChange={(value) => {
               if (value === 'all') {
                 updateLocalFilter('config_types', []);
@@ -193,7 +201,9 @@ export function SystemConfigFilters({
           <Label>排序方向</Label>
           <Select
             value={localFilters.sort_dir || 'desc'}
-            onValueChange={(value) => updateLocalFilter('sort_dir', value as 'asc' | 'desc')}
+            onValueChange={(value) =>
+              updateLocalFilter('sort_dir', value as 'asc' | 'desc')
+            }
           >
             <SelectTrigger className='w-full'>
               <SelectValue placeholder='选择排序方向' />
@@ -213,11 +223,14 @@ export function SystemConfigFilters({
             <Checkbox
               id='is_public'
               checked={localFilters.is_public === true}
-              onCheckedChange={(checked) => 
+              onCheckedChange={(checked) =>
                 updateLocalFilter('is_public', checked ? true : undefined)
               }
             />
-            <Label htmlFor='is_public' className='cursor-pointer text-sm font-normal'>
+            <Label
+              htmlFor='is_public'
+              className='cursor-pointer text-sm font-normal'
+            >
               仅公开配置
             </Label>
           </div>
@@ -225,9 +238,14 @@ export function SystemConfigFilters({
             <Checkbox
               id='disabled'
               checked={localFilters.disabled || false}
-              onCheckedChange={(checked) => updateLocalFilter('disabled', checked)}
+              onCheckedChange={(checked) =>
+                updateLocalFilter('disabled', checked)
+              }
             />
-            <Label htmlFor='disabled' className='cursor-pointer text-sm font-normal'>
+            <Label
+              htmlFor='disabled'
+              className='cursor-pointer text-sm font-normal'
+            >
               仅禁用项
             </Label>
           </div>
@@ -235,9 +253,14 @@ export function SystemConfigFilters({
             <Checkbox
               id='show_removed'
               checked={localFilters.show_removed || false}
-              onCheckedChange={(checked) => updateLocalFilter('show_removed', checked)}
+              onCheckedChange={(checked) =>
+                updateLocalFilter('show_removed', checked)
+              }
             />
-            <Label htmlFor='show_removed' className='cursor-pointer text-sm font-normal'>
+            <Label
+              htmlFor='show_removed'
+              className='cursor-pointer text-sm font-normal'
+            >
               显示已删除
             </Label>
           </div>

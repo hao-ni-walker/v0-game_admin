@@ -36,7 +36,9 @@ export function PaymentChannelFilters({
   onReset,
   loading
 }: PaymentChannelFiltersProps) {
-  const [localFilters, setLocalFilters] = useState<Partial<PaymentChannelFilters>>({
+  const [localFilters, setLocalFilters] = useState<
+    Partial<PaymentChannelFilters>
+  >({
     keyword: filters.keyword || '',
     types: filters.types || [],
     channel_types: filters.channel_types || [],
@@ -258,7 +260,10 @@ export function PaymentChannelFilters({
               handleInputChange('disabled', checked ? true : undefined)
             }
           />
-          <Label htmlFor='disabled' className='cursor-pointer text-sm font-normal'>
+          <Label
+            htmlFor='disabled'
+            className='cursor-pointer text-sm font-normal'
+          >
             仅显示禁用渠道
           </Label>
         </div>

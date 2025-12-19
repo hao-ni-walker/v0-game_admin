@@ -108,10 +108,13 @@ export function GameFilters({
   /**
    * 处理多选
    */
-  const handleMultiSelect = (key: 'provider_codes' | 'categories', value: string) => {
+  const handleMultiSelect = (
+    key: 'provider_codes' | 'categories',
+    value: string
+  ) => {
     const currentValues = (formData[key] as string[]) || [];
     let newValues: string[];
-    
+
     if (value === 'all') {
       newValues = [];
     } else if (currentValues.includes(value)) {
@@ -119,7 +122,7 @@ export function GameFilters({
     } else {
       newValues = [...currentValues, value];
     }
-    
+
     updateFormField(key, newValues);
   };
 
@@ -156,16 +159,14 @@ export function GameFilters({
   /**
    * 计算激活的筛选条件数量（与玩家列表保持一致的计算方式）
    */
-  const activeFiltersCount = Object.keys(filters).filter(
-    (k) => {
-      const value = filters[k as keyof GameFiltersType];
-      if (value === undefined || value === null) return false;
-      if (value === '') return false;
-      if (value === 'all') return false;
-      if (Array.isArray(value) && value.length === 0) return false;
-      return true;
-    }
-  ).length;
+  const activeFiltersCount = Object.keys(filters).filter((k) => {
+    const value = filters[k as keyof GameFiltersType];
+    if (value === undefined || value === null) return false;
+    if (value === '') return false;
+    if (value === 'all') return false;
+    if (Array.isArray(value) && value.length === 0) return false;
+    return true;
+  }).length;
 
   /**
    * 渲染高级筛选表单
@@ -179,7 +180,9 @@ export function GameFilters({
           <Input
             placeholder='搜索游戏名称或游戏标识...'
             value={formData.keyword || ''}
-            onChange={(e) => updateFormField('keyword', e.target.value || undefined)}
+            onChange={(e) =>
+              updateFormField('keyword', e.target.value || undefined)
+            }
           />
         </div>
         <div className='space-y-2'>
@@ -357,7 +360,10 @@ export function GameFilters({
                   : 'all'
             }
             onValueChange={(value) =>
-              updateFormField('is_new', value === 'all' ? undefined : value === 'true')
+              updateFormField(
+                'is_new',
+                value === 'all' ? undefined : value === 'true'
+              )
             }
           >
             <SelectTrigger>
@@ -478,7 +484,7 @@ export function GameFilters({
                 )
               }
             />
-            <span className='self-center text-muted-foreground'>-</span>
+            <span className='text-muted-foreground self-center'>-</span>
             <Input
               type='number'
               step='0.01'
@@ -508,7 +514,7 @@ export function GameFilters({
                 )
               }
             />
-            <span className='self-center text-muted-foreground'>-</span>
+            <span className='text-muted-foreground self-center'>-</span>
             <Input
               type='number'
               step='0.01'
@@ -538,7 +544,7 @@ export function GameFilters({
                 )
               }
             />
-            <span className='self-center text-muted-foreground'>-</span>
+            <span className='text-muted-foreground self-center'>-</span>
             <Input
               type='number'
               step='0.01'
@@ -753,7 +759,7 @@ export function GameFilters({
       {/* 快速搜索栏 */}
       <div className='flex items-center gap-2'>
         <div className='relative flex-1'>
-          <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+          <Search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
           <Input
             placeholder='搜索游戏名称或游戏标识...'
             className='pl-9'
@@ -774,7 +780,7 @@ export function GameFilters({
           <Filter className='mr-2 h-4 w-4' />
           高级筛选
           {hasActiveFilters && (
-            <span className='ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground'>
+            <span className='bg-primary text-primary-foreground ml-2 rounded-full px-2 py-0.5 text-xs'>
               {activeFiltersCount}
             </span>
           )}
