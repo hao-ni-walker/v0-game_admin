@@ -1,11 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+
+const REMOTE_API_URL =
+  'https://api.xreddeercasino.com/api/admin/payment-channels';
 
 /**
  * POST /api/payment-channels/list
- * 获取支付渠道列表(带筛选和分页)
+ * 获取支付渠道列表(带筛选和分页) - 代理到远程 API
  */
 export async function POST(request: NextRequest) {
+  const requestStartTime = Date.now();
   try {
+    // 从 cookie 中获取 token
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token');
+
+    if (!token || !token.value) {
+      console.warn('[支付渠道列表] 未授权访问：缺少 token');
+      return NextResponse.json(
+        { code: 401, message: '未授权访问' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const {
       page = 1,
@@ -14,8 +31,8 @@ export async function POST(request: NextRequest) {
       types,
       channel_types,
       status,
-      disabled = false,
-      show_removed = false,
+      disabled,
+      show_removed,
       min_amount_maxlte,
       max_amount_mingte,
       fee_rate_min,
@@ -28,187 +45,290 @@ export async function POST(request: NextRequest) {
       created_to,
       updated_from,
       updated_to,
-      sort_by = 'type',
-      sort_dir = 'asc'
+      sort_by,
+      sort_dir
     } = body;
 
-    // 导入模拟数据
-    const fs = await import('fs/promises');
-    const path = await import('path');
-    const dataPath = path.join(process.cwd(), 'data', 'paymentChannels.json');
-    const fileContent = await fs.readFile(dataPath, 'utf-8');
-    const allChannels = JSON.parse(fileContent);
+    // 构建查询参数
+    const searchParams = new URLSearchParams();
+    searchParams.append('page', String(page));
+    searchParams.append('page_size', String(page_size));
 
-    // 筛选逻辑
-    let filteredChannels = [...allChannels];
-
-    // 关键词搜索 (name, code)
-    if (keyword) {
-      const lowerKeyword = keyword.toLowerCase();
-      filteredChannels = filteredChannels.filter(
-        (channel) =>
-          channel.name?.toLowerCase().includes(lowerKeyword) ||
-          channel.code?.toLowerCase().includes(lowerKeyword)
-      );
-    }
-
-    // 类型筛选 (充值/提现)
+    // 添加筛选条件到查询参数（如果远程 API 支持）
+    // 注意：这里只添加基本的分页参数，其他筛选条件可能需要后端支持
+    // 如果远程 API 不支持这些筛选，可以先获取所有数据，然后在前端筛选
+    if (keyword) searchParams.append('keyword', keyword);
     if (types && types.length > 0) {
-      filteredChannels = filteredChannels.filter((channel) =>
-        types.includes(channel.type)
+      types.forEach((type: number) =>
+        searchParams.append('types', String(type))
       );
     }
-
-    // 渠道类型筛选 (alipay/wechat/usdt等)
-    if (channel_types && channel_types.length > 0) {
-      filteredChannels = filteredChannels.filter((channel) =>
-        channel_types.includes(channel.channelType)
-      );
-    }
-
-    // 状态筛选
     if (status !== undefined && status !== 'all') {
-      filteredChannels = filteredChannels.filter(
-        (channel) => channel.status === status
-      );
+      searchParams.append('status', String(status));
     }
 
-    // 禁用筛选
-    if (disabled !== undefined) {
-      filteredChannels = filteredChannels.filter(
-        (channel) => channel.disabled === disabled
-      );
-    }
+    // 构建远程 API URL
+    const remoteUrl = `${REMOTE_API_URL}?${searchParams.toString()}`;
 
-    // 删除筛选
-    if (!show_removed) {
-      filteredChannels = filteredChannels.filter((channel) => !channel.removed);
-    }
+    // 记录请求日志
+    console.log('[支付渠道列表] 发送请求到远程API:', remoteUrl);
 
-    // 金额区间筛选
-    if (min_amount_maxlte !== undefined) {
-      filteredChannels = filteredChannels.filter(
-        (channel) => channel.minAmount <= min_amount_maxlte
-      );
-    }
-    if (max_amount_mingte !== undefined) {
-      filteredChannels = filteredChannels.filter(
-        (channel) => channel.maxAmount >= max_amount_mingte
-      );
-    }
-
-    // 费率区间筛选
-    if (fee_rate_min !== undefined) {
-      filteredChannels = filteredChannels.filter(
-        (channel) => channel.feeRate >= fee_rate_min
-      );
-    }
-    if (fee_rate_max !== undefined) {
-      filteredChannels = filteredChannels.filter(
-        (channel) => channel.feeRate <= fee_rate_max
-      );
-    }
-
-    // 固定费用区间筛选
-    if (fixed_fee_min !== undefined) {
-      filteredChannels = filteredChannels.filter(
-        (channel) => channel.fixedFee >= fixed_fee_min
-      );
-    }
-    if (fixed_fee_max !== undefined) {
-      filteredChannels = filteredChannels.filter(
-        (channel) => channel.fixedFee <= fixed_fee_max
-      );
-    }
-
-    // 每日限额区间筛选
-    if (daily_limit_min !== undefined) {
-      filteredChannels = filteredChannels.filter(
-        (channel) => channel.dailyLimit >= daily_limit_min
-      );
-    }
-    if (daily_limit_max !== undefined) {
-      filteredChannels = filteredChannels.filter(
-        (channel) => channel.dailyLimit <= daily_limit_max
-      );
-    }
-
-    // 时间范围筛选
-    if (created_from) {
-      filteredChannels = filteredChannels.filter(
-        (channel) => new Date(channel.createdAt) >= new Date(created_from)
-      );
-    }
-    if (created_to) {
-      filteredChannels = filteredChannels.filter(
-        (channel) => new Date(channel.createdAt) <= new Date(created_to)
-      );
-    }
-    if (updated_from) {
-      filteredChannels = filteredChannels.filter(
-        (channel) => new Date(channel.updatedAt) >= new Date(updated_from)
-      );
-    }
-    if (updated_to) {
-      filteredChannels = filteredChannels.filter(
-        (channel) => new Date(channel.updatedAt) <= new Date(updated_to)
-      );
-    }
-
-    // 排序逻辑
-    // 默认排序: type升序(充值在前), 然后sort_order降序, 然后updated_at降序, 再id降序
-    filteredChannels.sort((a, b) => {
-      // 自定义排序字段
-      if (sort_by && sort_by !== 'type') {
-        const aValue = a[sort_by as keyof typeof a];
-        const bValue = b[sort_by as keyof typeof b];
-
-        if (aValue === undefined || aValue === null) return 1;
-        if (bValue === undefined || bValue === null) return -1;
-
-        if (sort_dir === 'asc') {
-          return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
-        } else {
-          return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
-        }
+    // 转发请求到远程 API
+    const remoteResponse = await fetch(remoteUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token.value}`
       }
-
-      // 默认排序
-      // 1. type升序
-      if (a.type !== b.type) {
-        return a.type - b.type;
-      }
-      // 2. sortOrder降序
-      if (a.sortOrder !== b.sortOrder) {
-        return b.sortOrder - a.sortOrder;
-      }
-      // 3. updatedAt降序
-      const aUpdated = new Date(a.updatedAt).getTime();
-      const bUpdated = new Date(b.updatedAt).getTime();
-      if (aUpdated !== bUpdated) {
-        return bUpdated - aUpdated;
-      }
-      // 4. id降序
-      return b.id - a.id;
     });
 
-    // 分页
-    const total = filteredChannels.length;
-    const start = (page - 1) * page_size;
-    const end = start + page_size;
-    const paginatedChannels = filteredChannels.slice(start, end);
+    // 检查 HTTP 状态码
+    if (!remoteResponse.ok) {
+      const errorText = await remoteResponse.text();
+      console.error('[支付渠道列表] 远程API请求失败:', {
+        status: remoteResponse.status,
+        statusText: remoteResponse.statusText,
+        errorText
+      });
 
-    // 按照规范返回: total, page, page_size, list
+      if (remoteResponse.status === 401) {
+        return NextResponse.json(
+          { code: 401, message: '认证失败，请重新登录' },
+          { status: 401 }
+        );
+      }
+
+      return NextResponse.json(
+        { code: 500, message: `远程API错误: ${remoteResponse.status}` },
+        { status: 500 }
+      );
+    }
+
+    // 解析远程 API 响应
+    const result = await remoteResponse.json();
+
+    // 控制台打印响应
+    const requestDuration = Date.now() - requestStartTime;
+    console.log(
+      '[支付渠道列表] 远程API响应:',
+      JSON.stringify(
+        {
+          code: result.code,
+          msg: result.msg,
+          dataInfo: {
+            total: result.data?.total,
+            page: result.data?.page,
+            page_size: result.data?.page_size,
+            total_pages: result.data?.total_pages,
+            itemsCount: Array.isArray(result.data?.items)
+              ? result.data.items.length
+              : 0
+          },
+          requestDuration: `${requestDuration}ms`
+        },
+        null,
+        2
+      )
+    );
+
+    // 转换响应格式
+    if ((result.code === 200 || result.code === 0) && result.data) {
+      // 映射远程 API 的 channel_type 到前端期望的类型
+      const mapChannelType = (
+        channelType: string
+      ): 'alipay' | 'wechat' | 'bank' | 'usdt' | 'other' => {
+        const typeMap: Record<
+          string,
+          'alipay' | 'wechat' | 'bank' | 'usdt' | 'other'
+        > = {
+          crypto: 'usdt',
+          bank: 'bank',
+          alipay: 'alipay',
+          wechat: 'wechat'
+        };
+        return typeMap[channelType] || 'other';
+      };
+
+      // 安全的数字解析函数
+      const parseNumber = (
+        value: string | number | null | undefined
+      ): number => {
+        if (value === null || value === undefined) return 0;
+        if (typeof value === 'number') return isNaN(value) ? 0 : value;
+        if (typeof value === 'string') {
+          const parsed = parseFloat(value);
+          return isNaN(parsed) ? 0 : parsed;
+        }
+        return 0;
+      };
+
+      // 转换支付渠道数据：snake_case -> camelCase，并处理数据类型
+      let transformedItems = (result.data.items || []).map((item: any) => {
+        return {
+          id: item.id,
+          name: item.name || '',
+          code: item.code || '',
+          type: item.type,
+          channelType: mapChannelType(item.channel_type || 'other'),
+          config: item.config || {},
+          minAmount: parseNumber(item.min_amount),
+          maxAmount: parseNumber(item.max_amount),
+          dailyLimit:
+            item.daily_limit !== null && item.daily_limit !== undefined
+              ? parseNumber(item.daily_limit)
+              : 0,
+          feeRate: parseNumber(item.fee_rate),
+          fixedFee: parseNumber(item.fixed_fee),
+          sortOrder: item.sort_order || 0,
+          status: item.status,
+          version: item.version || 0,
+          createdAt: item.created_at || '',
+          updatedAt: item.updated_at || item.created_at || '',
+          removed: item.removed || false,
+          disabled: item.disabled || false
+        };
+      });
+
+      // 如果远程 API 不支持某些筛选，在这里进行客户端筛选
+      if (keyword) {
+        const lowerKeyword = keyword.toLowerCase();
+        transformedItems = transformedItems.filter(
+          (channel) =>
+            channel.name?.toLowerCase().includes(lowerKeyword) ||
+            channel.code?.toLowerCase().includes(lowerKeyword)
+        );
+      }
+
+      if (types && types.length > 0) {
+        transformedItems = transformedItems.filter((channel) =>
+          types.includes(channel.type)
+        );
+      }
+
+      if (channel_types && channel_types.length > 0) {
+        transformedItems = transformedItems.filter((channel) =>
+          channel_types.includes(channel.channelType)
+        );
+      }
+
+      if (status !== undefined && status !== 'all') {
+        transformedItems = transformedItems.filter(
+          (channel) => channel.status === status
+        );
+      }
+
+      if (disabled !== undefined) {
+        transformedItems = transformedItems.filter(
+          (channel) => channel.disabled === disabled
+        );
+      }
+
+      if (!show_removed) {
+        transformedItems = transformedItems.filter(
+          (channel) => !channel.removed
+        );
+      }
+
+      // 应用其他筛选条件...
+      if (min_amount_maxlte !== undefined) {
+        transformedItems = transformedItems.filter(
+          (channel) => channel.minAmount <= min_amount_maxlte
+        );
+      }
+      if (max_amount_mingte !== undefined) {
+        transformedItems = transformedItems.filter(
+          (channel) => channel.maxAmount >= max_amount_mingte
+        );
+      }
+      if (fee_rate_min !== undefined) {
+        transformedItems = transformedItems.filter(
+          (channel) => channel.feeRate >= fee_rate_min
+        );
+      }
+      if (fee_rate_max !== undefined) {
+        transformedItems = transformedItems.filter(
+          (channel) => channel.feeRate <= fee_rate_max
+        );
+      }
+      if (fixed_fee_min !== undefined) {
+        transformedItems = transformedItems.filter(
+          (channel) => channel.fixedFee >= fixed_fee_min
+        );
+      }
+      if (fixed_fee_max !== undefined) {
+        transformedItems = transformedItems.filter(
+          (channel) => channel.fixedFee <= fixed_fee_max
+        );
+      }
+      if (daily_limit_min !== undefined) {
+        transformedItems = transformedItems.filter(
+          (channel) => channel.dailyLimit >= daily_limit_min
+        );
+      }
+      if (daily_limit_max !== undefined) {
+        transformedItems = transformedItems.filter(
+          (channel) => channel.dailyLimit <= daily_limit_max
+        );
+      }
+
+      // 排序（如果指定了排序字段）
+      if (sort_by) {
+        transformedItems.sort((a: any, b: any) => {
+          const aValue = a[sort_by];
+          const bValue = b[sort_by];
+
+          if (aValue === undefined || aValue === null) return 1;
+          if (bValue === undefined || bValue === null) return -1;
+
+          const dir = sort_dir === 'desc' ? -1 : 1;
+          if (aValue > bValue) return dir;
+          if (aValue < bValue) return -dir;
+          return 0;
+        });
+      }
+
+      // 重新计算分页（因为可能进行了客户端筛选）
+      const total = transformedItems.length;
+      const start = (page - 1) * page_size;
+      const end = start + page_size;
+      const paginatedItems = transformedItems.slice(start, end);
+
+      // 按照前端期望的格式返回
+      return NextResponse.json({
+        total,
+        page,
+        page_size,
+        list: paginatedItems
+      });
+    }
+
+    // 如果远程 API 返回错误
+    if (result.code !== 200 && result.code !== 0) {
+      console.warn('[支付渠道列表] 远程API返回错误:', {
+        code: result.code,
+        msg: result.msg
+      });
+      return NextResponse.json(
+        { code: 500, message: result.msg || '获取支付渠道列表失败' },
+        { status: 500 }
+      );
+    }
+
+    // 默认返回空列表
     return NextResponse.json({
-      total,
-      page,
-      page_size,
-      list: paginatedChannels
+      total: 0,
+      page: 1,
+      page_size: 20,
+      list: []
     });
   } catch (error) {
-    console.error('获取支付渠道列表失败:', error);
+    const requestDuration = Date.now() - requestStartTime;
+    console.error('[支付渠道列表] 获取支付渠道列表失败:', {
+      error: error instanceof Error ? error.message : String(error),
+      requestDuration: `${requestDuration}ms`
+    });
     return NextResponse.json(
-      { code: 500, message: '获取支付渠道列表失败', data: null },
+      { code: 500, message: '获取支付渠道列表失败' },
       { status: 500 }
     );
   }

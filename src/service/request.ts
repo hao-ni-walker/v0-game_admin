@@ -8,3 +8,4 @@ export { RoleAPI } from './api/role';
 export { PermissionAPI } from './api/permission';
 export { DashboardAPI } from './api/dashboard';
 export { LogAPI, OperationLogAPI } from './api/log';
+export { SystemConfigAPI } from './api/system-config';

@@ -66,16 +66,49 @@ export function useOperationLogManagement() {
 
       const res = await OperationLogAPI.getList(params);
 
-      if (res.code === 0) {
-        setLogs(res.data || []);
+      if (res.code === 0 || res.code === 200) {
+        // 处理新的响应格式：data.items 和 data.total, data.page, data.page_size, data.total_pages
+        const responseData = res.data;
+        const items = responseData?.items || responseData || [];
+
+        // 将 snake_case 转换为 camelCase
+        const transformedLogs = items.map((item: any) => ({
+          id: item.id,
+          userId: item.user_id || item.userId,
+          username: item.username,
+          operation: item.operation,
+          tableName: item.table_name || item.tableName,
+          objectId: item.object_id || item.objectId,
+          oldData: item.old_data || item.oldData,
+          newData: item.new_data || item.newData,
+          description: item.description,
+          ipAddress: item.ip_address || item.ipAddress,
+          source: item.source,
+          userAgent: item.user_agent || item.userAgent,
+          operationAt: item.operation_at || item.operationAt,
+          createdAt: item.created_at || item.createdAt
+        }));
+
+        setLogs(transformedLogs);
+
+        // 处理分页信息（支持 snake_case 和 camelCase）
+        const paginationData = responseData || {};
         setPagination({
-          page: res.pager?.page || 1,
-          limit: res.pager?.limit || 20,
-          total: res.pager?.total || 0,
-          totalPages: res.pager?.totalPages || 0
+          page: paginationData.page || res.pager?.page || 1,
+          limit:
+            paginationData.page_size ||
+            paginationData.pageSize ||
+            res.pager?.limit ||
+            20,
+          total: paginationData.total || res.pager?.total || 0,
+          totalPages:
+            paginationData.total_pages ||
+            paginationData.totalPages ||
+            res.pager?.totalPages ||
+            0
         });
       } else {
-        toast.error(res.message || MESSAGES.ERROR.FETCH_LOGS);
+        toast.error(res.message || res.msg || MESSAGES.ERROR.FETCH_LOGS);
         setLogs([]);
       }
     } catch (error) {

@@ -29,7 +29,11 @@ export type OperationType =
   | 'EXPORT'
   | 'LOGIN'
   | 'LOGOUT'
-  | 'RESET_PWD';
+  | 'RESET_PWD'
+  | 'INSERT'
+  | 'GAME_LAUNCH'
+  | 'CHECKIN'
+  | 'LOTTERY_DRAW';
 
 /**
  * 用户操作日志（审计日志）

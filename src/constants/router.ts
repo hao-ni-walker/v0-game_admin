@@ -99,7 +99,7 @@ export const businessNavList: NavItem[] = [
       {
         title: '游戏列表',
         url: '/dashboard/games',
-        icon: List,
+        icon: Gamepad2,
         description: '游戏列表',
         searchConfig: {
           keywords: 'game games 游戏 列表',
@@ -111,7 +111,7 @@ export const businessNavList: NavItem[] = [
       {
         title: '活动列表',
         url: '/dashboard/campaigns',
-        icon: List,
+        icon: Megaphone,
         description: '活动列表',
         searchConfig: {
           keywords: 'campaign 活动 列表',
@@ -123,7 +123,7 @@ export const businessNavList: NavItem[] = [
       {
         title: '礼包列表',
         url: '/dashboard/gift-packs',
-        icon: List,
+        icon: Gift,
         description: '礼包列表',
         searchConfig: {
           keywords: 'gift pack 礼包 列表',

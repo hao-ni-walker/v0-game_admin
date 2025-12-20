@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { Ticket } from '@/repository/models';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
+import { TicketCommentInline } from './ticket-comment-inline';
 
 interface TicketTableProps {
   tickets: (Ticket & {
@@ -163,86 +164,98 @@ export function TicketTable({
         </TableHeader>
         <TableBody>
           {tickets.map((ticket) => (
-            <TableRow key={ticket.id}>
-              <TableCell className='font-medium'>#{ticket.id}</TableCell>
-              <TableCell className='max-w-md'>
-                <div className='truncate font-medium'>{ticket.title}</div>
-                {ticket.tags && ticket.tags.length > 0 && (
-                  <div className='mt-1 flex gap-1'>
-                    {ticket.tags.slice(0, 2).map((tag, i) => (
-                      <Badge key={i} variant='outline' className='text-xs'>
-                        {tag}
-                      </Badge>
-                    ))}
-                    {ticket.tags.length > 2 && (
-                      <Badge variant='outline' className='text-xs'>
-                        +{ticket.tags.length - 2}
-                      </Badge>
-                    )}
+            <>
+              <TableRow key={ticket.id}>
+                <TableCell className='font-medium'>#{ticket.id}</TableCell>
+                <TableCell className='max-w-md'>
+                  <div className='truncate font-medium'>{ticket.title}</div>
+                  {ticket.tags && ticket.tags.length > 0 && (
+                    <div className='mt-1 flex gap-1'>
+                      {ticket.tags.slice(0, 2).map((tag, i) => (
+                        <Badge key={i} variant='outline' className='text-xs'>
+                          {tag}
+                        </Badge>
+                      ))}
+                      {ticket.tags.length > 2 && (
+                        <Badge variant='outline' className='text-xs'>
+                          +{ticket.tags.length - 2}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Badge className={STATUS_COLORS[ticket.status] || ''}>
+                    {STATUS_LABELS[ticket.status] || ticket.status}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge className={PRIORITY_COLORS[ticket.priority] || ''}>
+                    {PRIORITY_LABELS[ticket.priority] || ticket.priority}
+                  </Badge>
+                </TableCell>
+                <TableCell>{ticket.category}</TableCell>
+                <TableCell>
+                  {ticket.dueAt ? (
+                    <div className='flex items-center gap-1'>
+                      {ticket.sla?.isOverdue && (
+                        <AlertCircle className='h-3.5 w-3.5 text-red-500' />
+                      )}
+                      <span
+                        className={
+                          ticket.sla?.isOverdue
+                            ? 'font-medium text-red-500'
+                            : ''
+                        }
+                      >
+                        {formatDistanceToNow(new Date(ticket.dueAt), {
+                          locale: zhCN,
+                          addSuffix: true
+                        })}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className='text-muted-foreground'>-</span>
+                  )}
+                </TableCell>
+                <TableCell className='text-muted-foreground'>
+                  {formatDistanceToNow(new Date(ticket.createdAt), {
+                    locale: zhCN,
+                    addSuffix: true
+                  })}
+                </TableCell>
+                <TableCell className='text-right'>
+                  <div className='flex items-center justify-end gap-2'>
+                    <TicketCommentInline
+                      ticketId={ticket.id}
+                      onCommentAdded={() => {
+                        // 可以在这里触发列表刷新
+                      }}
+                    />
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant='ghost' className='h-8 w-8 p-0'>
+                          <MoreHorizontal className='h-4 w-4' />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align='end'>
+                        <DropdownMenuItem onClick={() => onView(ticket)}>
+                          <Eye className='mr-2 h-4 w-4' />
+                          查看详情
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onDelete(ticket)}
+                          className='text-red-600'
+                        >
+                          <Trash2 className='mr-2 h-4 w-4' />
+                          删除
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                )}
-              </TableCell>
-              <TableCell>
-                <Badge className={STATUS_COLORS[ticket.status] || ''}>
-                  {STATUS_LABELS[ticket.status] || ticket.status}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <Badge className={PRIORITY_COLORS[ticket.priority] || ''}>
-                  {PRIORITY_LABELS[ticket.priority] || ticket.priority}
-                </Badge>
-              </TableCell>
-              <TableCell>{ticket.category}</TableCell>
-              <TableCell>
-                {ticket.dueAt ? (
-                  <div className='flex items-center gap-1'>
-                    {ticket.sla?.isOverdue && (
-                      <AlertCircle className='h-3.5 w-3.5 text-red-500' />
-                    )}
-                    <span
-                      className={
-                        ticket.sla?.isOverdue ? 'font-medium text-red-500' : ''
-                      }
-                    >
-                      {formatDistanceToNow(new Date(ticket.dueAt), {
-                        locale: zhCN,
-                        addSuffix: true
-                      })}
-                    </span>
-                  </div>
-                ) : (
-                  <span className='text-muted-foreground'>-</span>
-                )}
-              </TableCell>
-              <TableCell className='text-muted-foreground'>
-                {formatDistanceToNow(new Date(ticket.createdAt), {
-                  locale: zhCN,
-                  addSuffix: true
-                })}
-              </TableCell>
-              <TableCell className='text-right'>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant='ghost' className='h-8 w-8 p-0'>
-                      <MoreHorizontal className='h-4 w-4' />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align='end'>
-                    <DropdownMenuItem onClick={() => onView(ticket)}>
-                      <Eye className='mr-2 h-4 w-4' />
-                      查看详情
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => onDelete(ticket)}
-                      className='text-red-600'
-                    >
-                      <Trash2 className='mr-2 h-4 w-4' />
-                      删除
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
+                </TableCell>
+              </TableRow>
+            </>
           ))}
         </TableBody>
       </Table>
