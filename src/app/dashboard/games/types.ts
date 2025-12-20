@@ -7,17 +7,17 @@ export interface Game {
   name: string;
   lang: string;
   category: string;
-  provider_code: string;
-  min_bet?: number;
-  max_bet?: number;
-  rtp?: number;
-  icon_url?: string;
-  thumbnail_url?: string;
+  provider_code: string | null;
+  min_bet?: number | string;
+  max_bet?: number | string;
+  rtp?: number | null;
+  icon_url?: string | null;
+  thumbnail_url?: string | null;
   background_url?: string;
   description?: string;
   rules?: string;
-  supported_languages: string[];
-  supported_currencies: string[];
+  supported_languages?: string[];
+  supported_currencies?: string[];
   is_mobile_supported: boolean;
   is_demo_available: boolean;
   has_jackpot: boolean;
@@ -26,12 +26,13 @@ export interface Game {
   is_featured: boolean;
   is_new: boolean;
   sort_order: number;
-  removed: boolean;
+  removed?: boolean;
+  disabled?: boolean;
   play_count: number;
-  popularity_score?: number;
+  popularity_score?: number | string;
   created_at: string;
   updated_at: string;
-  last_played_at?: string;
+  last_played_at?: string | null;
 }
 
 /**

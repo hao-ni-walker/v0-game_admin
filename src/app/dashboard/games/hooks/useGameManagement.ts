@@ -10,7 +10,8 @@ import { DEFAULT_PAGINATION, MESSAGES } from '../constants';
 export function useGameManagement() {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(false);
-  const [pagination, setPagination] = useState<PaginationInfo>(DEFAULT_PAGINATION);
+  const [pagination, setPagination] =
+    useState<PaginationInfo>(DEFAULT_PAGINATION);
 
   /**
    * 获取游戏列表
@@ -18,57 +19,111 @@ export function useGameManagement() {
   const fetchGames = useCallback(async (filters: GameFilters) => {
     setLoading(true);
     try {
-      // 构建请求体
-      const requestBody: any = {
-        page: filters.page || 1,
-        page_size: filters.page_size || 20
-      };
+      // 构建查询参数
+      const searchParams = new URLSearchParams();
+
+      // 添加分页参数
+      searchParams.append('page', String(filters.page || 1));
+      searchParams.append('page_size', String(filters.page_size || 20));
 
       // 添加筛选条件
-      if (filters.keyword) requestBody.keyword = filters.keyword;
+      if (filters.keyword) searchParams.append('keyword', filters.keyword);
       if (filters.provider_codes && filters.provider_codes.length > 0) {
-        requestBody.provider_codes = filters.provider_codes;
+        filters.provider_codes.forEach((code) => {
+          searchParams.append('provider_codes', code);
+        });
       }
       if (filters.categories && filters.categories.length > 0) {
-        requestBody.categories = filters.categories;
+        filters.categories.forEach((category) => {
+          searchParams.append('categories', category);
+        });
       }
-      if (filters.lang) requestBody.lang = filters.lang;
+      if (filters.lang) searchParams.append('lang', filters.lang);
       if (filters.status !== 'all' && filters.status !== undefined) {
-        requestBody.status = filters.status;
+        searchParams.append('status', String(filters.status));
       }
-      if (filters.is_new !== undefined) requestBody.is_new = filters.is_new;
-      if (filters.is_featured !== undefined) requestBody.is_featured = filters.is_featured;
+      if (filters.is_new !== undefined) {
+        searchParams.append('is_new', String(filters.is_new));
+      }
+      if (filters.is_featured !== undefined) {
+        searchParams.append('is_featured', String(filters.is_featured));
+      }
       if (filters.is_mobile_supported !== undefined) {
-        requestBody.is_mobile_supported = filters.is_mobile_supported;
+        searchParams.append(
+          'is_mobile_supported',
+          String(filters.is_mobile_supported)
+        );
       }
       if (filters.is_demo_available !== undefined) {
-        requestBody.is_demo_available = filters.is_demo_available;
+        searchParams.append(
+          'is_demo_available',
+          String(filters.is_demo_available)
+        );
       }
-      if (filters.has_jackpot !== undefined) requestBody.has_jackpot = filters.has_jackpot;
-      if (filters.sort_by) requestBody.sort_by = filters.sort_by;
-      if (filters.sort_dir) requestBody.sort_dir = filters.sort_dir;
+      if (filters.has_jackpot !== undefined) {
+        searchParams.append('has_jackpot', String(filters.has_jackpot));
+      }
+      if (filters.sort_by) searchParams.append('sort_by', filters.sort_by);
+      if (filters.sort_dir) searchParams.append('sort_dir', filters.sort_dir);
 
-      const response = await fetch('/api/games/list', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
-      });
+      const response = await fetch(
+        `/api/admin/games?${searchParams.toString()}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
 
       if (!response.ok) {
         throw new Error('获取游戏列表失败');
       }
 
-      const data = await response.json();
-      
-      setGames(data.list || []);
-      setPagination({
-        page: data.page || 1,
-        page_size: data.page_size || 20,
-        total: data.total || 0,
-        totalPages: Math.ceil((data.total || 0) / (data.page_size || 20))
-      });
+      const result = await response.json();
+
+      // 适配返回的数据结构：{ code, message, success, data: { items, total, page, page_size, total_pages } }
+      if (result.success && result.data) {
+        // 转换数据格式，将字符串类型的数字转换为数字类型
+        const games = (result.data.items || []).map((game: any) => ({
+          ...game,
+          min_bet: game.min_bet
+            ? typeof game.min_bet === 'string'
+              ? parseFloat(game.min_bet)
+              : game.min_bet
+            : undefined,
+          max_bet: game.max_bet
+            ? typeof game.max_bet === 'string'
+              ? parseFloat(game.max_bet)
+              : game.max_bet
+            : undefined,
+          rtp: game.rtp
+            ? typeof game.rtp === 'string'
+              ? parseFloat(game.rtp)
+              : game.rtp
+            : null,
+          popularity_score: game.popularity_score
+            ? typeof game.popularity_score === 'string'
+              ? parseFloat(game.popularity_score)
+              : game.popularity_score
+            : undefined,
+          supported_languages: game.supported_languages || [],
+          supported_currencies: game.supported_currencies || [],
+          removed: game.removed ?? game.disabled ?? false
+        }));
+
+        setGames(games);
+        setPagination({
+          page: result.data.page || 1,
+          page_size: result.data.page_size || 20,
+          total: result.data.total || 0,
+          totalPages:
+            result.data.total_pages ||
+            Math.ceil((result.data.total || 0) / (result.data.page_size || 20))
+        });
+      } else {
+        throw new Error(result.message || '获取游戏列表失败');
+      }
     } catch (error) {
       console.error('获取游戏列表失败:', error);
       toast.error(MESSAGES.ERROR.FETCH_GAMES);
@@ -92,28 +147,31 @@ export function useGameManagement() {
   /**
    * 创建游戏
    */
-  const createGame = useCallback(async (data: GameFormData): Promise<boolean> => {
-    try {
-      const response = await fetch('/api/games', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
+  const createGame = useCallback(
+    async (data: GameFormData): Promise<boolean> => {
+      try {
+        const response = await fetch('/api/games', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
 
-      if (!response.ok) {
-        throw new Error('创建游戏失败');
+        if (!response.ok) {
+          throw new Error('创建游戏失败');
+        }
+
+        toast.success(MESSAGES.SUCCESS.CREATE);
+        return true;
+      } catch (error) {
+        console.error('创建游戏失败:', error);
+        toast.error(MESSAGES.ERROR.CREATE);
+        return false;
       }
-
-      toast.success(MESSAGES.SUCCESS.CREATE);
-      return true;
-    } catch (error) {
-      console.error('创建游戏失败:', error);
-      toast.error(MESSAGES.ERROR.CREATE);
-      return false;
-    }
-  }, []);
+    },
+    []
+  );
 
   /**
    * 更新游戏
@@ -174,7 +232,9 @@ export function useGameManagement() {
       const newStatus = !game.status;
       const success = await updateGame(game.id, { status: newStatus });
       if (success) {
-        toast.success(newStatus ? MESSAGES.SUCCESS.ENABLE : MESSAGES.SUCCESS.DISABLE);
+        toast.success(
+          newStatus ? MESSAGES.SUCCESS.ENABLE : MESSAGES.SUCCESS.DISABLE
+        );
       }
       return success;
     },
@@ -189,7 +249,9 @@ export function useGameManagement() {
       const newFeatured = !game.is_featured;
       const success = await updateGame(game.id, { is_featured: newFeatured });
       if (success) {
-        toast.success(newFeatured ? MESSAGES.SUCCESS.FEATURE : MESSAGES.SUCCESS.UNFEATURE);
+        toast.success(
+          newFeatured ? MESSAGES.SUCCESS.FEATURE : MESSAGES.SUCCESS.UNFEATURE
+        );
       }
       return success;
     },

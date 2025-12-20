@@ -133,14 +133,41 @@ export const businessNavList: NavItem[] = [
         }
       },
       {
-        title: '通告列表',
-        url: '/dashboard/announcements',
-        icon: List,
-        description: '通告列表',
+        title: '通知管理',
+        url: '#',
+        icon: Megaphone,
+        isActive: false,
+        description: '通知管理',
+        items: [
+          {
+            title: '通告列表',
+            url: '/dashboard/announcements',
+            icon: List,
+            description: '通告列表',
+            searchConfig: {
+              keywords: 'announcement 通告 公告 列表',
+              searchShortcut: ['n'],
+              searchSection: '通知管理',
+              searchPriority: 8
+            }
+          },
+          {
+            title: '通告模板',
+            url: '/dashboard/announcements/templates',
+            icon: ScrollText,
+            description: '通告模板',
+            searchConfig: {
+              keywords: 'announcement template 通告 模板',
+              searchShortcut: ['t'],
+              searchSection: '通知管理',
+              searchPriority: 9
+            }
+          }
+        ],
         searchConfig: {
-          keywords: 'announcement 通告 公告 列表',
+          keywords: 'announcement 通知 通告',
           searchShortcut: ['n'],
-          searchSection: '通告管理',
+          searchSection: '通知管理',
           searchPriority: 8
         }
       },
