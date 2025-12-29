@@ -4,6 +4,28 @@ import { cookies } from 'next/headers';
 const REMOTE_API_URL =
   'https://api.xreddeercasino.com/api/admin/payment-channels';
 
+// 转换后的支付渠道数据类型
+interface TransformedPaymentChannel {
+  id: number;
+  name: string;
+  code: string;
+  type: number;
+  channelType: 'alipay' | 'wechat' | 'bank' | 'usdt' | 'other';
+  config: any;
+  minAmount: number;
+  maxAmount: number;
+  dailyLimit: number;
+  feeRate: number;
+  fixedFee: number;
+  sortOrder: number;
+  status: number;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+  removed: boolean;
+  disabled: boolean;
+}
+
 /**
  * POST /api/payment-channels/list
  * 获取支付渠道列表(带筛选和分页) - 代理到远程 API
@@ -163,7 +185,9 @@ export async function POST(request: NextRequest) {
       };
 
       // 转换支付渠道数据：snake_case -> camelCase，并处理数据类型
-      let transformedItems = (result.data.items || []).map((item: any) => {
+      let transformedItems: TransformedPaymentChannel[] = (
+        result.data.items || []
+      ).map((item: any) => {
         return {
           id: item.id,
           name: item.name || '',
@@ -193,98 +217,109 @@ export async function POST(request: NextRequest) {
       if (keyword) {
         const lowerKeyword = keyword.toLowerCase();
         transformedItems = transformedItems.filter(
-          (channel) =>
+          (channel: TransformedPaymentChannel) =>
             channel.name?.toLowerCase().includes(lowerKeyword) ||
             channel.code?.toLowerCase().includes(lowerKeyword)
         );
       }
 
       if (types && types.length > 0) {
-        transformedItems = transformedItems.filter((channel) =>
-          types.includes(channel.type)
+        transformedItems = transformedItems.filter(
+          (channel: TransformedPaymentChannel) => types.includes(channel.type)
         );
       }
 
       if (channel_types && channel_types.length > 0) {
-        transformedItems = transformedItems.filter((channel) =>
-          channel_types.includes(channel.channelType)
+        transformedItems = transformedItems.filter(
+          (channel: TransformedPaymentChannel) =>
+            channel_types.includes(channel.channelType)
         );
       }
 
       if (status !== undefined && status !== 'all') {
         transformedItems = transformedItems.filter(
-          (channel) => channel.status === status
+          (channel: TransformedPaymentChannel) => channel.status === status
         );
       }
 
       if (disabled !== undefined) {
         transformedItems = transformedItems.filter(
-          (channel) => channel.disabled === disabled
+          (channel: TransformedPaymentChannel) => channel.disabled === disabled
         );
       }
 
       if (!show_removed) {
         transformedItems = transformedItems.filter(
-          (channel) => !channel.removed
+          (channel: TransformedPaymentChannel) => !channel.removed
         );
       }
 
       // 应用其他筛选条件...
       if (min_amount_maxlte !== undefined) {
         transformedItems = transformedItems.filter(
-          (channel) => channel.minAmount <= min_amount_maxlte
+          (channel: TransformedPaymentChannel) =>
+            channel.minAmount <= min_amount_maxlte
         );
       }
       if (max_amount_mingte !== undefined) {
         transformedItems = transformedItems.filter(
-          (channel) => channel.maxAmount >= max_amount_mingte
+          (channel: TransformedPaymentChannel) =>
+            channel.maxAmount >= max_amount_mingte
         );
       }
       if (fee_rate_min !== undefined) {
         transformedItems = transformedItems.filter(
-          (channel) => channel.feeRate >= fee_rate_min
+          (channel: TransformedPaymentChannel) =>
+            channel.feeRate >= fee_rate_min
         );
       }
       if (fee_rate_max !== undefined) {
         transformedItems = transformedItems.filter(
-          (channel) => channel.feeRate <= fee_rate_max
+          (channel: TransformedPaymentChannel) =>
+            channel.feeRate <= fee_rate_max
         );
       }
       if (fixed_fee_min !== undefined) {
         transformedItems = transformedItems.filter(
-          (channel) => channel.fixedFee >= fixed_fee_min
+          (channel: TransformedPaymentChannel) =>
+            channel.fixedFee >= fixed_fee_min
         );
       }
       if (fixed_fee_max !== undefined) {
         transformedItems = transformedItems.filter(
-          (channel) => channel.fixedFee <= fixed_fee_max
+          (channel: TransformedPaymentChannel) =>
+            channel.fixedFee <= fixed_fee_max
         );
       }
       if (daily_limit_min !== undefined) {
         transformedItems = transformedItems.filter(
-          (channel) => channel.dailyLimit >= daily_limit_min
+          (channel: TransformedPaymentChannel) =>
+            channel.dailyLimit >= daily_limit_min
         );
       }
       if (daily_limit_max !== undefined) {
         transformedItems = transformedItems.filter(
-          (channel) => channel.dailyLimit <= daily_limit_max
+          (channel: TransformedPaymentChannel) =>
+            channel.dailyLimit <= daily_limit_max
         );
       }
 
       // 排序（如果指定了排序字段）
       if (sort_by) {
-        transformedItems.sort((a: any, b: any) => {
-          const aValue = a[sort_by];
-          const bValue = b[sort_by];
+        transformedItems.sort(
+          (a: TransformedPaymentChannel, b: TransformedPaymentChannel) => {
+            const aValue = a[sort_by];
+            const bValue = b[sort_by];
 
-          if (aValue === undefined || aValue === null) return 1;
-          if (bValue === undefined || bValue === null) return -1;
+            if (aValue === undefined || aValue === null) return 1;
+            if (bValue === undefined || bValue === null) return -1;
 
-          const dir = sort_dir === 'desc' ? -1 : 1;
-          if (aValue > bValue) return dir;
-          if (aValue < bValue) return -dir;
-          return 0;
-        });
+            const dir = sort_dir === 'desc' ? -1 : 1;
+            if (aValue > bValue) return dir;
+            if (aValue < bValue) return -dir;
+            return 0;
+          }
+        );
       }
 
       // 重新计算分页（因为可能进行了客户端筛选）
