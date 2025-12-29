@@ -306,7 +306,10 @@ export function WithdrawOrderTable({
                   {formatCurrency(order.fee)}
                 </TableCell>
                 <TableCell className='text-right font-semibold text-green-600'>
-                  {formatCurrency(order.actualAmount)}
+                  {order.actualAmount !== null &&
+                  order.actualAmount !== undefined
+                    ? formatCurrency(order.actualAmount)
+                    : '—'}
                 </TableCell>
                 <TableCell>
                   <div>{order.paymentChannelName || '-'}</div>

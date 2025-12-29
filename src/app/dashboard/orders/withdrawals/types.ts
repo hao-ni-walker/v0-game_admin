@@ -27,7 +27,7 @@ export interface WithdrawOrder {
   channelType?: 'bank' | 'usdt' | 'alipay' | 'wechat' | 'other'; // 渠道类型
   amount: number; // 提现金额
   fee: number; // 手续费
-  actualAmount: number; // 实际出款金额
+  actualAmount: number | null; // 实际出款金额（待审核/待出款时为 null）
   status: WithdrawOrderStatus;
   currency: string; // 币种
   // 提现账户信息
@@ -50,7 +50,7 @@ export interface WithdrawOrder {
   remark?: string | null; // 备注
   createdAt: string; // 申请时间
   completedAt?: string | null; // 完成时间
-  updatedAt?: string; // 更新时间
+  updatedAt?: string; // 更新时间（可能缺失，使用 createdAt 作为默认值）
 }
 
 // 用户钱包信息（复用储值订单的类型）

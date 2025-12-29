@@ -8,6 +8,7 @@ import type {
   WalletTransaction
 } from '../types';
 import { toast } from 'sonner';
+import { transformDepositOrderList } from '../utils/transform';
 
 export function useDepositOrderManagement() {
   const [orders, setOrders] = useState<DepositOrder[]>([]);
@@ -26,14 +27,71 @@ export function useDepositOrderManagement() {
     try {
       const response = await DepositOrderAPI.getDepositOrders(filters);
       if (response.success && response.data) {
-        setOrders(response.data.data);
-        setStats(response.data.stats);
-        setPagination({
-          page: response.data.pager.page,
-          pageSize: response.data.pager.limit,
-          total: response.data.pager.total,
-          totalPages: response.data.pager.totalPages
-        });
+        // 处理实际返回的数据结构
+        // 后端返回: { code: 0, data: { items: [], total, page, page_size, total_pages } }
+        // 或者期望的结构: { data: { data: [], stats: {}, pager: {} } }
+
+        let ordersList: any[] = [];
+        let paginationData: any = {};
+        let statsData: DepositOrderStats | null = null;
+
+        // 检查是否是新的数据结构（items 格式）
+        if ('items' in response.data && Array.isArray(response.data.items)) {
+          ordersList = response.data.items;
+          paginationData = {
+            page: response.data.page || 1,
+            pageSize: response.data.page_size || response.data.pageSize || 20,
+            total: response.data.total || 0,
+            totalPages:
+              response.data.total_pages || response.data.totalPages || 0
+          };
+          // 如果没有 stats，尝试单独获取或设置为默认值
+          if (response.data.stats) {
+            statsData = response.data.stats;
+          } else {
+            // 如果没有 stats，可以尝试单独调用 stats API
+            try {
+              const statsResponse = await DepositOrderAPI.getStats(filters);
+              if (statsResponse.success && statsResponse.data) {
+                statsData = statsResponse.data;
+              }
+            } catch (statsError) {
+              console.warn('获取统计数据失败:', statsError);
+              // 设置默认值
+              statsData = {
+                orderCount: ordersList.length,
+                totalAmount: 0,
+                totalActualAmount: 0,
+                totalBonusAmount: 0
+              };
+            }
+          }
+        } else if (
+          'data' in response.data &&
+          Array.isArray(response.data.data)
+        ) {
+          // 旧的数据结构（期望的格式）
+          ordersList = response.data.data;
+          statsData = response.data.stats || null;
+          paginationData = {
+            page: response.data.pager?.page || 1,
+            pageSize:
+              response.data.pager?.limit || response.data.pager?.pageSize || 20,
+            total: response.data.pager?.total || 0,
+            totalPages: response.data.pager?.totalPages || 0
+          };
+        } else {
+          // 如果都不匹配，尝试直接使用 response.data
+          console.warn('未知的数据结构:', response.data);
+          ordersList = Array.isArray(response.data) ? response.data : [];
+        }
+
+        // 转换订单数据（下划线转驼峰）
+        const transformedOrders = transformDepositOrderList(ordersList);
+
+        setOrders(transformedOrders as DepositOrder[]);
+        setStats(statsData);
+        setPagination(paginationData);
       } else {
         toast.error(response.message || '获取订单列表失败');
         setOrders([]);
