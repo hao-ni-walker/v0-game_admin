@@ -108,7 +108,7 @@ export function useOperationLogManagement() {
             0
         });
       } else {
-        toast.error(res.message || res.msg || MESSAGES.ERROR.FETCH_LOGS);
+        toast.error(res.message || MESSAGES.ERROR.FETCH_LOGS);
         setLogs([]);
       }
     } catch (error) {

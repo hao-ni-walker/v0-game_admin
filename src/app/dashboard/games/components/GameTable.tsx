@@ -95,8 +95,8 @@ export function GameTable({
                   className='rounded-md object-cover'
                 />
               ) : (
-                <div className='flex h-10 w-10 items-center justify-center rounded-md bg-muted'>
-                  <Gamepad className='h-5 w-5 text-muted-foreground' />
+                <div className='bg-muted flex h-10 w-10 items-center justify-center rounded-md'>
+                  <Gamepad className='text-muted-foreground h-5 w-5' />
                 </div>
               )}
             </div>
@@ -113,7 +113,7 @@ export function GameTable({
             <div className='flex items-center gap-1'>
               <span className='truncate text-xs'>{value}</span>
               <Copy
-                className='h-3 w-3 cursor-pointer text-muted-foreground hover:text-foreground'
+                className='text-muted-foreground hover:text-foreground h-3 w-3 cursor-pointer'
                 onClick={() => handleCopyGameId(value)}
               />
             </div>
@@ -130,7 +130,7 @@ export function GameTable({
             <div className='space-y-1'>
               <div className='font-medium'>{value}</div>
               {record.description && (
-                <div className='line-clamp-1 text-xs text-muted-foreground'>
+                <div className='text-muted-foreground line-clamp-1 text-xs'>
                   {record.description}
                 </div>
               )}
@@ -145,9 +145,7 @@ export function GameTable({
         ...col,
         render: (value: string) => {
           return (
-            <Badge variant='outline'>
-              {CATEGORY_LABELS[value] || value}
-            </Badge>
+            <Badge variant='outline'>{CATEGORY_LABELS[value] || value}</Badge>
           );
         }
       };
@@ -158,9 +156,7 @@ export function GameTable({
         ...col,
         render: (value: string) => {
           return (
-            <Badge variant='secondary'>
-              {PROVIDER_LABELS[value] || value}
-            </Badge>
+            <Badge variant='secondary'>{PROVIDER_LABELS[value] || value}</Badge>
           );
         }
       };
@@ -171,9 +167,7 @@ export function GameTable({
         ...col,
         render: (value: number | undefined) => {
           return value !== undefined && value !== null ? (
-            <span className='font-mono text-xs'>
-              {value.toFixed(2)}
-            </span>
+            <span className='font-mono text-xs'>{value.toFixed(2)}</span>
           ) : (
             <span className='text-muted-foreground'>—</span>
           );
@@ -186,9 +180,7 @@ export function GameTable({
         ...col,
         render: (value: number | undefined) => {
           return value !== undefined && value !== null ? (
-            <span className='font-mono text-xs'>
-              {value.toFixed(2)}
-            </span>
+            <span className='font-mono text-xs'>{value.toFixed(2)}</span>
           ) : (
             <span className='text-muted-foreground'>—</span>
           );
@@ -241,9 +233,7 @@ export function GameTable({
                   奖励
                 </Badge>
               )}
-              {record.is_new && (
-                <Badge className='text-xs'>新</Badge>
-              )}
+              {record.is_new && <Badge className='text-xs'>新</Badge>}
             </div>
           );
         }
@@ -272,11 +262,15 @@ export function GameTable({
           return (
             <div className='space-y-1 text-right text-xs'>
               <div>
-                游玩: <span className='font-mono'>{record.play_count || 0}</span>
+                游玩:{' '}
+                <span className='font-mono'>{record.play_count || 0}</span>
               </div>
               {record.popularity_score !== undefined && (
                 <div>
-                  热度: <span className='font-mono'>{record.popularity_score.toFixed(2)}</span>
+                  热度:{' '}
+                  <span className='font-mono'>
+                    {Number(record.popularity_score).toFixed(2)}
+                  </span>
                 </div>
               )}
             </div>

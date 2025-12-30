@@ -213,16 +213,6 @@ export async function POST(request: NextRequest) {
         };
       });
 
-      // 如果远程 API 不支持某些筛选，在这里进行客户端筛选
-      if (keyword) {
-        const lowerKeyword = keyword.toLowerCase();
-        transformedItems = transformedItems.filter(
-          (channel: TransformedPaymentChannel) =>
-            channel.name?.toLowerCase().includes(lowerKeyword) ||
-            channel.code?.toLowerCase().includes(lowerKeyword)
-        );
-      }
-
       if (types && types.length > 0) {
         transformedItems = transformedItems.filter(
           (channel: TransformedPaymentChannel) => types.includes(channel.type)
@@ -308,8 +298,8 @@ export async function POST(request: NextRequest) {
       if (sort_by) {
         transformedItems.sort(
           (a: TransformedPaymentChannel, b: TransformedPaymentChannel) => {
-            const aValue = a[sort_by];
-            const bValue = b[sort_by];
+            const aValue = a[sort_by as keyof TransformedPaymentChannel];
+            const bValue = b[sort_by as keyof TransformedPaymentChannel];
 
             if (aValue === undefined || aValue === null) return 1;
             if (bValue === undefined || bValue === null) return -1;

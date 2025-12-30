@@ -38,12 +38,19 @@ export function useDepositOrderManagement() {
         // 检查是否是新的数据结构（items 格式）
         if ('items' in response.data && Array.isArray(response.data.items)) {
           ordersList = response.data.items;
+          // Type-safe access to pagination fields in the items format
+          const itemsData = response.data as Record<string, unknown>;
           paginationData = {
-            page: response.data.page || 1,
-            pageSize: response.data.page_size || response.data.pageSize || 20,
-            total: response.data.total || 0,
+            page: (itemsData.page as number) || 1,
+            pageSize:
+              (itemsData.page_size as number) ||
+              (itemsData.pageSize as number) ||
+              20,
+            total: (itemsData.total as number) || 0,
             totalPages:
-              response.data.total_pages || response.data.totalPages || 0
+              (itemsData.total_pages as number) ||
+              (itemsData.totalPages as number) ||
+              0
           };
           // 如果没有 stats，尝试单独获取或设置为默认值
           if (response.data.stats) {
@@ -73,10 +80,10 @@ export function useDepositOrderManagement() {
           // 旧的数据结构（期望的格式）
           ordersList = response.data.data;
           statsData = response.data.stats || null;
+          // pager type has 'limit' not 'pageSize'
           paginationData = {
             page: response.data.pager?.page || 1,
-            pageSize:
-              response.data.pager?.limit || response.data.pager?.pageSize || 20,
+            pageSize: response.data.pager?.limit || 20,
             total: response.data.pager?.total || 0,
             totalPages: response.data.pager?.totalPages || 0
           };
