@@ -47,10 +47,12 @@ export function useDepositOrderManagement() {
               (itemsData.pageSize as number) ||
               20,
             total: (itemsData.total as number) || 0,
-            totalPages:
+            totalPages: Math.max(
               (itemsData.total_pages as number) ||
-              (itemsData.totalPages as number) ||
-              0
+                (itemsData.totalPages as number) ||
+                0,
+              1
+            )
           };
           // 如果没有 stats，尝试单独获取或设置为默认值
           if (response.data.stats) {
@@ -85,7 +87,7 @@ export function useDepositOrderManagement() {
             page: response.data.pager?.page || 1,
             pageSize: response.data.pager?.limit || 20,
             total: response.data.pager?.total || 0,
-            totalPages: response.data.pager?.totalPages || 0
+            totalPages: Math.max(response.data.pager?.totalPages || 0, 1)
           };
         } else {
           // 如果都不匹配，尝试直接使用 response.data

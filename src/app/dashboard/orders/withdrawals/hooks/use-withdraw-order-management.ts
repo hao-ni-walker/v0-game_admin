@@ -32,7 +32,7 @@ export function useWithdrawOrderManagement() {
           page: response.data.pager.page,
           pageSize: response.data.pager.limit,
           total: response.data.pager.total,
-          totalPages: response.data.pager.totalPages
+          totalPages: Math.max(response.data.pager.totalPages || 0, 1)
         });
       } else {
         toast.error(response.message || '获取订单列表失败');

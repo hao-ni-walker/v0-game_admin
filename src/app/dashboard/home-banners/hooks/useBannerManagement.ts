@@ -1,6 +1,11 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { Banner, BannerFilters, PaginationInfo, BannerFormData } from '../types';
+import {
+  Banner,
+  BannerFilters,
+  PaginationInfo,
+  BannerFormData
+} from '../types';
 import { DEFAULT_PAGINATION, MESSAGES } from '../constants';
 
 /**
@@ -10,7 +15,8 @@ import { DEFAULT_PAGINATION, MESSAGES } from '../constants';
 export function useBannerManagement() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(false);
-  const [pagination, setPagination] = useState<PaginationInfo>(DEFAULT_PAGINATION);
+  const [pagination, setPagination] =
+    useState<PaginationInfo>(DEFAULT_PAGINATION);
 
   /**
    * 获取轮播图列表
@@ -18,47 +24,81 @@ export function useBannerManagement() {
   const fetchBanners = useCallback(async (filters: BannerFilters) => {
     setLoading(true);
     try {
-      // 构建请求体
-      const requestBody: any = {
-        page: filters.page || 1,
-        page_size: filters.page_size || 20
-      };
+      // 构建查询参数
+      const queryParams = new URLSearchParams();
+
+      // 添加分页参数
+      queryParams.append('page', String(filters.page || 1));
+      queryParams.append('page_size', String(filters.page_size || 20));
 
       // 添加筛选条件
-      if (filters.keyword) requestBody.keyword = filters.keyword;
+      if (filters.keyword) queryParams.append('keyword', filters.keyword);
       if (filters.positions && filters.positions.length > 0) {
-        requestBody.positions = filters.positions;
+        filters.positions.forEach((position) => {
+          queryParams.append('positions', position);
+        });
       }
       if (filters.status !== 'all' && filters.status !== undefined) {
-        requestBody.status = filters.status;
+        queryParams.append('status', String(filters.status));
       }
-      if (filters.disabled !== undefined) requestBody.disabled = filters.disabled;
-      if (filters.show_removed !== undefined) requestBody.show_removed = filters.show_removed;
-      if (filters.active_only !== undefined) requestBody.active_only = filters.active_only;
-      if (filters.sort_by) requestBody.sort_by = filters.sort_by;
-      if (filters.sort_dir) requestBody.sort_dir = filters.sort_dir;
+      if (filters.disabled !== undefined) {
+        queryParams.append('disabled', String(filters.disabled));
+      }
+      if (filters.show_removed !== undefined) {
+        queryParams.append('show_removed', String(filters.show_removed));
+      }
+      if (filters.active_only !== undefined) {
+        queryParams.append('active_only', String(filters.active_only));
+      }
+      if (filters.sort_by) queryParams.append('sort_by', filters.sort_by);
+      if (filters.sort_dir) queryParams.append('sort_dir', filters.sort_dir);
 
-      const response = await fetch('/api/banners/list', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
-      });
+      const response = await fetch(
+        `/api/admin/banners?${queryParams.toString()}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
 
       if (!response.ok) {
         throw new Error('获取轮播图列表失败');
       }
 
-      const data = await response.json();
-      
-      setBanners(data.list || []);
-      setPagination({
-        page: data.page || 1,
-        page_size: data.page_size || 20,
-        total: data.total || 0,
-        totalPages: Math.ceil((data.total || 0) / (data.page_size || 20))
-      });
+      const result = await response.json();
+
+      // 处理新的响应格式: { code, msg, data: { items, total, page, page_size, total_pages } }
+      if (result.success && result.data) {
+        const data = result.data;
+        setBanners(data.items || []);
+        setPagination({
+          page: data.page || 1,
+          page_size: data.page_size || 20,
+          total: data.total || 0,
+          totalPages:
+            data.total_pages ||
+            Math.ceil((data.total || 0) / (data.page_size || 20))
+        });
+      } else {
+        // 如果响应格式不符合预期，尝试直接使用 result
+        if (result.data && Array.isArray(result.data.items)) {
+          setBanners(result.data.items);
+          setPagination({
+            page: result.data.page || 1,
+            page_size: result.data.page_size || 20,
+            total: result.data.total || 0,
+            totalPages:
+              result.data.total_pages ||
+              Math.ceil(
+                (result.data.total || 0) / (result.data.page_size || 20)
+              )
+          });
+        } else {
+          throw new Error(result.message || '获取轮播图列表失败');
+        }
+      }
     } catch (error) {
       console.error('获取轮播图列表失败:', error);
       toast.error(MESSAGES.ERROR.FETCH_BANNERS);
@@ -82,34 +122,40 @@ export function useBannerManagement() {
   /**
    * 创建轮播图
    */
-  const createBanner = useCallback(async (data: BannerFormData): Promise<boolean> => {
-    try {
-      const response = await fetch('/api/banners', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
+  const createBanner = useCallback(
+    async (data: BannerFormData): Promise<boolean> => {
+      try {
+        const response = await fetch('/api/banners', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
 
-      if (!response.ok) {
-        throw new Error('创建轮播图失败');
+        if (!response.ok) {
+          throw new Error('创建轮播图失败');
+        }
+
+        toast.success(MESSAGES.SUCCESS.CREATE);
+        return true;
+      } catch (error) {
+        console.error('创建轮播图失败:', error);
+        toast.error(MESSAGES.ERROR.CREATE);
+        return false;
       }
-
-      toast.success(MESSAGES.SUCCESS.CREATE);
-      return true;
-    } catch (error) {
-      console.error('创建轮播图失败:', error);
-      toast.error(MESSAGES.ERROR.CREATE);
-      return false;
-    }
-  }, []);
+    },
+    []
+  );
 
   /**
    * 更新轮播图
    */
   const updateBanner = useCallback(
-    async (id: number, data: Partial<BannerFormData> & { version: number }): Promise<boolean> => {
+    async (
+      id: number,
+      data: Partial<BannerFormData> & { version: number }
+    ): Promise<boolean> => {
       try {
         const response = await fetch(`/api/banners/${id}`, {
           method: 'PUT',
@@ -168,12 +214,14 @@ export function useBannerManagement() {
   const toggleBannerStatus = useCallback(
     async (banner: Banner): Promise<boolean> => {
       const newStatus: 0 | 1 = banner.status === 1 ? 0 : 1;
-      const success = await updateBanner(banner.id, { 
+      const success = await updateBanner(banner.id, {
         status: newStatus,
         version: banner.version
       });
       if (success) {
-        toast.success(newStatus === 1 ? MESSAGES.SUCCESS.ENABLE : MESSAGES.SUCCESS.DISABLE);
+        toast.success(
+          newStatus === 1 ? MESSAGES.SUCCESS.ENABLE : MESSAGES.SUCCESS.DISABLE
+        );
       }
       return success;
     },
@@ -185,7 +233,7 @@ export function useBannerManagement() {
    */
   const disableBanner = useCallback(
     async (banner: Banner): Promise<boolean> => {
-      const success = await updateBanner(banner.id, { 
+      const success = await updateBanner(banner.id, {
         disabled: true,
         version: banner.version
       });
@@ -202,7 +250,7 @@ export function useBannerManagement() {
    */
   const restoreBanner = useCallback(
     async (banner: Banner): Promise<boolean> => {
-      const success = await updateBanner(banner.id, { 
+      const success = await updateBanner(banner.id, {
         disabled: false,
         version: banner.version
       });
