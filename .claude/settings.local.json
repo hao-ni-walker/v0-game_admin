@@ -1,6 +1,21 @@
 {
+  "alwaysThinkingEnabled": true,
   "permissions": {
-    "allow": ["Bash(npm run build)", "Bash(pnpm run build:*)"],
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(npm run build)",
+      "Bash(node:*)",
+      "Bash(pnpm dev)",
+      "Bash(curl:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm dev:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Edit",
+      "Bash(npm:*)",
+      "Bash(ls:*)"
+    ],
     "deny": [],
     "ask": []
   }

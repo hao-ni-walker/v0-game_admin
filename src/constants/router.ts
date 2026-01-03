@@ -20,7 +20,8 @@ import {
   Receipt,
   Crown,
   Wallet,
-  ArrowDownCircle
+  ArrowDownCircle,
+  Server
 } from 'lucide-react';
 
 // 业务导航列表
@@ -305,6 +306,18 @@ export const systemNavList: NavItem[] = [
           searchShortcut: ['y'],
           searchSection: '系统管理',
           searchPriority: 7
+        }
+      },
+      {
+        title: '平台管理',
+        url: '/dashboard/system/platform',
+        icon: Server,
+        description: '平台管理',
+        searchConfig: {
+          keywords: 'platform 平台 管理',
+          searchShortcut: ['m'],
+          searchSection: '系统管理',
+          searchPriority: 8
         }
       },
       {
