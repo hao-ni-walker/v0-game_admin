@@ -56,12 +56,7 @@ export function usePlatformFilters() {
       // 更新 URL
       const params = new URLSearchParams();
       Object.entries(updatedFilters).forEach(([key, value]) => {
-        if (
-          value !== undefined &&
-          value !== null &&
-          value !== '' &&
-          value !== false
-        ) {
+        if (value !== undefined && value !== null && value !== '') {
           params.set(key, String(value));
         }
       });
@@ -85,12 +80,7 @@ export function usePlatformFilters() {
       // 更新 URL
       const params = new URLSearchParams();
       Object.entries(updatedFilters).forEach(([key, value]) => {
-        if (
-          value !== undefined &&
-          value !== null &&
-          value !== '' &&
-          value !== false
-        ) {
+        if (value !== undefined && value !== null && value !== '') {
           params.set(key, String(value));
         }
       });
