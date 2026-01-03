@@ -16,6 +16,8 @@ import type {
 } from '../types';
 import { DEFAULT_PAGINATION, MESSAGES } from '../constants';
 
+// RoleAPI is imported from @/service/api/role
+
 export function useRoleManagement() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(false);
