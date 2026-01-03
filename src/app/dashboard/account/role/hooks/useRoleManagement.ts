@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { PermissionAPI } from '@/service/request';
+import { RoleAPI } from '@/service/api/role';
+import { PermissionAPI } from '@/service/api/permission';
 import { AdminAPI } from '@/service/api/admin-api';
 import type {
   Role,
