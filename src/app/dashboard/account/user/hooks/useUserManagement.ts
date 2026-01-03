@@ -8,7 +8,8 @@ import {
   UserFormData
 } from '../types';
 import { DEFAULT_PAGINATION, MESSAGES } from '../constants';
-import { RoleAPI, UserAPI } from '@/service/request';
+import { RoleAPI } from '@/service/request';
+import { apiRequest, buildSearchParams } from '@/service/api/base';
 
 /**
  * 用户管理业务逻辑 Hook
@@ -46,30 +47,90 @@ export function useUserManagement() {
       setLoading(true);
 
       // 构建查询参数
-      const params: Record<string, any> = {};
-      Object.entries(filters).forEach(([key, value]) => {
-        if (key === 'dateRange' && value) {
-          // 处理日期范围
-          const dateRange = value as { from: Date; to: Date };
-          if (dateRange.from && dateRange.to) {
-            const startDateStr = dateRange.from.toISOString().split('T')[0];
-            const endDateStr = dateRange.to.toISOString().split('T')[0];
-            params.startDate = startDateStr;
-            params.endDate = endDateStr;
-          }
-        } else if (value !== undefined && value !== null && value !== '') {
-          params[key] = value;
-        }
-      });
+      const params: Record<string, any> = {
+        page: filters.page || 1,
+        page_size: filters.limit || 10
+      };
 
-      const res = await UserAPI.getUsers(params);
-      if (res.code === 0) {
-        setUsers(res.data || []);
+      // 处理筛选条件
+      if (filters.username) {
+        params.username = filters.username;
+      }
+      if (filters.email) {
+        params.email = filters.email;
+      }
+      if (filters.roleId && filters.roleId !== '') {
+        params.role_id = filters.roleId;
+      }
+      if (filters.status && filters.status !== 'all') {
+        params.status = filters.status;
+      }
+
+      // 处理日期范围
+      if (filters.dateRange) {
+        const dateRange = filters.dateRange as { from: Date; to: Date };
+        if (dateRange.from && dateRange.to) {
+          params.created_at_start = dateRange.from.toISOString();
+          params.created_at_end = dateRange.to.toISOString();
+        }
+      }
+
+      const searchParams = buildSearchParams(params);
+      const res = await apiRequest<{
+        total: number;
+        page: number;
+        page_size: number;
+        items: Array<{
+          id: number;
+          username: string;
+          email: string;
+          avatar: string | null;
+          role_id: number;
+          role_name: string;
+          is_super_admin: boolean;
+          status: string;
+          last_login_at: string;
+          login_error_count: number;
+          lock_time: string | null;
+          created_at: string;
+          updated_at: string;
+        }>;
+      }>(`/admin/admins${searchParams ? `?${searchParams}` : ''}`);
+
+      if (res.code === 0 && res.data) {
+        // 转换数据格式：将 API 返回的字段转换为前端期望的格式
+        const users: User[] = (res.data.items || []).map((item) => ({
+          id: item.id,
+          username: item.username,
+          email: item.email,
+          avatar: item.avatar,
+          roleId: item.role_id,
+          roleName: item.role_name,
+          createdAt: item.created_at,
+          lastLoginAt: item.last_login_at,
+          status: item.status as 'active' | 'disabled',
+          isSuperAdmin: item.is_super_admin,
+          loginErrorCount: item.login_error_count,
+          lockTime: item.lock_time,
+          updatedAt: item.updated_at,
+          role: {
+            id: item.role_id,
+            name: item.role_name
+          }
+        }));
+
+        setUsers(users);
+
+        // 计算总页数
+        const totalPages = Math.ceil(
+          res.data.total / (res.data.page_size || 10)
+        );
+
         setPagination({
-          page: res.pager?.page || 1,
-          limit: res.pager?.limit || 10,
-          total: res.pager?.total || 0,
-          totalPages: res.pager?.totalPages || 0
+          page: res.data.page || 1,
+          limit: res.data.page_size || 10,
+          total: res.data.total || 0,
+          totalPages
         });
       } else {
         toast.error(res.message || MESSAGES.ERROR.FETCH_USERS);

@@ -284,12 +284,12 @@ export default function GamesPage() {
                   : '开始添加游戏来管理您的游戏库',
                 action: !hasActiveFilters ? (
                   <Button
-                    onClick={handleOpenCreateDialog}
+                    onClick={handleOpenSyncDialog}
                     size='sm'
                     className='mt-2'
                   >
                     <Plus className='mr-2 h-4 w-4' />
-                    添加游戏
+                    同步平台游戏
                   </Button>
                 ) : undefined
               }}

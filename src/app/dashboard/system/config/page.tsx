@@ -70,17 +70,6 @@ export default function SystemConfigPage() {
   };
 
   /**
-   * 打开查看配置详情对话框
-   */
-  const handleOpenViewDialog = (config: SystemConfig) => {
-    setDialogState({
-      type: 'view',
-      config,
-      open: true
-    });
-  };
-
-  /**
    * 关闭对话框
    */
   const handleCloseDialog = () => {
@@ -172,17 +161,20 @@ export default function SystemConfigPage() {
               loading={loading}
               pagination={pagination}
               onEdit={handleOpenEditDialog}
-              onView={handleOpenViewDialog}
               onDelete={handleDeleteConfig}
               onToggleDisabled={handleToggleDisabled}
               emptyState={{
-                icon: <Settings className='h-8 w-8 text-muted-foreground' />,
+                icon: <Settings className='text-muted-foreground h-8 w-8' />,
                 title: hasActiveFilters ? '未找到匹配的配置' : '还没有配置项',
                 description: hasActiveFilters
                   ? '请尝试调整筛选条件以查看更多结果'
                   : '开始添加系统配置来管理应用',
                 action: !hasActiveFilters ? (
-                  <Button onClick={handleOpenCreateDialog} size='sm' className='mt-2'>
+                  <Button
+                    onClick={handleOpenCreateDialog}
+                    size='sm'
+                    className='mt-2'
+                  >
                     <Plus className='mr-2 h-4 w-4' />
                     新增配置
                   </Button>

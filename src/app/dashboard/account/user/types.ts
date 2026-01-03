@@ -2,11 +2,16 @@ export interface User {
   id: number;
   username: string;
   email: string;
-  roleId: string;
+  avatar?: string | null;
+  roleId: number | string;
+  roleName?: string;
   createdAt: string;
   lastLoginAt?: string;
   status: 'active' | 'disabled';
   isSuperAdmin?: boolean;
+  loginErrorCount?: number;
+  lockTime?: string | null;
+  updatedAt?: string;
   role?: {
     id: number;
     name: string;

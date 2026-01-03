@@ -8,16 +8,17 @@ import { getRepositories } from '@/repository';
  */
 export async function getUserFromRequest(): Promise<number | null> {
   try {
-    const cookieStore = cookies();
-    const token = (await cookieStore).get('token');
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token');
 
-    if (!token) {
+    if (!token || !token.value) {
       return null;
     }
 
     const user = verifyToken(token.value);
     return user?.id || null;
-  } catch {
+  } catch (error) {
+    console.error('getUserFromRequest error:', error);
     return null;
   }
 }

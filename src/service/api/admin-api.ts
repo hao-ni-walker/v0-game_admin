@@ -33,7 +33,11 @@ export class AdminAPI {
     page_size?: number;
     sort_by?: string;
     sort_order?: 'asc' | 'desc';
-  }): Promise<{ success: boolean; data?: AdminListResponse; message?: string }> {
+  }): Promise<{
+    success: boolean;
+    data?: AdminListResponse;
+    message?: string;
+  }> {
     const searchParams = buildSearchParams(params || {});
     return apiRequest(`/admin/admins${searchParams ? `?${searchParams}` : ''}`);
   }
@@ -121,12 +125,23 @@ export class AdminAPI {
    * 获取角色列表
    * GET /api/admin/admin-roles
    */
-  static async getAdminRoles(): Promise<{
+  static async getAdminRoles(params?: {
+    page?: number;
+    page_size?: number;
+  }): Promise<{
     success: boolean;
-    data?: AdminRole[];
+    data?: {
+      items: AdminRole[];
+      total: number;
+      page: number;
+      page_size: number;
+    };
     message?: string;
   }> {
-    return apiRequest('/admin/admin-roles');
+    const searchParams = buildSearchParams(params || {});
+    return apiRequest(
+      `/admin/admin-roles${searchParams ? `?${searchParams}` : ''}`
+    );
   }
 
   /**
@@ -154,4 +169,3 @@ export class AdminAPI {
     );
   }
 }
-

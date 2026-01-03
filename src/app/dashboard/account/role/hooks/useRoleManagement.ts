@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { RoleAPI, PermissionAPI } from '@/service/request';
+import { PermissionAPI } from '@/service/request';
+import { AdminAPI } from '@/service/api/admin-api';
 import type {
   Role,
   Permission,
@@ -39,49 +40,46 @@ export function useRoleManagement() {
     try {
       setLoading(true);
 
-      const params: Record<string, any> = {};
-      Object.entries(filters).forEach(([key, value]) => {
-        if (key === 'dateRange' && value) {
-          // 处理日期范围
-          const dateRange = value as { from: Date; to: Date };
-          if (dateRange.from && dateRange.to) {
-            const startDateStr = dateRange.from.toISOString().split('T')[0];
-            const endDateStr = dateRange.to.toISOString().split('T')[0];
-            params.startDate = startDateStr;
-            params.endDate = endDateStr;
-          }
-        } else if (value !== undefined && value !== null && value !== '') {
-          params[key] = value;
-        }
-      });
+      // 构建 API 请求参数
+      const params: {
+        page?: number;
+        page_size?: number;
+      } = {
+        page: filters.page || 1,
+        page_size: filters.limit || 10
+      };
 
-      const res = await RoleAPI.getRoles(params);
-      if (res.code === 0) {
-        setRoles(res.data || []);
+      const res = await AdminAPI.getAdminRoles(params);
+
+      if (res.success && res.data) {
+        // 转换数据格式：将 AdminRole 转换为 Role
+        const roles: Role[] = (res.data.items || []).map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          createdAt: item.created_at,
+          updatedAt: item.updated_at,
+          userCount: item.admin_count,
+          isSuper: item.is_super || false
+        }));
+
+        setRoles(roles);
 
         // 处理分页信息
-        if (res.pager) {
-          setPagination({
-            page: res.pager.page || 1,
-            limit: res.pager.limit || 10,
-            total: res.pager.total || 0,
-            totalPages: res.pager.totalPages || 0
-          });
-        } else {
-          // 如果API没有返回分页信息，手动计算
-          const total = Array.isArray(res.data) ? res.data.length : 0;
-          setPagination({
-            page: 1,
-            limit: total,
-            total,
-            totalPages: 1
-          });
-        }
+        setPagination({
+          page: res.data.page || 1,
+          limit: res.data.page_size || 10,
+          total: res.data.total || 0,
+          totalPages: Math.ceil(
+            (res.data.total || 0) / (res.data.page_size || 10)
+          )
+        });
       } else {
         toast.error(res.message || MESSAGES.ERROR.FETCH_ROLES);
         setRoles([]);
       }
     } catch (error) {
+      console.error('获取角色列表失败:', error);
       toast.error(MESSAGES.ERROR.FETCH_ROLES);
       setRoles([]);
     } finally {

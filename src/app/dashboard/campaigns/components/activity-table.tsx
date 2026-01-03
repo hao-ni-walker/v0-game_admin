@@ -33,7 +33,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Activity } from '@/repository/models';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import { STATUS_COLORS, STATUS_LABELS, TYPE_LABELS } from '../types';
+import {
+  STATUS_COLORS,
+  STATUS_LABELS,
+  TYPE_LABELS,
+  TRIGGER_MODE_LABELS
+} from '../types';
 import { Pagination } from '@/components/table/pagination';
 import {
   Tooltip,
@@ -112,7 +117,7 @@ export function ActivityTable({
                   <ArrowDown className='h-4 w-4' />
                 )
               ) : (
-                <ArrowUpDown className='h-4 w-4 text-muted-foreground opacity-50' />
+                <ArrowUpDown className='text-muted-foreground h-4 w-4 opacity-50' />
               )}
             </>
           )}
@@ -139,6 +144,51 @@ export function ActivityTable({
     }
   };
 
+  // 格式化参与配置显示
+  const formatParticipationConfig = (
+    config: Record<string, unknown> | undefined
+  ) => {
+    if (!config || typeof config !== 'object') return '-';
+    const parts: string[] = [];
+    if (config.total_stock !== undefined)
+      parts.push(`库存: ${config.total_stock}`);
+    if (config.purchase_limit_per_user !== undefined)
+      parts.push(`限购: ${config.purchase_limit_per_user}`);
+    if (config.eligible_vip_min !== undefined)
+      parts.push(`VIP: ≥${config.eligible_vip_min}`);
+    return parts.length > 0 ? parts.join(', ') : '-';
+  };
+
+  // 格式化触发条件显示
+  const formatMatchCriteria = (
+    criteria: Record<string, unknown> | undefined
+  ) => {
+    if (!criteria || typeof criteria !== 'object') return '-';
+    if (criteria.event_type) return String(criteria.event_type);
+    return JSON.stringify(criteria).substring(0, 30) + '...';
+  };
+
+  // 格式化奖励显示
+  const formatRewardItems = (items: unknown[] | undefined) => {
+    if (!items || !Array.isArray(items) || items.length === 0) return '-';
+    return items
+      .map((item: any) => {
+        if (item.type && item.amount) {
+          return `${item.type}: ${item.amount}`;
+        }
+        return JSON.stringify(item).substring(0, 20);
+      })
+      .join(', ');
+  };
+
+  // 格式化时间（秒转小时）
+  const formatSeconds = (seconds: number | null | undefined) => {
+    if (!seconds) return '-';
+    if (seconds < 60) return `${seconds}秒`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}分钟`;
+    return `${Math.floor(seconds / 3600)}小时`;
+  };
+
   if (loading && activities.length === 0) {
     return (
       <div className='rounded-md border'>
@@ -153,7 +203,15 @@ export function ActivityTable({
               <TableHead>活动时间</TableHead>
               <TableHead>展示时间</TableHead>
               <TableHead>优先级</TableHead>
-              <TableHead>触发规则</TableHead>
+              <TableHead>活动限制</TableHead>
+              <TableHead>创建者</TableHead>
+              <TableHead>更新者</TableHead>
+              <TableHead>触发条件</TableHead>
+              <TableHead>触发模式</TableHead>
+              <TableHead>冷却时间</TableHead>
+              <TableHead>每日限制</TableHead>
+              <TableHead>总限制</TableHead>
+              <TableHead>奖励</TableHead>
               <TableHead>创建时间</TableHead>
               <TableHead className='text-right'>操作</TableHead>
             </TableRow>
@@ -184,6 +242,30 @@ export function ActivityTable({
                 </TableCell>
                 <TableCell>
                   <Skeleton className='h-4 w-20' />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className='h-4 w-24' />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className='h-4 w-16' />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className='h-4 w-16' />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className='h-4 w-24' />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className='h-4 w-16' />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className='h-4 w-16' />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className='h-4 w-16' />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className='h-4 w-16' />
                 </TableCell>
                 <TableCell>
                   <Skeleton className='h-4 w-24' />
@@ -233,7 +315,15 @@ export function ActivityTable({
               {renderSortableHeader('start_time', '活动时间')}
               <TableHead>展示时间</TableHead>
               {renderSortableHeader('priority', '优先级')}
-              <TableHead>触发规则</TableHead>
+              <TableHead>活动限制</TableHead>
+              <TableHead>创建者</TableHead>
+              <TableHead>更新者</TableHead>
+              <TableHead>触发条件</TableHead>
+              <TableHead>触发模式</TableHead>
+              <TableHead>冷却时间</TableHead>
+              <TableHead>每日限制</TableHead>
+              <TableHead>总限制</TableHead>
+              <TableHead>奖励</TableHead>
               {renderSortableHeader('created_at', '创建时间')}
               <TableHead className='text-right'>操作</TableHead>
             </TableRow>
@@ -243,8 +333,8 @@ export function ActivityTable({
               <TableRow key={activity.id}>
                 <TableCell className='font-medium'>#{activity.id}</TableCell>
                 <TableCell>
-                  <code className='text-muted-foreground rounded bg-muted px-2 py-1 text-xs'>
-                    {activity.activityCode}
+                  <code className='text-muted-foreground bg-muted rounded px-2 py-1 text-xs'>
+                    {(activity as any).activity_code || activity.activityCode}
                   </code>
                 </TableCell>
                 <TableCell className='max-w-md'>
@@ -257,7 +347,11 @@ export function ActivityTable({
                 </TableCell>
                 <TableCell>
                   <Badge variant='outline'>
-                    {TYPE_LABELS[activity.activityType] || activity.activityType}
+                    {TYPE_LABELS[
+                      (activity as any).activity_type || activity.activityType
+                    ] ||
+                      (activity as any).activity_type ||
+                      activity.activityType}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -270,13 +364,26 @@ export function ActivityTable({
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div className='text-muted-foreground cursor-help text-sm'>
-                          {formatDateRange(activity.startTime, activity.endTime)}
+                          {formatDateRange(
+                            (activity as any).start_time || activity.startTime,
+                            (activity as any).end_time || activity.endTime
+                          )}
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
                         <div className='text-xs'>
-                          <div>开始: {formatDateTime(activity.startTime)}</div>
-                          <div>结束: {formatDateTime(activity.endTime)}</div>
+                          <div>
+                            开始:{' '}
+                            {formatDateTime(
+                              (activity as any).start_time || activity.startTime
+                            )}
+                          </div>
+                          <div>
+                            结束:{' '}
+                            {formatDateTime(
+                              (activity as any).end_time || activity.endTime
+                            )}
+                          </div>
                         </div>
                       </TooltipContent>
                     </Tooltip>
@@ -289,46 +396,173 @@ export function ActivityTable({
                         <TooltipTrigger asChild>
                           <div className='text-muted-foreground cursor-help text-sm'>
                             {formatDateRange(
-                              activity.displayStartTime,
-                              activity.displayEndTime
+                              (activity as any).display_start_time ||
+                                activity.displayStartTime ||
+                                '',
+                              (activity as any).display_end_time ||
+                                activity.displayEndTime ||
+                                ''
                             )}
                           </div>
                         </TooltipTrigger>
                         <TooltipContent>
                           <div className='text-xs'>
                             <div>
-                              开始: {formatDateTime(activity.displayStartTime)}
+                              开始:{' '}
+                              {formatDateTime(
+                                (activity as any).display_start_time ||
+                                  activity.displayStartTime ||
+                                  ''
+                              )}
                             </div>
                             <div>
-                              结束: {formatDateTime(activity.displayEndTime)}
+                              结束:{' '}
+                              {formatDateTime(
+                                (activity as any).display_end_time ||
+                                  activity.displayEndTime ||
+                                  ''
+                              )}
                             </div>
                           </div>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   ) : (
-                    <span className='text-muted-foreground text-sm'>跟随活动时间</span>
+                    <span className='text-muted-foreground text-sm'>
+                      跟随活动时间
+                    </span>
                   )}
                 </TableCell>
                 <TableCell>{activity.priority}</TableCell>
                 <TableCell>
-                  <div className='text-muted-foreground text-sm'>
-                    {/* 这里可以显示触发规则摘要，需要从后端获取 */}
-                    <span>规则数: -</span>
-                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className='text-muted-foreground max-w-[150px] cursor-help truncate text-sm'>
+                          {formatParticipationConfig(
+                            (activity as any).participation_config ||
+                              activity.participationConfig
+                          )}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className='max-w-xs text-xs'>
+                          <pre className='whitespace-pre-wrap'>
+                            {JSON.stringify(
+                              (activity as any).participation_config ||
+                                activity.participationConfig ||
+                                {},
+                              null,
+                              2
+                            )}
+                          </pre>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </TableCell>
+                <TableCell>
+                  <span className='text-muted-foreground text-sm'>
+                    #{(activity as any).created_by || activity.createdBy || '-'}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <span className='text-muted-foreground text-sm'>
+                    #{(activity as any).updated_by || activity.updatedBy || '-'}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className='text-muted-foreground max-w-[150px] cursor-help truncate text-sm'>
+                          {formatMatchCriteria(
+                            (activity as any).match_criteria
+                          )}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className='max-w-xs text-xs'>
+                          <pre className='whitespace-pre-wrap'>
+                            {JSON.stringify(
+                              (activity as any).match_criteria || {},
+                              null,
+                              2
+                            )}
+                          </pre>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </TableCell>
+                <TableCell>
+                  <Badge variant='outline' className='text-xs'>
+                    {TRIGGER_MODE_LABELS[(activity as any).trigger_mode] ||
+                      (activity as any).trigger_mode ||
+                      '-'}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <span className='text-muted-foreground text-sm'>
+                    {formatSeconds((activity as any).cooldown_seconds)}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <span className='text-muted-foreground text-sm'>
+                    {(activity as any).daily_limit_per_user ?? '-'}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <span className='text-muted-foreground text-sm'>
+                    {(activity as any).total_limit ?? '-'}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className='text-muted-foreground max-w-[150px] cursor-help truncate text-sm'>
+                          {formatRewardItems((activity as any).reward_items)}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className='max-w-xs text-xs'>
+                          <pre className='whitespace-pre-wrap'>
+                            {JSON.stringify(
+                              (activity as any).reward_items || [],
+                              null,
+                              2
+                            )}
+                          </pre>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </TableCell>
                 <TableCell>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div className='text-muted-foreground cursor-help text-sm'>
-                          {formatDateTime(activity.createdAt)}
+                          {formatDateTime(
+                            (activity as any).created_at || activity.createdAt
+                          )}
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
                         <div className='text-xs'>
-                          <div>创建: {formatDateTime(activity.createdAt)}</div>
-                          <div>更新: {formatDateTime(activity.updatedAt)}</div>
+                          <div>
+                            创建:{' '}
+                            {formatDateTime(
+                              (activity as any).created_at || activity.createdAt
+                            )}
+                          </div>
+                          <div>
+                            更新:{' '}
+                            {formatDateTime(
+                              (activity as any).updated_at || activity.updatedAt
+                            )}
+                          </div>
                         </div>
                       </TooltipContent>
                     </Tooltip>
@@ -353,7 +587,9 @@ export function ActivityTable({
                         </DropdownMenuItem>
                       )}
                       {canManageTriggers && (
-                        <DropdownMenuItem onClick={() => onConfigureRules(activity)}>
+                        <DropdownMenuItem
+                          onClick={() => onConfigureRules(activity)}
+                        >
                           <Settings className='mr-2 h-4 w-4' />
                           配置规则
                         </DropdownMenuItem>
@@ -363,7 +599,9 @@ export function ActivityTable({
                           <DropdownMenuSeparator />
                           {activity.status === 'draft' && (
                             <DropdownMenuItem
-                              onClick={() => onChangeStatus(activity.id, 'scheduled')}
+                              onClick={() =>
+                                onChangeStatus(activity.id, 'scheduled')
+                              }
                             >
                               <Play className='mr-2 h-4 w-4' />
                               排期
@@ -371,7 +609,9 @@ export function ActivityTable({
                           )}
                           {activity.status === 'scheduled' && (
                             <DropdownMenuItem
-                              onClick={() => onChangeStatus(activity.id, 'active')}
+                              onClick={() =>
+                                onChangeStatus(activity.id, 'active')
+                              }
                             >
                               <Play className='mr-2 h-4 w-4' />
                               启用
@@ -380,13 +620,17 @@ export function ActivityTable({
                           {activity.status === 'active' && (
                             <>
                               <DropdownMenuItem
-                                onClick={() => onChangeStatus(activity.id, 'paused')}
+                                onClick={() =>
+                                  onChangeStatus(activity.id, 'paused')
+                                }
                               >
                                 <Pause className='mr-2 h-4 w-4' />
                                 暂停
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => onChangeStatus(activity.id, 'ended')}
+                                onClick={() =>
+                                  onChangeStatus(activity.id, 'ended')
+                                }
                               >
                                 <Square className='mr-2 h-4 w-4' />
                                 结束
@@ -396,13 +640,17 @@ export function ActivityTable({
                           {activity.status === 'paused' && (
                             <>
                               <DropdownMenuItem
-                                onClick={() => onChangeStatus(activity.id, 'active')}
+                                onClick={() =>
+                                  onChangeStatus(activity.id, 'active')
+                                }
                               >
                                 <Play className='mr-2 h-4 w-4' />
                                 恢复
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => onChangeStatus(activity.id, 'ended')}
+                                onClick={() =>
+                                  onChangeStatus(activity.id, 'ended')
+                                }
                               >
                                 <Square className='mr-2 h-4 w-4' />
                                 结束
@@ -413,7 +661,9 @@ export function ActivityTable({
                             activity.status === 'paused' ||
                             activity.status === 'scheduled') && (
                             <DropdownMenuItem
-                              onClick={() => onChangeStatus(activity.id, 'disabled')}
+                              onClick={() =>
+                                onChangeStatus(activity.id, 'disabled')
+                              }
                               className='text-red-600'
                             >
                               <Square className='mr-2 h-4 w-4' />
