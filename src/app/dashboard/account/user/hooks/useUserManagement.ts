@@ -8,7 +8,8 @@ import {
   UserFormData
 } from '../types';
 import { DEFAULT_PAGINATION, MESSAGES } from '../constants';
-import { RoleAPI } from '@/service/request';
+import { UserAPI } from '@/service/api/user';
+import { RoleAPI } from '@/service/api/role';
 import { apiRequest, buildSearchParams } from '@/service/api/base';
 
 /**
