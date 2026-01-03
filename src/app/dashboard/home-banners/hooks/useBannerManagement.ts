@@ -64,15 +64,39 @@ export function useBannerManagement() {
       );
 
       if (!response.ok) {
-        throw new Error('获取轮播图列表失败');
+        let errorMessage = '获取轮播图列表失败';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.msg || errorMessage;
+        } catch (e) {
+          // 如果响应不是 JSON，使用状态文本
+          errorMessage = `${errorMessage} (${response.status} ${response.statusText})`;
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
 
+      // 检查响应是否表示错误（code 不为 0 或 200，且不为 success）
+      if (
+        result.code !== undefined &&
+        result.code !== 0 &&
+        result.code !== 200 &&
+        !result.success
+      ) {
+        const errorMsg = result.message || result.msg || '获取轮播图列表失败';
+        throw new Error(errorMsg);
+      }
+
       // 处理新的响应格式: { code, msg, data: { items, total, page, page_size, total_pages } }
-      if (result.success && result.data) {
+      if (
+        (result.success || result.code === 0 || result.code === 200) &&
+        result.data
+      ) {
         const data = result.data;
-        setBanners(data.items || []);
+        const items = Array.isArray(data.items) ? data.items : [];
+
+        setBanners(items);
         setPagination({
           page: data.page || 1,
           page_size: data.page_size || 20,
@@ -96,7 +120,8 @@ export function useBannerManagement() {
               )
           });
         } else {
-          throw new Error(result.message || '获取轮播图列表失败');
+          console.error('[轮播图管理] 响应格式错误:', result);
+          throw new Error(result.message || result.msg || '获取轮播图列表失败');
         }
       }
     } catch (error) {
@@ -157,7 +182,7 @@ export function useBannerManagement() {
       data: Partial<BannerFormData> & { version: number }
     ): Promise<boolean> => {
       try {
-        const response = await fetch(`/api/banners/${id}`, {
+        const response = await fetch(`/api/admin/banners/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json'

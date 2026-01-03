@@ -1,7 +1,14 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { ArrowUpDown, Eye, Edit, MoreHorizontal, ArrowUp, ArrowDown } from 'lucide-react';
+import {
+  ArrowUpDown,
+  Eye,
+  Edit,
+  MoreHorizontal,
+  ArrowUp,
+  ArrowDown
+} from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -15,6 +22,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,6 +58,11 @@ interface PlayerTableEnhancedProps {
   onResetPassword: (player: Player) => void;
   onSendNotification: (player: Player) => void;
   onViewLogs: (player: Player) => void;
+  onStatusChange?: (playerId: number, status: boolean) => void;
+  onViewSpinQuota?: (player: Player) => void;
+  onViewSignRecords?: (player: Player) => void;
+  onViewActivities?: (player: Player) => void;
+  onModifyRTP?: (player: Player) => void;
 }
 
 /**
@@ -70,16 +83,26 @@ export function PlayerTableEnhanced({
   onEdit,
   onResetPassword,
   onSendNotification,
-  onViewLogs
+  onViewLogs,
+  onStatusChange,
+  onViewSpinQuota,
+  onViewSignRecords,
+  onViewActivities,
+  onModifyRTP
 }: PlayerTableEnhancedProps) {
   // 是否全选
   const isAllSelected = useMemo(() => {
-    return players.length > 0 && players.every((player) => selectedPlayerIds.includes(player.id));
+    return (
+      players.length > 0 &&
+      players.every((player) => selectedPlayerIds.includes(player.id))
+    );
   }, [players, selectedPlayerIds]);
 
   // 是否部分选中
   const isIndeterminate = useMemo(() => {
-    return selectedPlayerIds.length > 0 && selectedPlayerIds.length < players.length;
+    return (
+      selectedPlayerIds.length > 0 && selectedPlayerIds.length < players.length
+    );
   }, [selectedPlayerIds, players]);
 
   /**
@@ -92,6 +115,29 @@ export function PlayerTableEnhanced({
     } else {
       // 新列，默认升序
       onSort(column, 'asc');
+    }
+  };
+
+  /**
+   * 判断状态是否为启用
+   */
+  const isStatusActive = (status: string | boolean): boolean => {
+    if (typeof status === 'boolean') {
+      return status;
+    }
+    return status === 'active';
+  };
+
+  /**
+   * 处理状态切换
+   */
+  const handleStatusChange = (
+    playerId: number,
+    currentStatus: string | boolean
+  ) => {
+    if (onStatusChange) {
+      const newStatus = !isStatusActive(currentStatus);
+      onStatusChange(playerId, newStatus);
     }
   };
 
@@ -111,7 +157,7 @@ export function PlayerTableEnhanced({
               <ArrowDown className='h-4 w-4' />
             )
           ) : (
-            <ArrowUpDown className='h-4 w-4 text-muted-foreground' />
+            <ArrowUpDown className='text-muted-foreground h-4 w-4' />
           )}
         </div>
       </TableHead>
@@ -160,7 +206,10 @@ export function PlayerTableEnhanced({
           <TableBody>
             {players.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={13} className='text-center text-muted-foreground'>
+                <TableCell
+                  colSpan={13}
+                  className='text-muted-foreground text-center'
+                >
                   暂无数据
                 </TableCell>
               </TableRow>
@@ -178,14 +227,17 @@ export function PlayerTableEnhanced({
                   </TableCell>
                   <TableCell className='font-medium'>{player.id}</TableCell>
                   <TableCell>{player.username}</TableCell>
-                  <TableCell className='text-xs'>{maskEmail(player.email)}</TableCell>
+                  <TableCell className='text-xs'>
+                    {maskEmail(player.email)}
+                  </TableCell>
                   <TableCell>
-                    <Badge
-                      variant='default'
-                      className={getPlayerStatusColor(player.status)}
-                    >
-                      {getPlayerStatusText(player.status)}
-                    </Badge>
+                    <Switch
+                      checked={isStatusActive(player.status)}
+                      onCheckedChange={() =>
+                        handleStatusChange(player.id, player.status)
+                      }
+                      disabled={!onStatusChange}
+                    />
                   </TableCell>
                   <TableCell>
                     <Badge
@@ -226,13 +278,6 @@ export function PlayerTableEnhanced({
                       >
                         <Eye className='h-4 w-4' />
                       </Button>
-                      <Button
-                        variant='ghost'
-                        size='sm'
-                        onClick={() => onEdit(player)}
-                      >
-                        <Edit className='h-4 w-4' />
-                      </Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant='ghost' size='sm'>
@@ -240,15 +285,51 @@ export function PlayerTableEnhanced({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align='end'>
-                          <DropdownMenuItem onClick={() => onResetPassword(player)}>
-                            重置密码
+                          <DropdownMenuItem onClick={() => onEdit(player)}>
+                            编辑
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onSendNotification(player)}>
-                            发送通知
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onViewLogs(player)}>
-                            查看操作日志
-                          </DropdownMenuItem>
+                          {onViewSpinQuota && (
+                            <DropdownMenuItem
+                              onClick={() => onViewSpinQuota(player)}
+                            >
+                              查看大转盘次数
+                            </DropdownMenuItem>
+                          )}
+                          {onViewLogs && (
+                            <DropdownMenuItem
+                              onClick={() => onViewLogs(player)}
+                            >
+                              查看操作记录
+                            </DropdownMenuItem>
+                          )}
+                          {onSendNotification && (
+                            <DropdownMenuItem
+                              onClick={() => onSendNotification(player)}
+                            >
+                              发送通知
+                            </DropdownMenuItem>
+                          )}
+                          {onViewSignRecords && (
+                            <DropdownMenuItem
+                              onClick={() => onViewSignRecords(player)}
+                            >
+                              查看签到记录
+                            </DropdownMenuItem>
+                          )}
+                          {onViewActivities && (
+                            <DropdownMenuItem
+                              onClick={() => onViewActivities(player)}
+                            >
+                              查看参与的活动
+                            </DropdownMenuItem>
+                          )}
+                          {onModifyRTP && (
+                            <DropdownMenuItem
+                              onClick={() => onModifyRTP(player)}
+                            >
+                              修改RTP
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -277,4 +358,3 @@ export function PlayerTableEnhanced({
     </div>
   );
 }
-

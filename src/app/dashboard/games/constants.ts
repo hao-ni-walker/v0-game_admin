@@ -38,7 +38,7 @@ export const PROVIDER_OPTIONS = [
   { label: 'Evolution', value: 'EVO' },
   { label: 'Microgaming', value: 'MG' },
   { label: 'NetEnt', value: 'NE' },
-  { label: 'Play\'n GO', value: 'PNG' }
+  { label: "Play'n GO", value: 'PNG' }
 ] as const;
 
 /**
@@ -175,6 +175,16 @@ export const TABLE_COLUMNS = [
     className: 'text-center w-[80px]'
   },
   {
+    key: 'is_featured',
+    title: '是否推荐',
+    className: 'text-center w-[100px]'
+  },
+  {
+    key: 'is_new',
+    title: '是否新游',
+    className: 'text-center w-[100px]'
+  },
+  {
     key: 'stats',
     title: '统计',
     className: 'text-right w-[120px]'
@@ -214,7 +224,8 @@ export const MESSAGES = {
     UNFEATURE: '取消推荐成功',
     BATCH_ENABLE: '批量启用成功',
     BATCH_DISABLE: '批量停用成功',
-    BATCH_FEATURE: '批量推荐成功'
+    BATCH_FEATURE: '批量推荐成功',
+    BATCH_UNFEATURE: '批量取消推荐成功'
   },
   ERROR: {
     CREATE: '创建游戏失败',
@@ -233,7 +244,8 @@ export const MESSAGES = {
     DELETE: (name: string) => `确定要删除游戏 "${name}" 吗？此操作不可撤销。`,
     ENABLE: (name: string) => `确定要启用游戏 "${name}" 吗？`,
     DISABLE: (name: string) => `确定要停用游戏 "${name}" 吗？`,
-    BATCH_DELETE: (count: number) => `确定要删除选中的 ${count} 个游戏吗？此操作不可撤销。`
+    BATCH_DELETE: (count: number) =>
+      `确定要删除选中的 ${count} 个游戏吗？此操作不可撤销。`
   }
 } as const;
 

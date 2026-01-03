@@ -258,6 +258,158 @@ export function useGameManagement() {
     [updateGame]
   );
 
+  /**
+   * 切换新游状态
+   */
+  const toggleNew = useCallback(
+    async (game: Game): Promise<boolean> => {
+      const newIsNew = !game.is_new;
+      const success = await updateGame(game.id, { is_new: newIsNew });
+      if (success) {
+        toast.success(newIsNew ? '设置新游成功' : '取消新游成功');
+      }
+      return success;
+    },
+    [updateGame]
+  );
+
+  /**
+   * 同步平台游戏
+   */
+  const syncGames = useCallback(
+    async (providerCode: string): Promise<boolean> => {
+      setLoading(true);
+      try {
+        const response = await fetch('/api/admin/games/sync', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ provider_code: providerCode })
+        });
+
+        if (!response.ok) {
+          throw new Error('同步游戏失败');
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+          toast.success(`成功同步 ${providerCode} 平台的游戏`);
+          return true;
+        } else {
+          throw new Error(result.message || '同步游戏失败');
+        }
+      } catch (error) {
+        console.error('同步游戏失败:', error);
+        toast.error(error instanceof Error ? error.message : '同步游戏失败');
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  /**
+   * 批量启用游戏
+   */
+  const batchEnableGames = useCallback(
+    async (gameIds: number[]): Promise<boolean> => {
+      try {
+        const promises = gameIds.map((id) => updateGame(id, { status: true }));
+        await Promise.all(promises);
+        toast.success(MESSAGES.SUCCESS.BATCH_ENABLE);
+        return true;
+      } catch (error) {
+        console.error('批量启用游戏失败:', error);
+        toast.error('批量启用游戏失败');
+        return false;
+      }
+    },
+    [updateGame]
+  );
+
+  /**
+   * 批量停用游戏
+   */
+  const batchDisableGames = useCallback(
+    async (gameIds: number[]): Promise<boolean> => {
+      try {
+        const promises = gameIds.map((id) => updateGame(id, { status: false }));
+        await Promise.all(promises);
+        toast.success(MESSAGES.SUCCESS.BATCH_DISABLE);
+        return true;
+      } catch (error) {
+        console.error('批量停用游戏失败:', error);
+        toast.error('批量停用游戏失败');
+        return false;
+      }
+    },
+    [updateGame]
+  );
+
+  /**
+   * 批量推荐游戏
+   */
+  const batchFeatureGames = useCallback(
+    async (gameIds: number[]): Promise<boolean> => {
+      try {
+        const promises = gameIds.map((id) =>
+          updateGame(id, { is_featured: true })
+        );
+        await Promise.all(promises);
+        toast.success(MESSAGES.SUCCESS.BATCH_FEATURE);
+        return true;
+      } catch (error) {
+        console.error('批量推荐游戏失败:', error);
+        toast.error('批量推荐游戏失败');
+        return false;
+      }
+    },
+    [updateGame]
+  );
+
+  /**
+   * 批量取消推荐游戏
+   */
+  const batchUnfeatureGames = useCallback(
+    async (gameIds: number[]): Promise<boolean> => {
+      try {
+        const promises = gameIds.map((id) =>
+          updateGame(id, { is_featured: false })
+        );
+        await Promise.all(promises);
+        toast.success(MESSAGES.SUCCESS.BATCH_UNFEATURE);
+        return true;
+      } catch (error) {
+        console.error('批量取消推荐游戏失败:', error);
+        toast.error('批量取消推荐游戏失败');
+        return false;
+      }
+    },
+    [updateGame]
+  );
+
+  /**
+   * 批量删除游戏
+   */
+  const batchDeleteGames = useCallback(
+    async (gameIds: number[]): Promise<boolean> => {
+      try {
+        const promises = gameIds.map((id) => deleteGame(id));
+        await Promise.all(promises);
+        toast.success(`成功删除 ${gameIds.length} 个游戏`);
+        return true;
+      } catch (error) {
+        console.error('批量删除游戏失败:', error);
+        toast.error('批量删除游戏失败');
+        return false;
+      }
+    },
+    [deleteGame]
+  );
+
   return {
     games,
     loading,
@@ -268,6 +420,13 @@ export function useGameManagement() {
     updateGame,
     deleteGame,
     toggleGameStatus,
-    toggleFeatured
+    toggleFeatured,
+    toggleNew,
+    syncGames,
+    batchEnableGames,
+    batchDisableGames,
+    batchFeatureGames,
+    batchUnfeatureGames,
+    batchDeleteGames
   };
 }

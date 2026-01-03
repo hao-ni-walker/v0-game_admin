@@ -46,6 +46,7 @@ interface PlayerDetailModalProps {
   onEdit: (player: PlayerDetail) => void;
   onAdjustWallet: (player: PlayerDetail) => void;
   onRefresh: (playerId: number) => Promise<PlayerDetail | null>;
+  defaultTab?: 'basic' | 'wallet' | 'vip' | 'spin' | 'agency';
 }
 
 /**
@@ -57,7 +58,8 @@ export function PlayerDetailModal({
   onClose,
   onEdit,
   onAdjustWallet,
-  onRefresh
+  onRefresh,
+  defaultTab = 'basic'
 }: PlayerDetailModalProps) {
   const router = useRouter();
   const [player, setPlayer] = useState<PlayerDetail | null>(null);
@@ -138,7 +140,7 @@ export function PlayerDetailModal({
             </Button>
           </div>
         ) : (
-          <Tabs defaultValue='basic' className='w-full'>
+          <Tabs defaultValue={defaultTab} className='w-full'>
             <TabsList className='grid w-full grid-cols-5'>
               <TabsTrigger value='basic'>基本信息</TabsTrigger>
               <TabsTrigger value='wallet'>钱包信息</TabsTrigger>

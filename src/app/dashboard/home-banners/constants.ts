@@ -78,9 +78,9 @@ export const DEFAULT_FILTERS: BannerFilters = {
  */
 export const TABLE_COLUMNS = [
   {
-    key: 'index',
-    title: '#',
-    className: 'text-center w-[50px] font-mono text-sm'
+    key: 'id',
+    title: 'ID',
+    className: 'text-center w-[80px] font-mono text-sm'
   },
   {
     key: 'image',
@@ -89,18 +89,28 @@ export const TABLE_COLUMNS = [
   },
   {
     key: 'title',
-    title: '标题',
+    title: '名称',
     className: 'font-medium min-w-[150px]'
+  },
+  {
+    key: 'link',
+    title: '跳转地址',
+    className: 'min-w-[150px] font-mono text-xs'
+  },
+  {
+    key: 'target',
+    title: '跳转方式',
+    className: 'text-center w-[100px]'
+  },
+  {
+    key: 'page',
+    title: '页面',
+    className: 'w-[100px]'
   },
   {
     key: 'position',
     title: '位置',
     className: 'w-[120px]'
-  },
-  {
-    key: 'link',
-    title: '链接',
-    className: 'min-w-[150px] font-mono text-xs'
   },
   {
     key: 'sort_order',
@@ -109,13 +119,18 @@ export const TABLE_COLUMNS = [
   },
   {
     key: 'validity',
-    title: '有效期',
+    title: '展示时间',
     className: 'w-[200px] text-xs'
   },
   {
     key: 'status',
     title: '状态',
     className: 'text-center w-[100px]'
+  },
+  {
+    key: 'created_at',
+    title: '创建时间',
+    className: 'font-medium w-[140px]'
   },
   {
     key: 'updated_at',
@@ -167,7 +182,8 @@ export const MESSAGES = {
     TITLE: '未设置标题'
   },
   CONFIRM: {
-    DELETE: (title: string) => `确定要删除轮播图 "${title || '未命名'}" 吗？此操作不可撤销。`,
+    DELETE: (title: string) =>
+      `确定要删除轮播图 "${title || '未命名'}" 吗？此操作不可撤销。`,
     ENABLE: (title: string) => `确定要上线轮播图 "${title || '未命名'}" 吗？`,
     DISABLE: (title: string) => `确定要下线轮播图 "${title || '未命名'}" 吗？`
   }
@@ -189,7 +205,8 @@ export const POSITION_LABELS: Record<string, string> = {
 /**
  * 状态标签映射
  */
-export const STATUS_LABELS: Record<number, { label: string; variant: string }> = {
-  0: { label: '下线', variant: 'destructive' },
-  1: { label: '上线', variant: 'default' }
-};
+export const STATUS_LABELS: Record<number, { label: string; variant: string }> =
+  {
+    0: { label: '下线', variant: 'destructive' },
+    1: { label: '上线', variant: 'default' }
+  };

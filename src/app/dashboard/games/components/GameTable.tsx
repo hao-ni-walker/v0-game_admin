@@ -1,19 +1,22 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import Image from 'next/image';
 import {
   Edit,
-  Eye,
   Copy,
   Star,
   StarOff,
-  Power,
-  PowerOff,
   Smartphone,
   Gamepad,
   Trophy,
-  Gift
+  Gift,
+  CheckCircle,
+  Ban,
+  Trash2
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { DataTable } from '@/components/table/data-table';
 import {
   ActionDropdown,
@@ -41,11 +44,19 @@ interface GameTableProps {
   games: Game[];
   loading: boolean;
   pagination: PaginationInfo;
+  selectedGameIds: number[];
   onEdit: (game: Game) => void;
-  onView: (game: Game) => void;
   onDelete: (game: Game) => void;
   onToggleStatus: (game: Game) => void;
   onToggleFeatured: (game: Game) => void;
+  onToggleNew: (game: Game) => void;
+  onSelectGame: (gameId: number, checked: boolean) => void;
+  onSelectAll: (checked: boolean) => void;
+  onBatchEnable?: (gameIds: number[]) => void;
+  onBatchDisable?: (gameIds: number[]) => void;
+  onBatchFeature?: (gameIds: number[]) => void;
+  onBatchUnfeature?: (gameIds: number[]) => void;
+  onBatchDelete?: (gameIds: number[]) => void;
   emptyState?: EmptyStateProps;
 }
 
@@ -56,17 +67,75 @@ export function GameTable({
   games,
   loading,
   pagination,
+  selectedGameIds,
   onEdit,
-  onView,
   onDelete,
   onToggleStatus,
   onToggleFeatured,
+  onToggleNew,
+  onSelectGame,
+  onSelectAll,
+  onBatchEnable,
+  onBatchDisable,
+  onBatchFeature,
+  onBatchUnfeature,
+  onBatchDelete,
   emptyState
 }: GameTableProps) {
   // 复制游戏ID
   const handleCopyGameId = (gameId: string) => {
     navigator.clipboard.writeText(gameId);
     toast.success('游戏标识已复制');
+  };
+
+  // 全选状态
+  const isAllSelected = useMemo(() => {
+    return games.length > 0 && selectedGameIds.length === games.length;
+  }, [games.length, selectedGameIds.length]);
+
+  // 部分选中状态
+  const isIndeterminate = useMemo(() => {
+    return selectedGameIds.length > 0 && selectedGameIds.length < games.length;
+  }, [selectedGameIds.length, games.length]);
+
+  // 处理全选
+  const handleSelectAll = (checked: boolean) => {
+    onSelectAll(checked);
+  };
+
+  // 处理批量启用
+  const handleBatchEnable = () => {
+    if (onBatchEnable && selectedGameIds.length > 0) {
+      onBatchEnable(selectedGameIds);
+    }
+  };
+
+  // 处理批量停用
+  const handleBatchDisable = () => {
+    if (onBatchDisable && selectedGameIds.length > 0) {
+      onBatchDisable(selectedGameIds);
+    }
+  };
+
+  // 处理批量推荐
+  const handleBatchFeature = () => {
+    if (onBatchFeature && selectedGameIds.length > 0) {
+      onBatchFeature(selectedGameIds);
+    }
+  };
+
+  // 处理批量取消推荐
+  const handleBatchUnfeature = () => {
+    if (onBatchUnfeature && selectedGameIds.length > 0) {
+      onBatchUnfeature(selectedGameIds);
+    }
+  };
+
+  // 处理批量删除
+  const handleBatchDelete = () => {
+    if (onBatchDelete && selectedGameIds.length > 0) {
+      onBatchDelete(selectedGameIds);
+    }
   };
 
   // 表格列配置
@@ -246,9 +315,42 @@ export function GameTable({
         render: (value: boolean, record: Game) => {
           return (
             <div className='flex justify-center'>
-              <Badge variant={value ? 'default' : 'destructive'}>
-                {value ? '启用' : '停用'}
-              </Badge>
+              <Switch
+                checked={value}
+                onCheckedChange={() => onToggleStatus(record)}
+              />
+            </div>
+          );
+        }
+      };
+    }
+
+    if (col.key === 'is_featured') {
+      return {
+        ...col,
+        render: (value: boolean, record: Game) => {
+          return (
+            <div className='flex justify-center'>
+              <Switch
+                checked={value}
+                onCheckedChange={() => onToggleFeatured(record)}
+              />
+            </div>
+          );
+        }
+      };
+    }
+
+    if (col.key === 'is_new') {
+      return {
+        ...col,
+        render: (value: boolean, record: Game) => {
+          return (
+            <div className='flex justify-center'>
+              <Switch
+                checked={value}
+                onCheckedChange={() => onToggleNew(record)}
+              />
             </div>
           );
         }
@@ -294,58 +396,12 @@ export function GameTable({
         render: (value: any, record: Game) => {
           const actions: ActionItem[] = [
             {
-              key: 'view',
-              label: '查看详情',
-              icon: <Eye className='mr-2 h-4 w-4' />,
-              onClick: () => onView(record)
-            },
-            {
               key: 'edit',
               label: '编辑',
               icon: <Edit className='mr-2 h-4 w-4' />,
               onClick: () => onEdit(record)
-            },
-            {
-              key: 'copy',
-              label: '复制游戏ID',
-              icon: <Copy className='mr-2 h-4 w-4' />,
-              onClick: () => handleCopyGameId(record.game_id)
             }
           ];
-
-          // 启用/停用
-          if (record.status) {
-            actions.push({
-              key: 'disable',
-              label: '停用',
-              icon: <PowerOff className='mr-2 h-4 w-4' />,
-              onClick: () => onToggleStatus(record)
-            });
-          } else {
-            actions.push({
-              key: 'enable',
-              label: '启用',
-              icon: <Power className='mr-2 h-4 w-4' />,
-              onClick: () => onToggleStatus(record)
-            });
-          }
-
-          // 推荐/取消推荐
-          if (record.is_featured) {
-            actions.push({
-              key: 'unfeature',
-              label: '取消推荐',
-              icon: <StarOff className='mr-2 h-4 w-4' />,
-              onClick: () => onToggleFeatured(record)
-            });
-          } else {
-            actions.push({
-              key: 'feature',
-              label: '设置推荐',
-              icon: <Star className='mr-2 h-4 w-4' />,
-              onClick: () => onToggleFeatured(record)
-            });
-          }
 
           const deleteAction: DeleteAction = {
             description: MESSAGES.CONFIRM.DELETE(record.name),
@@ -362,14 +418,123 @@ export function GameTable({
     return col;
   });
 
+  // 添加选择列
+  const columnsWithSelection = [
+    {
+      key: 'selection',
+      title: (
+        <div className='flex items-center gap-2'>
+          <Checkbox
+            checked={isAllSelected}
+            onCheckedChange={handleSelectAll}
+            ref={(el) => {
+              if (el) {
+                // 访问底层 DOM 元素设置 indeterminate 状态
+                const input = el.querySelector(
+                  'input'
+                ) as HTMLInputElement | null;
+                if (input) {
+                  input.indeterminate = isIndeterminate;
+                }
+              }
+            }}
+          />
+        </div>
+      ),
+      className: 'w-[50px]',
+      render: (value: any, record: Game) => (
+        <Checkbox
+          checked={selectedGameIds.includes(record.id)}
+          onCheckedChange={(checked) =>
+            onSelectGame(record.id, checked === true)
+          }
+        />
+      )
+    },
+    ...columns
+  ];
+
   return (
-    <DataTable
-      columns={columns}
-      data={games}
-      loading={loading}
-      emptyText={MESSAGES.EMPTY.GAMES}
-      emptyState={emptyState}
-      rowKey='id'
-    />
+    <div className='space-y-2'>
+      {/* 批量操作栏 */}
+      {selectedGameIds.length > 0 && (
+        <div className='bg-muted/50 flex items-center gap-2 rounded-lg border p-3'>
+          <span className='text-sm font-medium'>
+            已选择 <strong>{selectedGameIds.length}</strong> 个游戏
+          </span>
+          {onBatchEnable && (
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={handleBatchEnable}
+              className='h-7 text-xs'
+            >
+              <CheckCircle className='mr-2 h-4 w-4' />
+              批量启用
+            </Button>
+          )}
+          {onBatchDisable && (
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={handleBatchDisable}
+              className='h-7 text-xs'
+            >
+              <Ban className='mr-2 h-4 w-4' />
+              批量停用
+            </Button>
+          )}
+          {onBatchFeature && (
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={handleBatchFeature}
+              className='h-7 text-xs'
+            >
+              <Star className='mr-2 h-4 w-4' />
+              批量推荐
+            </Button>
+          )}
+          {onBatchUnfeature && (
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={handleBatchUnfeature}
+              className='h-7 text-xs'
+            >
+              <StarOff className='mr-2 h-4 w-4' />
+              取消推荐
+            </Button>
+          )}
+          {onBatchDelete && (
+            <Button
+              variant='destructive'
+              size='sm'
+              onClick={handleBatchDelete}
+              className='h-7 text-xs'
+            >
+              <Trash2 className='mr-2 h-4 w-4' />
+              批量删除
+            </Button>
+          )}
+          <Button
+            variant='ghost'
+            size='sm'
+            onClick={() => handleSelectAll(false)}
+            className='h-7 text-xs'
+          >
+            取消选择
+          </Button>
+        </div>
+      )}
+      <DataTable
+        columns={columnsWithSelection}
+        data={games}
+        loading={loading}
+        emptyText={MESSAGES.EMPTY.GAMES}
+        emptyState={emptyState}
+        rowKey='id'
+      />
+    </div>
   );
 }

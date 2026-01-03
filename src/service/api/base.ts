@@ -15,6 +15,58 @@ export interface ApiResponse<T = any> {
   };
 }
 
+// 401 错误处理标志，防止重复登出
+let isHandling401 = false;
+
+/**
+ * 处理 401 未授权错误
+ * 当 API 返回 401 时，自动清理本地认证状态并跳转到登录页
+ */
+function handle401Error() {
+  // 防止重复处理
+  if (isHandling401) {
+    return;
+  }
+
+  isHandling401 = true;
+
+  // 动态导入 auth store，避免循环依赖
+  import('@/stores/auth')
+    .then(({ useAuthStore }) => {
+      const { logout } = useAuthStore.getState();
+
+      // 清理本地认证状态
+      logout();
+
+      // 清理 localStorage 中的持久化数据
+      localStorage.removeItem('auth-storage');
+
+      // 显示提示信息
+      console.warn('[401 Unauthorized] 登录已过期，正在跳转到登录页...');
+
+      // 跳转到登录页
+      if (typeof window !== 'undefined') {
+        // 保存当前页面路径，登录后可以跳转回来
+        const currentPath = window.location.pathname + window.location.search;
+        if (currentPath !== '/login') {
+          sessionStorage.setItem('redirectAfterLogin', currentPath);
+        }
+
+        // 跳转到登录页
+        window.location.href = '/login';
+      }
+
+      // 延迟重置标志，确保不会在同一个请求周期内重复处理
+      setTimeout(() => {
+        isHandling401 = false;
+      }, 1000);
+    })
+    .catch((error) => {
+      console.error('[401 Handler] 导入 auth store 失败:', error);
+      isHandling401 = false;
+    });
+}
+
 // 通用请求函数
 export async function apiRequest<T = any>(
   endpoint: string,
@@ -39,6 +91,11 @@ export async function apiRequest<T = any>(
     const response = await fetch(url, config);
 
     if (!response.ok) {
+      // 处理 401 未授权错误 - 自动登出
+      if (response.status === 401) {
+        handle401Error();
+      }
+
       // 尝试解析错误响应
       try {
         const errorData = await response.json();
@@ -58,6 +115,11 @@ export async function apiRequest<T = any>(
     }
 
     const result = await response.json();
+
+    // 检查业务层面的 401 错误（有些后端返回 HTTP 200 但 code 为 401）
+    if (result.code === 401) {
+      handle401Error();
+    }
 
     // 添加调试日志
     console.log('[API Response]', endpoint, result);

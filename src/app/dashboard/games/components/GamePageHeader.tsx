@@ -1,10 +1,10 @@
 import React from 'react';
-import { Gamepad2, Plus, RefreshCw } from 'lucide-react';
+import { Gamepad2, Download, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Heading } from '@/components/shared/heading';
 
 interface GamePageHeaderProps {
-  onCreateGame: () => void;
+  onSyncGames: () => void;
   onRefresh?: () => void;
   loading?: boolean;
 }
@@ -13,7 +13,7 @@ interface GamePageHeaderProps {
  * 游戏页面头部组件
  */
 export function GamePageHeader({
-  onCreateGame,
+  onSyncGames,
   onRefresh,
   loading = false
 }: GamePageHeaderProps) {
@@ -31,13 +31,15 @@ export function GamePageHeader({
             onClick={onRefresh}
             disabled={loading}
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`}
+            />
             刷新
           </Button>
         )}
-        <Button onClick={onCreateGame} size='sm'>
-          <Plus className='mr-2 h-4 w-4' />
-          添加游戏
+        <Button onClick={onSyncGames} size='sm'>
+          <Download className='mr-2 h-4 w-4' />
+          同步平台游戏
         </Button>
       </div>
     </div>

@@ -26,6 +26,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'source.game24x.com'
+      },
+      {
+        protocol: 'https',
         hostname: '**.amazonaws.com'
       }
     ]

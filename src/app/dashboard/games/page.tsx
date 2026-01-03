@@ -9,11 +9,12 @@ import PageContainer from '@/components/layout/page-container';
 import {
   GamePageHeader,
   GameFilters,
-  GameTable
+  GameTable,
+  SyncGameDialog
 } from './components';
 import { useGameFilters, useGameManagement } from './hooks';
 import { PAGE_SIZE_OPTIONS } from './constants';
-import { Game, GameDialogState } from './types';
+import { Game } from './types';
 
 export default function GamesPage() {
   // 使用自定义hooks
@@ -33,15 +34,21 @@ export default function GamesPage() {
     refreshGames,
     deleteGame,
     toggleGameStatus,
-    toggleFeatured
+    toggleFeatured,
+    toggleNew,
+    syncGames,
+    batchEnableGames,
+    batchDisableGames,
+    batchFeatureGames,
+    batchUnfeatureGames,
+    batchDeleteGames
   } = useGameManagement();
 
-  // 对话框状态
-  const [dialogState, setDialogState] = useState<GameDialogState>({
-    type: null,
-    game: null,
-    open: false
-  });
+  // 同步游戏对话框状态
+  const [syncDialogOpen, setSyncDialogOpen] = useState(false);
+
+  // 选中的游戏ID列表
+  const [selectedGameIds, setSelectedGameIds] = useState<number[]>([]);
 
   // 初始化和筛选条件变化时获取数据
   useEffect(() => {
@@ -49,47 +56,29 @@ export default function GamesPage() {
   }, [filters, fetchGames]);
 
   /**
-   * 打开创建游戏对话框
+   * 打开同步游戏对话框
    */
-  const handleOpenCreateDialog = () => {
-    setDialogState({
-      type: 'create',
-      game: null,
-      open: true
-    });
+  const handleOpenSyncDialog = () => {
+    setSyncDialogOpen(true);
+  };
+
+  /**
+   * 处理同步游戏
+   */
+  const handleSyncGames = async (providerCode: string) => {
+    const success = await syncGames(providerCode);
+    if (success) {
+      // 同步成功后刷新游戏列表
+      fetchGames(filters);
+    }
   };
 
   /**
    * 打开编辑游戏对话框
    */
   const handleOpenEditDialog = (game: Game) => {
-    setDialogState({
-      type: 'edit',
-      game,
-      open: true
-    });
-  };
-
-  /**
-   * 打开查看游戏详情对话框
-   */
-  const handleOpenViewDialog = (game: Game) => {
-    setDialogState({
-      type: 'view',
-      game,
-      open: true
-    });
-  };
-
-  /**
-   * 关闭对话框
-   */
-  const handleCloseDialog = () => {
-    setDialogState({
-      type: null,
-      game: null,
-      open: false
-    });
+    // TODO: 实现编辑游戏对话框
+    console.log('编辑游戏:', game);
   };
 
   /**
@@ -117,6 +106,16 @@ export default function GamesPage() {
    */
   const handleToggleFeatured = async (game: Game) => {
     const success = await toggleFeatured(game);
+    if (success) {
+      fetchGames(filters);
+    }
+  };
+
+  /**
+   * 切换新游状态
+   */
+  const handleToggleNew = async (game: Game) => {
+    const success = await toggleNew(game);
     if (success) {
       fetchGames(filters);
     }
@@ -157,12 +156,94 @@ export default function GamesPage() {
     updatePagination({ page_size, page: 1 });
   };
 
+  /**
+   * 处理选择游戏
+   */
+  const handleSelectGame = (gameId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedGameIds((prev) => [...prev, gameId]);
+    } else {
+      setSelectedGameIds((prev) => prev.filter((id) => id !== gameId));
+    }
+  };
+
+  /**
+   * 处理全选/取消全选
+   */
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedGameIds(games.map((game) => game.id));
+    } else {
+      setSelectedGameIds([]);
+    }
+  };
+
+  /**
+   * 处理批量启用
+   */
+  const handleBatchEnable = async (gameIds: number[]) => {
+    const success = await batchEnableGames(gameIds);
+    if (success) {
+      setSelectedGameIds([]);
+      fetchGames(filters);
+    }
+  };
+
+  /**
+   * 处理批量停用
+   */
+  const handleBatchDisable = async (gameIds: number[]) => {
+    const success = await batchDisableGames(gameIds);
+    if (success) {
+      setSelectedGameIds([]);
+      fetchGames(filters);
+    }
+  };
+
+  /**
+   * 处理批量推荐
+   */
+  const handleBatchFeature = async (gameIds: number[]) => {
+    const success = await batchFeatureGames(gameIds);
+    if (success) {
+      setSelectedGameIds([]);
+      fetchGames(filters);
+    }
+  };
+
+  /**
+   * 处理批量取消推荐
+   */
+  const handleBatchUnfeature = async (gameIds: number[]) => {
+    const success = await batchUnfeatureGames(gameIds);
+    if (success) {
+      setSelectedGameIds([]);
+      fetchGames(filters);
+    }
+  };
+
+  /**
+   * 处理批量删除
+   */
+  const handleBatchDelete = async (gameIds: number[]) => {
+    if (
+      !confirm(`确定要删除选中的 ${gameIds.length} 个游戏吗？此操作不可撤销。`)
+    ) {
+      return;
+    }
+    const success = await batchDeleteGames(gameIds);
+    if (success) {
+      setSelectedGameIds([]);
+      fetchGames(filters);
+    }
+  };
+
   return (
     <PageContainer scrollable={false}>
       <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
         {/* 页面头部 */}
         <GamePageHeader
-          onCreateGame={handleOpenCreateDialog}
+          onSyncGames={handleOpenSyncDialog}
           onRefresh={handleRefresh}
           loading={loading}
         />
@@ -182,19 +263,31 @@ export default function GamesPage() {
               games={games}
               loading={loading}
               pagination={pagination}
+              selectedGameIds={selectedGameIds}
               onEdit={handleOpenEditDialog}
-              onView={handleOpenViewDialog}
               onDelete={handleDeleteGame}
               onToggleStatus={handleToggleStatus}
               onToggleFeatured={handleToggleFeatured}
+              onToggleNew={handleToggleNew}
+              onSelectGame={handleSelectGame}
+              onSelectAll={handleSelectAll}
+              onBatchEnable={handleBatchEnable}
+              onBatchDisable={handleBatchDisable}
+              onBatchFeature={handleBatchFeature}
+              onBatchUnfeature={handleBatchUnfeature}
+              onBatchDelete={handleBatchDelete}
               emptyState={{
-                icon: <Gamepad2 className='h-8 w-8 text-muted-foreground' />,
+                icon: <Gamepad2 className='text-muted-foreground h-8 w-8' />,
                 title: hasActiveFilters ? '未找到匹配的游戏' : '还没有游戏',
                 description: hasActiveFilters
                   ? '请尝试调整筛选条件以查看更多结果'
                   : '开始添加游戏来管理您的游戏库',
                 action: !hasActiveFilters ? (
-                  <Button onClick={handleOpenCreateDialog} size='sm' className='mt-2'>
+                  <Button
+                    onClick={handleOpenCreateDialog}
+                    size='sm'
+                    className='mt-2'
+                  >
                     <Plus className='mr-2 h-4 w-4' />
                     添加游戏
                   </Button>
@@ -217,8 +310,13 @@ export default function GamesPage() {
           </div>
         </div>
 
-        {/* TODO: 游戏对话框（创建/编辑/查看） */}
-        {/* 可以后续添加 GameDialogs 组件 */}
+        {/* 同步游戏对话框 */}
+        <SyncGameDialog
+          open={syncDialogOpen}
+          onOpenChange={setSyncDialogOpen}
+          onSync={handleSyncGames}
+          loading={loading}
+        />
       </div>
     </PageContainer>
   );

@@ -60,9 +60,19 @@ export function LoginForm({
         // 等待初始化完成，确保 session 已更新
         await forceReInitialize();
 
-        // 跳转到dashboard并刷新页面，确保获取最新的认证状态
-        router.push('/dashboard');
-        router.refresh();
+        // 检查是否有保存的重定向路径
+        const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+        if (redirectPath && redirectPath !== '/login') {
+          // 清除保存的重定向路径
+          sessionStorage.removeItem('redirectAfterLogin');
+          // 跳转到原页面
+          router.push(redirectPath);
+          router.refresh();
+        } else {
+          // 没有保存的路径，默认跳转到 dashboard
+          router.push('/dashboard');
+          router.refresh();
+        }
       } else {
         toast.error(res.message || '登录失败');
       }

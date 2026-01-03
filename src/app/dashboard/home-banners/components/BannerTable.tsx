@@ -2,15 +2,16 @@ import React from 'react';
 import Image from 'next/image';
 import {
   Edit,
-  Eye,
   Copy,
   Power,
-  PowerOff,
   RotateCcw,
   ExternalLink,
   Link as LinkIcon
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { DataTable } from '@/components/table/data-table';
 import {
   ActionDropdown,
@@ -70,11 +71,14 @@ export function BannerTable({
 
   // 表格列配置
   const columns = TABLE_COLUMNS.map((col) => {
-    if (col.key === 'index') {
+    if (col.key === 'id') {
       return {
         ...col,
-        render: (value: any, record: Banner, index: number) => {
-          return (pagination.page - 1) * pagination.page_size + index + 1;
+        render: (value: number | undefined) => {
+          if (value === undefined || value === null) {
+            return <span className='text-muted-foreground text-xs'>-</span>;
+          }
+          return <div className='text-center font-mono text-sm'>{value}</div>;
         }
       };
     }
@@ -83,22 +87,31 @@ export function BannerTable({
       return {
         ...col,
         render: (value: any, record: Banner) => {
+          if (!record.image_url) {
+            return (
+              <div className='bg-muted flex h-16 w-20 items-center justify-center rounded-md'>
+                <LinkIcon className='text-muted-foreground h-6 w-6' />
+              </div>
+            );
+          }
+
           return (
             <div className='flex items-center justify-center'>
-              {record.image_url ? (
-                <div className='relative h-16 w-20 overflow-hidden rounded-md'>
-                  <Image
-                    src={record.image_url}
-                    alt={record.title || '轮播图'}
-                    fill
-                    className='object-cover'
-                  />
-                </div>
-              ) : (
-                <div className='flex h-16 w-20 items-center justify-center rounded-md bg-muted'>
-                  <LinkIcon className='h-6 w-6 text-muted-foreground' />
-                </div>
-              )}
+              <div className='relative h-16 w-20 overflow-hidden rounded-md'>
+                <Image
+                  src={record.image_url}
+                  alt={record.title || '轮播图'}
+                  fill
+                  className='object-cover'
+                  unoptimized={true}
+                  onError={(e) => {
+                    const target = e.currentTarget as HTMLImageElement;
+                    if (target.parentElement) {
+                      target.parentElement.style.display = 'none';
+                    }
+                  }}
+                />
+              </div>
             </div>
           );
         }
@@ -112,7 +125,9 @@ export function BannerTable({
           return (
             <div className='space-y-1'>
               <div className='font-medium'>
-                {value || <span className='text-muted-foreground'>未设置标题</span>}
+                {value || (
+                  <span className='text-muted-foreground'>未设置标题</span>
+                )}
               </div>
             </div>
           );
@@ -123,11 +138,12 @@ export function BannerTable({
     if (col.key === 'position') {
       return {
         ...col,
-        render: (value: string) => {
+        render: (value: string | undefined) => {
+          if (!value) {
+            return <span className='text-muted-foreground text-xs'>-</span>;
+          }
           return (
-            <Badge variant='outline'>
-              {POSITION_LABELS[value] || value}
-            </Badge>
+            <Badge variant='outline'>{POSITION_LABELS[value] || value}</Badge>
           );
         }
       };
@@ -136,19 +152,22 @@ export function BannerTable({
     if (col.key === 'link') {
       return {
         ...col,
-        render: (value: string | undefined, record: Banner) => {
-          if (!value) {
-            return <span className='text-muted-foreground text-xs'>无跳转</span>;
+        render: (value: any, record: Banner) => {
+          const linkUrl = record.link_url;
+          if (!linkUrl) {
+            return (
+              <span className='text-muted-foreground text-xs'>无跳转</span>
+            );
           }
           return (
             <div className='flex items-center gap-1 truncate'>
-              <span className='truncate text-xs'>{value}</span>
+              <span className='truncate text-xs'>{linkUrl}</span>
               <Copy
-                className='h-3 w-3 flex-shrink-0 cursor-pointer text-muted-foreground hover:text-foreground'
-                onClick={() => handleCopyLink(value)}
+                className='text-muted-foreground hover:text-foreground h-3 w-3 flex-shrink-0 cursor-pointer'
+                onClick={() => handleCopyLink(linkUrl)}
               />
               {record.target === '_blank' && (
-                <ExternalLink className='h-3 w-3 flex-shrink-0 text-muted-foreground' />
+                <ExternalLink className='text-muted-foreground h-3 w-3 flex-shrink-0' />
               )}
             </div>
           );
@@ -156,10 +175,40 @@ export function BannerTable({
       };
     }
 
+    if (col.key === 'target') {
+      return {
+        ...col,
+        render: (value: '_self' | '_blank' | undefined, record: Banner) => {
+          const target = value || record.target || '_self';
+          const label = target === '_blank' ? '新标签页' : '当前标签页';
+          return (
+            <div className='text-center'>
+              <Badge variant='outline'>{label}</Badge>
+            </div>
+          );
+        }
+      };
+    }
+
+    if (col.key === 'page') {
+      return {
+        ...col,
+        render: (value: string | undefined) => {
+          if (!value) {
+            return <span className='text-muted-foreground text-xs'>-</span>;
+          }
+          return <Badge variant='secondary'>{value}</Badge>;
+        }
+      };
+    }
+
     if (col.key === 'sort_order') {
       return {
         ...col,
-        render: (value: number) => {
+        render: (value: number | undefined) => {
+          if (value === undefined || value === null) {
+            return <span className='text-muted-foreground text-xs'>-</span>;
+          }
           return (
             <div className='text-center font-mono text-sm font-semibold'>
               {value}
@@ -173,7 +222,9 @@ export function BannerTable({
       return {
         ...col,
         render: (value: any, record: Banner) => {
-          const startTime = record.start_time ? new Date(record.start_time) : null;
+          const startTime = record.start_time
+            ? new Date(record.start_time)
+            : null;
           const endTime = record.end_time ? new Date(record.end_time) : null;
           const now = new Date();
 
@@ -184,7 +235,8 @@ export function BannerTable({
           return (
             <div className='space-y-1 text-xs'>
               <div>
-                开始: {startTime ? formatDateTime(record.start_time!) : '立即生效'}
+                开始:{' '}
+                {startTime ? formatDateTime(record.start_time!) : '立即生效'}
               </div>
               <div>
                 结束: {endTime ? formatDateTime(record.end_time!) : '长期有效'}
@@ -206,19 +258,37 @@ export function BannerTable({
     if (col.key === 'status') {
       return {
         ...col,
-        render: (value: 0 | 1, record: Banner) => {
-          const statusInfo = STATUS_LABELS[value];
+        render: (value: 0 | 1 | undefined, record: Banner) => {
+          const status = value ?? record.status ?? 0;
+          const isActive = status === 1 && !record.disabled;
+
           return (
-            <div className='flex flex-col items-center gap-1'>
-              <Badge variant={statusInfo.variant as any}>
-                {statusInfo.label}
-              </Badge>
-              {record.disabled && (
-                <Badge variant='secondary' className='text-xs'>
-                  禁用
-                </Badge>
-              )}
+            <div className='flex items-center justify-center gap-2'>
+              <Switch
+                checked={isActive}
+                onCheckedChange={() => onToggleStatus(record)}
+              />
+              <Label
+                className='cursor-pointer text-sm'
+                onClick={() => onToggleStatus(record)}
+              >
+                {isActive ? '激活' : '禁用'}
+              </Label>
             </div>
+          );
+        }
+      };
+    }
+
+    if (col.key === 'created_at') {
+      return {
+        ...col,
+        render: (value: string | undefined) => {
+          if (!value) {
+            return <span className='text-muted-foreground text-xs'>-</span>;
+          }
+          return (
+            <span className='font-mono text-xs'>{formatDateTime(value)}</span>
           );
         }
       };
@@ -227,9 +297,14 @@ export function BannerTable({
     if (col.key === 'updated_at') {
       return {
         ...col,
-        render: (value: string) => (
-          <span className='font-mono text-xs'>{formatDateTime(value)}</span>
-        )
+        render: (value: string | undefined) => {
+          if (!value) {
+            return <span className='text-muted-foreground text-xs'>-</span>;
+          }
+          return (
+            <span className='font-mono text-xs'>{formatDateTime(value)}</span>
+          );
+        }
       };
     }
 
@@ -239,12 +314,6 @@ export function BannerTable({
         render: (value: any, record: Banner) => {
           const actions: ActionItem[] = [
             {
-              key: 'view',
-              label: '查看详情',
-              icon: <Eye className='mr-2 h-4 w-4' />,
-              onClick: () => onView(record)
-            },
-            {
               key: 'edit',
               label: '编辑',
               icon: <Edit className='mr-2 h-4 w-4' />,
@@ -252,15 +321,8 @@ export function BannerTable({
             }
           ];
 
-          // 上线/下线
-          if (record.status === 1) {
-            actions.push({
-              key: 'disable',
-              label: '下线',
-              icon: <PowerOff className='mr-2 h-4 w-4' />,
-              onClick: () => onToggleStatus(record)
-            });
-          } else {
+          // 上线
+          if (record.status !== 1) {
             actions.push({
               key: 'enable',
               label: '上线',
@@ -269,20 +331,13 @@ export function BannerTable({
             });
           }
 
-          // 禁用/恢复
+          // 恢复
           if (record.disabled && onRestore) {
             actions.push({
               key: 'restore',
               label: '恢复',
               icon: <RotateCcw className='mr-2 h-4 w-4' />,
               onClick: () => onRestore(record)
-            });
-          } else if (!record.disabled) {
-            actions.push({
-              key: 'disable_banner',
-              label: '紧急禁用',
-              icon: <PowerOff className='mr-2 h-4 w-4' />,
-              onClick: () => onDisable(record)
             });
           }
 
