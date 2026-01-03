@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -183,14 +184,17 @@ export function BannerEditDialog({
               <p className='text-sm text-red-500'>{errors.image_url}</p>
             )}
             {formData.image_url && (
-              <div className='mt-2'>
-                <img
+              <div className='relative mt-2 h-32 w-auto overflow-hidden rounded-md border'>
+                <Image
                   src={formData.image_url}
                   alt='预览'
-                  className='h-32 w-auto rounded-md border'
+                  width={400}
+                  height={128}
+                  className='h-full w-auto object-contain'
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                   }}
+                  unoptimized
                 />
               </div>
             )}

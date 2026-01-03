@@ -15,10 +15,12 @@ const REMOTE_API_BASE_URL =
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const requestStartTime = Date.now();
   try {
+    const { id } = await params;
+
     // 从 cookie 中获取 token
     const cookieStore = await cookies();
     const token = cookieStore.get('token');
@@ -27,8 +29,6 @@ export async function GET(
       console.warn('[权限管理] 未授权访问：缺少 token');
       return unauthorizedResponse('未授权访问');
     }
-
-    const { id } = params;
     const remoteUrl = `${REMOTE_API_BASE_URL}/${id}`;
 
     // 记录请求日志
@@ -83,10 +83,12 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const requestStartTime = Date.now();
   try {
+    const { id } = await params;
+
     // 从 cookie 中获取 token
     const cookieStore = await cookies();
     const token = cookieStore.get('token');
@@ -95,8 +97,6 @@ export async function PUT(
       console.warn('[权限管理] 未授权访问：缺少 token');
       return unauthorizedResponse('未授权访问');
     }
-
-    const { id } = params;
     const remoteUrl = `${REMOTE_API_BASE_URL}/${id}`;
 
     // 获取请求体
@@ -155,10 +155,12 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const requestStartTime = Date.now();
   try {
+    const { id } = await params;
+
     // 从 cookie 中获取 token
     const cookieStore = await cookies();
     const token = cookieStore.get('token');
@@ -167,8 +169,6 @@ export async function DELETE(
       console.warn('[权限管理] 未授权访问：缺少 token');
       return unauthorizedResponse('未授权访问');
     }
-
-    const { id } = params;
     const remoteUrl = `${REMOTE_API_BASE_URL}/${id}`;
 
     // 记录请求日志
