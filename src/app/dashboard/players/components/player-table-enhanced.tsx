@@ -218,7 +218,20 @@ export function PlayerTableEnhanced({
                 const vipLevel =
                   vipInfo?.vip_level ?? vipInfo?.level ?? player.vip_level ?? 0;
                 // 获取钱包信息
-                const wallet = player.wallet || {};
+                const wallet = player.wallet || {
+                  balance: 0,
+                  frozen_balance: 0,
+                  bonus: 0,
+                  credit: 0,
+                  withdrawable: 0,
+                  total_deposit: 0,
+                  total_withdraw: 0,
+                  total_bet: 0,
+                  total_win: 0,
+                  currency: '',
+                  status: 'active' as const,
+                  version: 0
+                };
 
                 return (
                   <TableRow key={player.id}>
