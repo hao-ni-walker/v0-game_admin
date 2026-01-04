@@ -5,7 +5,7 @@ import { AnnouncementFilters } from './types';
  */
 export const DEFAULT_PAGINATION = {
   page: 1,
-  page_size: 20,
+  page_size: 10,
   total: 0,
   totalPages: 0
 } as const;
@@ -13,16 +13,15 @@ export const DEFAULT_PAGINATION = {
 /**
  * 分页大小选项
  */
-export const PAGE_SIZE_OPTIONS = [20, 50, 100];
+export const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 /**
- * 公告类型选项
+ * 通知类型选项
  */
 export const ANNOUNCEMENT_TYPE_OPTIONS = [
   { label: '全部', value: 'all' },
-  { label: '系统公告', value: 1 },
-  { label: '活动公告', value: 2 },
-  { label: '维护公告', value: 3 }
+  { label: '系统通知', value: 'system' },
+  { label: '奖励通知', value: 'REWARD' }
 ] as const;
 
 /**
@@ -30,9 +29,9 @@ export const ANNOUNCEMENT_TYPE_OPTIONS = [
  */
 export const PRIORITY_OPTIONS = [
   { label: '全部', value: 'all' },
-  { label: '高', value: 1 },
-  { label: '中', value: 2 },
-  { label: '低', value: 3 }
+  { label: '高', value: 'high' },
+  { label: '普通', value: 'normal' },
+  { label: '低', value: 'low' }
 ] as const;
 
 /**
@@ -40,8 +39,9 @@ export const PRIORITY_OPTIONS = [
  */
 export const STATUS_OPTIONS = [
   { label: '全部', value: 'all' },
-  { label: '上线', value: 1 },
-  { label: '下线', value: 0 }
+  { label: '待发送', value: 'pending' },
+  { label: '已发送', value: 'sent' },
+  { label: '已读', value: 'read' }
 ] as const;
 
 /**
@@ -57,13 +57,11 @@ export const BOOLEAN_OPTIONS = [
  * 排序字段选项
  */
 export const SORT_OPTIONS = [
-  { label: '默认排序', value: 'default' },
-  { label: '优先级', value: 'priority' },
-  { label: '开始时间', value: 'start_time' },
-  { label: '结束时间', value: 'end_time' },
   { label: '创建时间', value: 'created_at' },
-  { label: '更新时间', value: 'updated_at' },
-  { label: 'ID', value: 'id' }
+  { label: '发送时间', value: 'sent_at' },
+  { label: '阅读时间', value: 'read_at' },
+  { label: 'ID', value: 'id' },
+  { label: '用户ID', value: 'user_id' }
 ] as const;
 
 /**
@@ -71,15 +69,14 @@ export const SORT_OPTIONS = [
  */
 export const DEFAULT_FILTERS: AnnouncementFilters = {
   keyword: '',
-  types: [],
+  notification_type: undefined,
   status: 'all',
-  disabled: false,
-  show_removed: false,
-  active_only: false,
-  sort_by: 'default',
-  sort_dir: 'asc',
+  is_read: undefined,
+  user_id: undefined,
+  sort_by: 'created_at',
+  sort_dir: 'desc',
   page: 1,
-  page_size: 20
+  page_size: 10
 } as const;
 
 /**
@@ -97,14 +94,19 @@ export const TABLE_COLUMNS = [
     className: 'font-mono text-xs w-[80px] text-center'
   },
   {
+    key: 'user_id',
+    title: '用户ID',
+    className: 'font-mono text-xs w-[80px] text-center'
+  },
+  {
     key: 'title',
     title: '标题',
     className: 'font-medium min-w-[200px]'
   },
   {
-    key: 'type',
-    title: '类型',
-    className: 'w-[100px]'
+    key: 'notification_type',
+    title: '通知类型',
+    className: 'w-[120px]'
   },
   {
     key: 'priority',
@@ -112,28 +114,28 @@ export const TABLE_COLUMNS = [
     className: 'text-center w-[80px]'
   },
   {
-    key: 'time_range',
-    title: '有效期',
-    className: 'w-[280px]'
-  },
-  {
     key: 'status',
     title: '状态',
     className: 'text-center w-[100px]'
   },
   {
-    key: 'disabled',
-    title: '禁用',
+    key: 'is_read',
+    title: '已读',
     className: 'text-center w-[80px]'
   },
   {
-    key: 'version',
-    title: '版本',
-    className: 'text-center w-[60px] font-mono'
+    key: 'created_at',
+    title: '创建时间',
+    className: 'font-medium w-[140px]'
   },
   {
-    key: 'updated_at',
-    title: '更新时间',
+    key: 'sent_at',
+    title: '发送时间',
+    className: 'font-medium w-[140px]'
+  },
+  {
+    key: 'read_at',
+    title: '阅读时间',
     className: 'font-medium w-[140px]'
   },
   {
@@ -170,34 +172,36 @@ export const MESSAGES = {
   CONFIRM: {
     DELETE: (title: string) => `确定要删除公告 "${title}" 吗？此操作不可撤销。`,
     OFFLINE: (title: string) => `确定要下线公告 "${title}" 吗？`,
-    DISABLE: (title: string) => `确定要禁用公告 "${title}" 吗？紧急止投将立即生效。`,
+    DISABLE: (title: string) =>
+      `确定要禁用公告 "${title}" 吗？紧急止投将立即生效。`,
     ENABLE: (title: string) => `确定要启用公告 "${title}" 吗？`
   }
 } as const;
 
 /**
- * 公告类型标签映射
+ * 通知类型标签映射
  */
-export const ANNOUNCEMENT_TYPE_LABELS: Record<number, string> = {
-  1: '系统公告',
-  2: '活动公告',
-  3: '维护公告'
+export const ANNOUNCEMENT_TYPE_LABELS: Record<string, string> = {
+  system: '系统通知',
+  REWARD: '奖励通知'
 };
 
 /**
- * 公告类型颜色映射
+ * 通知类型颜色映射
  */
-export const ANNOUNCEMENT_TYPE_COLORS: Record<number, string> = {
-  1: 'default',
-  2: 'secondary',
-  3: 'destructive'
+export const ANNOUNCEMENT_TYPE_COLORS: Record<string, string> = {
+  system: 'default',
+  REWARD: 'secondary'
 };
 
 /**
  * 优先级标签映射
  */
-export const PRIORITY_LABELS: Record<number, { label: string; variant: string }> = {
-  1: { label: '高', variant: 'destructive' },
-  2: { label: '中', variant: 'default' },
-  3: { label: '低', variant: 'secondary' }
+export const PRIORITY_LABELS: Record<
+  string,
+  { label: string; variant: string }
+> = {
+  high: { label: '高', variant: 'destructive' },
+  normal: { label: '普通', variant: 'default' },
+  low: { label: '低', variant: 'secondary' }
 };

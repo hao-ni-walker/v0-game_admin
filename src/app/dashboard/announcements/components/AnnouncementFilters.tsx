@@ -70,13 +70,12 @@ export function AnnouncementFilters({
   // 检查是否有激活的筛选条件
   const hasActiveFilters = Boolean(
     filters.keyword ||
-      (filters.types && filters.types.length > 0) ||
+      filters.notification_type ||
       filters.status !== 'all' ||
-      filters.disabled ||
-      filters.show_removed ||
-      filters.active_only ||
-      filters.sort_by !== 'default' ||
-      filters.sort_dir !== 'asc'
+      filters.is_read !== undefined ||
+      filters.user_id ||
+      filters.sort_by !== 'created_at' ||
+      filters.sort_dir !== 'desc'
   );
 
   /**
@@ -88,7 +87,7 @@ export function AnnouncementFilters({
       <div className='relative max-w-sm flex-1'>
         <Search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
         <Input
-          placeholder='搜索公告标题...'
+          placeholder='搜索通知标题...'
           value={localFilters.keyword || ''}
           onChange={(e) => updateLocalFilter('keyword', e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -143,30 +142,25 @@ export function AnnouncementFilters({
         <div className='space-y-2'>
           <Label>关键词</Label>
           <Input
-            placeholder='搜索公告标题...'
+            placeholder='搜索通知标题...'
             value={localFilters.keyword || ''}
             onChange={(e) => updateLocalFilter('keyword', e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           />
         </div>
         <div className='space-y-2'>
-          <Label>类型</Label>
+          <Label>通知类型</Label>
           <Select
-            value={
-              localFilters.types && localFilters.types.length > 0
-                ? String(localFilters.types[0])
-                : 'all'
-            }
+            value={localFilters.notification_type || 'all'}
             onValueChange={(value) => {
-              if (value === 'all') {
-                updateLocalFilter('types', []);
-              } else {
-                updateLocalFilter('types', [Number(value)]);
-              }
+              updateLocalFilter(
+                'notification_type',
+                value === 'all' ? undefined : value
+              );
             }}
           >
             <SelectTrigger className='w-full'>
-              <SelectValue placeholder='选择类型' />
+              <SelectValue placeholder='选择通知类型' />
             </SelectTrigger>
             <SelectContent>
               {ANNOUNCEMENT_TYPE_OPTIONS.map((option) => (
@@ -188,7 +182,7 @@ export function AnnouncementFilters({
             onValueChange={(value) =>
               updateLocalFilter(
                 'status',
-                value === 'all' ? 'all' : Number(value)
+                value as 'pending' | 'read' | 'sent' | 'all'
               )
             }
           >
@@ -205,9 +199,27 @@ export function AnnouncementFilters({
           </Select>
         </div>
         <div className='space-y-2'>
+          <Label>用户ID</Label>
+          <Input
+            type='number'
+            placeholder='输入用户ID'
+            value={localFilters.user_id || ''}
+            onChange={(e) =>
+              updateLocalFilter(
+                'user_id',
+                e.target.value ? parseInt(e.target.value) : undefined
+              )
+            }
+          />
+        </div>
+      </div>
+
+      {/* 第三行：排序方式和排序方向 */}
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+        <div className='space-y-2'>
           <Label>排序方式</Label>
           <Select
-            value={localFilters.sort_by || 'default'}
+            value={localFilters.sort_by || 'created_at'}
             onValueChange={(value) => updateLocalFilter('sort_by', value)}
           >
             <SelectTrigger className='w-full'>
@@ -222,14 +234,10 @@ export function AnnouncementFilters({
             </SelectContent>
           </Select>
         </div>
-      </div>
-
-      {/* 第三行：排序方向 */}
-      <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
         <div className='space-y-2'>
           <Label>排序方向</Label>
           <Select
-            value={localFilters.sort_dir || 'asc'}
+            value={localFilters.sort_dir || 'desc'}
             onValueChange={(value) =>
               updateLocalFilter('sort_dir', value as 'asc' | 'desc')
             }
@@ -245,52 +253,37 @@ export function AnnouncementFilters({
         </div>
       </div>
 
-      {/* 第四行：复选框筛选 */}
+      {/* 第四行：已读状态 */}
       <div className='grid grid-cols-1 gap-4'>
         <div className='flex flex-wrap gap-4'>
           <div className='flex items-center space-x-2'>
             <Checkbox
-              id='disabled'
-              checked={localFilters.disabled || false}
+              id='is_read'
+              checked={localFilters.is_read === true}
               onCheckedChange={(checked) =>
-                updateLocalFilter('disabled', checked)
+                updateLocalFilter('is_read', checked ? true : undefined)
               }
             />
             <Label
-              htmlFor='disabled'
+              htmlFor='is_read'
               className='cursor-pointer text-sm font-normal'
             >
-              显示禁用
+              仅显示已读
             </Label>
           </div>
           <div className='flex items-center space-x-2'>
             <Checkbox
-              id='show_removed'
-              checked={localFilters.show_removed || false}
+              id='is_unread'
+              checked={localFilters.is_read === false}
               onCheckedChange={(checked) =>
-                updateLocalFilter('show_removed', checked)
+                updateLocalFilter('is_read', checked ? false : undefined)
               }
             />
             <Label
-              htmlFor='show_removed'
+              htmlFor='is_unread'
               className='cursor-pointer text-sm font-normal'
             >
-              显示已删除
-            </Label>
-          </div>
-          <div className='flex items-center space-x-2'>
-            <Checkbox
-              id='active_only'
-              checked={localFilters.active_only || false}
-              onCheckedChange={(checked) =>
-                updateLocalFilter('active_only', checked)
-              }
-            />
-            <Label
-              htmlFor='active_only'
-              className='cursor-pointer text-sm font-normal'
-            >
-              仅生效中
+              仅显示未读
             </Label>
           </div>
         </div>
@@ -307,7 +300,7 @@ export function AnnouncementFilters({
       <AdvancedFilterContainer
         open={isAdvancedFilterOpen}
         onClose={() => setIsAdvancedFilterOpen(false)}
-        title='公告筛选'
+        title='通知筛选'
         hasActiveFilters={hasActiveFilters}
         onSearch={handleSearch}
         onReset={handleReset}
