@@ -6,14 +6,14 @@ import { Pagination } from '@/components/table/pagination';
 import PageContainer from '@/components/layout/page-container';
 
 import {
-  GameFlowFilters,
-  GameFlowTable,
-  GameFlowPageHeader
+  UserRetentionFilters,
+  UserRetentionTable,
+  UserRetentionPageHeader
 } from './components';
-import { useGameFlowFilters, useGameFlowManagement } from './hooks';
+import { useUserRetentionFilters, useUserRetentionManagement } from './hooks';
 import { PAGE_SIZE_OPTIONS } from './constants';
 
-export default function AnalyticsFlowsPage() {
+export default function UserRetentionPage() {
   // 使用自定义hooks
   const {
     filters,
@@ -21,15 +21,20 @@ export default function AnalyticsFlowsPage() {
     updatePagination,
     clearFilters,
     hasActiveFilters
-  } = useGameFlowFilters();
+  } = useUserRetentionFilters();
 
-  const { flows, loading, pagination, fetchFlows, refreshFlows } =
-    useGameFlowManagement();
+  const {
+    retentionData,
+    loading,
+    pagination,
+    fetchRetention,
+    refreshRetention
+  } = useUserRetentionManagement();
 
   // 初始化和筛选条件变化时获取数据
   useEffect(() => {
-    fetchFlows(filters);
-  }, [filters, fetchFlows]);
+    fetchRetention(filters);
+  }, [filters, fetchRetention]);
 
   // 处理查询
   const handleSearch = (newFilters: any) => {
@@ -53,21 +58,17 @@ export default function AnalyticsFlowsPage() {
 
   // 处理刷新
   const handleRefresh = () => {
-    refreshFlows(filters);
+    refreshRetention(filters);
   };
 
   return (
     <PageContainer scrollable={false}>
       <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
         {/* 页面头部 */}
-        <GameFlowPageHeader
-          filters={filters}
-          onRefresh={handleRefresh}
-          loading={loading}
-        />
+        <UserRetentionPageHeader onRefresh={handleRefresh} loading={loading} />
 
         {/* 搜索和筛选 */}
-        <GameFlowFilters
+        <UserRetentionFilters
           filters={filters}
           onSearch={handleSearch}
           onReset={handleReset}
@@ -76,8 +77,8 @@ export default function AnalyticsFlowsPage() {
 
         {/* 数据表格 */}
         <div className='flex min-h-0 flex-col'>
-          <GameFlowTable
-            data={flows}
+          <UserRetentionTable
+            data={retentionData}
             loading={loading}
             pagination={pagination}
           />

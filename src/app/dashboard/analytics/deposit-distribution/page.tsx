@@ -5,27 +5,27 @@ import React, { useEffect } from 'react';
 import PageContainer from '@/components/layout/page-container';
 
 import {
-  OperationReportFilters,
-  OperationReportTable,
-  OperationReportPageHeader
+  DepositDistributionFilters,
+  DepositDistributionTable,
+  DepositDistributionPageHeader
 } from './components';
 import {
-  useOperationReportFilters,
-  useOperationReportManagement
+  useDepositDistributionFilters,
+  useDepositDistributionManagement
 } from './hooks';
 
-export default function AnalyticsReportsPage() {
+export default function DepositDistributionPage() {
   // 使用自定义hooks
   const { filters, searchFilters, clearFilters, hasActiveFilters } =
-    useOperationReportFilters();
+    useDepositDistributionFilters();
 
-  const { reports, loading, total, fetchReports, refreshReports } =
-    useOperationReportManagement();
+  const { distributionData, loading, fetchDistribution, refreshDistribution } =
+    useDepositDistributionManagement();
 
   // 初始化和筛选条件变化时获取数据
   useEffect(() => {
-    fetchReports(filters);
-  }, [filters, fetchReports]);
+    fetchDistribution(filters);
+  }, [filters, fetchDistribution]);
 
   // 处理查询
   const handleSearch = (newFilters: any) => {
@@ -39,20 +39,20 @@ export default function AnalyticsReportsPage() {
 
   // 处理刷新
   const handleRefresh = () => {
-    refreshReports(filters);
+    refreshDistribution(filters);
   };
 
   return (
     <PageContainer scrollable={false}>
-      <div className='flex min-h-0 flex-col gap-4'>
+      <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
         {/* 页面头部 */}
-        <OperationReportPageHeader
+        <DepositDistributionPageHeader
           onRefresh={handleRefresh}
           loading={loading}
         />
 
         {/* 搜索和筛选 */}
-        <OperationReportFilters
+        <DepositDistributionFilters
           filters={filters}
           onSearch={handleSearch}
           onReset={handleReset}
@@ -61,7 +61,7 @@ export default function AnalyticsReportsPage() {
 
         {/* 数据表格 */}
         <div className='flex min-h-0 flex-col'>
-          <OperationReportTable data={reports} loading={loading} />
+          <DepositDistributionTable data={distributionData} loading={loading} />
         </div>
       </div>
     </PageContainer>

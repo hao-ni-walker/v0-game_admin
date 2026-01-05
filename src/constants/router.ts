@@ -215,6 +215,30 @@ export const businessNavList: NavItem[] = [
           searchSection: '数据分析',
           searchPriority: 5
         }
+      },
+      {
+        title: '用户留存',
+        url: '/dashboard/analytics/user-retention',
+        icon: Users,
+        description: '用户留存',
+        searchConfig: {
+          keywords: 'analytics user retention 用户留存 数据 分析',
+          searchShortcut: ['u'],
+          searchSection: '数据分析',
+          searchPriority: 6
+        }
+      },
+      {
+        title: '储值分布',
+        url: '/dashboard/analytics/deposit-distribution',
+        icon: Wallet,
+        description: '储值分布',
+        searchConfig: {
+          keywords: 'analytics deposit distribution 储值分布 数据 分析',
+          searchShortcut: ['d'],
+          searchSection: '数据分析',
+          searchPriority: 7
+        }
       }
     ]
   }
