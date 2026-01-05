@@ -35,13 +35,21 @@ export function useDepositDistributionManagement() {
           const endDate = filters.dateRange.to.toISOString().split('T')[0];
           params.start_date = startDate;
           params.end_date = endDate;
-        } else {
+        } else if (filters.start_date || filters.end_date) {
+          // 如果提供了单独的日期参数
           if (filters.start_date) {
             params.start_date = filters.start_date;
           }
           if (filters.end_date) {
             params.end_date = filters.end_date;
           }
+        } else {
+          // 如果没有提供日期，默认使用过去一个月
+          const endDate = new Date();
+          const startDate = new Date();
+          startDate.setMonth(startDate.getMonth() - 1);
+          params.start_date = startDate.toISOString().split('T')[0];
+          params.end_date = endDate.toISOString().split('T')[0];
         }
 
         // 构建查询字符串
