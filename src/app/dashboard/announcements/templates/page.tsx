@@ -75,15 +75,16 @@ export default function NotificationTemplatesPage() {
           {/* 分页控件 */}
           <div className='flex-shrink-0 pt-4'>
             <Pagination
-              current={pagination.page}
-              pageSize={pagination.page_size}
-              total={pagination.total}
-              pageSizeOptions={PAGE_SIZE_OPTIONS}
-              onChange={handlePageChange}
+              pagination={{
+                page: pagination.page,
+                limit: pagination.page_size,
+                total: pagination.total,
+                totalPages: pagination.total_pages
+              }}
+              onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
-              showSizeChanger
-              showQuickJumper
-              showTotal={(total) => `共 ${total} 条`}
+              pageSizeOptions={PAGE_SIZE_OPTIONS}
+              showPageSizeSelector
             />
           </div>
         </div>
