@@ -57,23 +57,185 @@ export function useWithdrawOrderManagement() {
     [fetchOrders]
   );
 
-  // 导出订单
-  const exportOrders = useCallback(async (filters?: WithdrawOrderFilters) => {
-    try {
-      const response = await WithdrawOrderAPI.exportOrders(filters);
-      if (response.success && response.data) {
-        toast.success(response.data.message || '导出任务已创建');
+  // 获取所有订单（用于导出）
+  const fetchAllOrders = useCallback(
+    async (filters?: WithdrawOrderFilters): Promise<WithdrawOrder[]> => {
+      try {
+        const allOrders: WithdrawOrder[] = [];
+        let currentPage = 1;
+        const pageSize = 100; // 每页获取100条数据
+        let hasMore = true;
+
+        while (hasMore) {
+          const response = await WithdrawOrderAPI.getWithdrawOrders({
+            ...filters,
+            page: currentPage,
+            pageSize: pageSize
+          });
+
+          if (response.success && response.data) {
+            const orders = response.data.data || [];
+            allOrders.push(...orders);
+
+            const totalPages = response.data.pager.totalPages || 0;
+
+            if (currentPage >= totalPages || orders.length === 0) {
+              hasMore = false;
+            } else {
+              currentPage++;
+            }
+          } else {
+            hasMore = false;
+          }
+        }
+
+        return allOrders;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : '获取数据失败';
+        toast.error(message);
+        return [];
+      }
+    },
+    []
+  );
+
+  // 导出订单为 CSV
+  const exportOrders = useCallback(
+    async (filters?: WithdrawOrderFilters): Promise<boolean> => {
+      try {
+        toast.info('正在准备导出数据...');
+
+        // 获取所有符合筛选条件的数据
+        const allOrders = await fetchAllOrders(filters);
+
+        if (allOrders.length === 0) {
+          toast.warning('没有可导出的数据');
+          return false;
+        }
+
+        // 动态导入 CSV 导出工具和格式化函数
+        const { exportToCSV } = await import('@/lib/csv-export');
+        const { format } = await import('date-fns');
+        const { zhCN } = await import('date-fns/locale');
+        const { ORDER_STATUS_LABELS } = await import('../constants');
+
+        // 格式化货币
+        const formatCurrency = (value: number | null | undefined) => {
+          if (value === null || value === undefined) return '';
+          return new Intl.NumberFormat('zh-CN', {
+            style: 'currency',
+            currency: 'CNY',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          }).format(value);
+        };
+
+        // 格式化日期时间
+        const formatDateTime = (dateString: string | null | undefined) => {
+          if (!dateString) return '';
+          try {
+            return format(new Date(dateString), 'yyyy-MM-dd HH:mm:ss', {
+              locale: zhCN
+            });
+          } catch {
+            return dateString;
+          }
+        };
+
+        // 定义 CSV 表头
+        const headers = [
+          '订单号',
+          '渠道订单号',
+          '用户ID',
+          '用户名',
+          '昵称',
+          '手机号',
+          '邮箱',
+          '提现渠道',
+          '渠道类型',
+          '提现金额',
+          '手续费',
+          '实际出款金额',
+          '币种',
+          '订单状态',
+          '账户名',
+          '账户号',
+          '银行名称',
+          '审核状态',
+          '审核人',
+          '审核时间',
+          '审核备注',
+          '出款状态',
+          '出款方式',
+          '出款时间',
+          '出款失败原因',
+          'IP地址',
+          '备注',
+          '申请时间',
+          '完成时间',
+          '更新时间'
+        ];
+
+        // 获取每行数据
+        const getRowData = (order: WithdrawOrder, index: number) => {
+          return [
+            order.orderNo || '',
+            order.channelOrderNo || '',
+            order.userId || '',
+            order.username || '',
+            order.nickname || '',
+            order.phone || '',
+            order.email || '',
+            order.paymentChannelName || '',
+            order.channelType || '',
+            formatCurrency(order.amount),
+            formatCurrency(order.fee),
+            formatCurrency(order.actualAmount),
+            order.currency || 'CNY',
+            ORDER_STATUS_LABELS[order.status] || order.status,
+            order.accountName || '',
+            order.accountNumber || '',
+            order.bankName || '',
+            order.auditStatus || '',
+            order.auditorName || '',
+            formatDateTime(order.auditAt),
+            order.auditRemark || '',
+            order.payoutStatus || '',
+            order.payoutMethod === 'auto'
+              ? '自动代付'
+              : order.payoutMethod === 'manual'
+                ? '手工打款'
+                : '',
+            formatDateTime(order.payoutAt),
+            order.payoutFailureReason || '',
+            order.ipAddress || '',
+            order.remark || '',
+            formatDateTime(order.createdAt),
+            formatDateTime(order.completedAt),
+            formatDateTime(order.updatedAt || order.createdAt)
+          ];
+        };
+
+        // 生成文件名（包含时间戳）
+        const timestamp = new Date()
+          .toISOString()
+          .replace(/[:.]/g, '-')
+          .slice(0, -5);
+        const filename = `提现订单_${timestamp}`;
+
+        // 导出 CSV
+        exportToCSV(allOrders, headers, getRowData, filename);
+
+        toast.success(`成功导出 ${allOrders.length} 条数据`);
         return true;
-      } else {
-        toast.error(response.message || '导出失败');
+      } catch (err) {
+        const message = err instanceof Error ? err.message : '导出失败';
+        toast.error(message);
         return false;
       }
-    } catch (error) {
-      console.error('导出订单失败:', error);
-      toast.error('导出订单失败');
-      return false;
-    }
-  }, []);
+    },
+    [fetchAllOrders]
+  );
 
   // 审核订单
   const auditOrder = useCallback(async (params: AuditOrderParams) => {

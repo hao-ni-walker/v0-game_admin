@@ -168,7 +168,7 @@ export default function DepositOrdersPage() {
               <DialogTitle>确认导出</DialogTitle>
               <DialogDescription>
                 将导出当前筛选条件下的所有订单数据，预计导出 {pagination.total}{' '}
-                条记录。导出任务创建后，您可以在任务列表中查看进度。
+                条记录。CSV 文件将直接下载到您的设备。
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>

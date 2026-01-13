@@ -37,34 +37,62 @@ export interface Game {
 
 /**
  * 游戏筛选条件
+ * 注意：内部使用友好的字段名，在发送到 API 时会映射到正确的参数名
  */
 export interface GameFilters {
+  // 搜索字段（UI 使用，映射到 API 的 name 或 game_id）
   keyword?: string;
+  game_id?: string;
+  name?: string;
+
+  // 分类和供应商（UI 使用数组，API 使用单个值）
   provider_codes?: string[];
+  provider_code?: string; // API 参数
   categories?: string[];
+  category?: string; // API 参数
+
   lang?: string;
   status?: boolean | 'all';
+  disabled?: boolean | 'all';
   is_new?: boolean;
   is_featured?: boolean;
   is_mobile_supported?: boolean;
   is_demo_available?: boolean;
   has_jackpot?: boolean;
+  platform_id?: string;
+
+  // 下注和 RTP 范围
   min_bet_min?: number;
   min_bet_max?: number;
   max_bet_min?: number;
   max_bet_max?: number;
   rtp_min?: number;
   rtp_max?: number;
+
+  // 支持的语言和货币
   supported_language?: string;
   supported_currency?: string;
+
+  // 时间范围（UI 使用友好名称，API 使用标准名称）
   created_from?: string;
   created_to?: string;
+  created_at_start?: string; // API 参数
+  created_at_end?: string; // API 参数
+
   updated_from?: string;
   updated_to?: string;
+  updated_at_start?: string; // API 参数
+  updated_at_end?: string; // API 参数
+
   last_played_from?: string;
   last_played_to?: string;
+
+  // 排序
   sort_by?: string;
   sort_dir?: 'asc' | 'desc';
+  sort_order?: 'asc' | 'desc'; // API 参数
+
+  // 分页
   page?: number;
   page_size?: number;
 }

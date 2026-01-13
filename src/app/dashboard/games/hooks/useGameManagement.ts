@@ -15,6 +15,7 @@ export function useGameManagement() {
 
   /**
    * 获取游戏列表
+   * 将内部筛选条件映射到 API 期望的参数名称
    */
   const fetchGames = useCallback(async (filters: GameFilters) => {
     setLoading(true);
@@ -26,22 +27,44 @@ export function useGameManagement() {
       searchParams.append('page', String(filters.page || 1));
       searchParams.append('page_size', String(filters.page_size || 20));
 
-      // 添加筛选条件
-      if (filters.keyword) searchParams.append('keyword', filters.keyword);
-      if (filters.provider_codes && filters.provider_codes.length > 0) {
-        filters.provider_codes.forEach((code) => {
-          searchParams.append('provider_codes', code);
-        });
+      // 游戏标识和名称（优先使用 game_id，否则使用 keyword 作为 name）
+      if (filters.game_id) {
+        searchParams.append('game_id', filters.game_id);
+      } else if (filters.name) {
+        searchParams.append('name', filters.name);
+      } else if (filters.keyword) {
+        // keyword 可以匹配 game_id 或 name，优先作为 name 搜索
+        searchParams.append('name', filters.keyword);
       }
-      if (filters.categories && filters.categories.length > 0) {
-        filters.categories.forEach((category) => {
-          searchParams.append('categories', category);
-        });
+
+      // 分类（API 使用单个 category，取第一个）
+      if (filters.category) {
+        searchParams.append('category', filters.category);
+      } else if (filters.categories && filters.categories.length > 0) {
+        searchParams.append('category', filters.categories[0]);
       }
+
+      // 供应商（API 使用单个 provider_code，取第一个）
+      if (filters.provider_code) {
+        searchParams.append('provider_code', filters.provider_code);
+      } else if (filters.provider_codes && filters.provider_codes.length > 0) {
+        searchParams.append('provider_code', filters.provider_codes[0]);
+      }
+
+      // 语言
       if (filters.lang) searchParams.append('lang', filters.lang);
+
+      // 状态
       if (filters.status !== 'all' && filters.status !== undefined) {
         searchParams.append('status', String(filters.status));
       }
+
+      // 禁用状态
+      if (filters.disabled !== 'all' && filters.disabled !== undefined) {
+        searchParams.append('disabled', String(filters.disabled));
+      }
+
+      // 布尔特性
       if (filters.is_new !== undefined) {
         searchParams.append('is_new', String(filters.is_new));
       }
@@ -60,11 +83,43 @@ export function useGameManagement() {
           String(filters.is_demo_available)
         );
       }
-      if (filters.has_jackpot !== undefined) {
-        searchParams.append('has_jackpot', String(filters.has_jackpot));
+
+      // 平台ID
+      if (filters.platform_id) {
+        searchParams.append('platform_id', filters.platform_id);
       }
+
+      // 排序（API 使用 sort_by 和 sort_order）
       if (filters.sort_by) searchParams.append('sort_by', filters.sort_by);
-      if (filters.sort_dir) searchParams.append('sort_dir', filters.sort_dir);
+      if (filters.sort_order) {
+        searchParams.append('sort_order', filters.sort_order);
+      } else if (filters.sort_dir) {
+        searchParams.append('sort_order', filters.sort_dir);
+      }
+
+      // 时间范围（API 使用 created_at_start/created_at_end）
+      if (filters.created_at_start) {
+        searchParams.append('created_at_start', filters.created_at_start);
+      } else if (filters.created_from) {
+        searchParams.append('created_at_start', filters.created_from);
+      }
+      if (filters.created_at_end) {
+        searchParams.append('created_at_end', filters.created_at_end);
+      } else if (filters.created_to) {
+        searchParams.append('created_at_end', filters.created_to);
+      }
+
+      // 更新时间范围（API 使用 updated_at_start/updated_at_end）
+      if (filters.updated_at_start) {
+        searchParams.append('updated_at_start', filters.updated_at_start);
+      } else if (filters.updated_from) {
+        searchParams.append('updated_at_start', filters.updated_from);
+      }
+      if (filters.updated_at_end) {
+        searchParams.append('updated_at_end', filters.updated_at_end);
+      } else if (filters.updated_to) {
+        searchParams.append('updated_at_end', filters.updated_to);
+      }
 
       const response = await fetch(
         `/api/admin/games?${searchParams.toString()}`,

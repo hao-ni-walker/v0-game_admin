@@ -21,7 +21,8 @@ import {
   Crown,
   Wallet,
   ArrowDownCircle,
-  Server
+  Server,
+  Activity
 } from 'lucide-react';
 
 // 业务导航列表
@@ -238,6 +239,18 @@ export const businessNavList: NavItem[] = [
           searchShortcut: ['d'],
           searchSection: '数据分析',
           searchPriority: 7
+        }
+      },
+      {
+        title: '运营活动分析',
+        url: '/dashboard/analytics/activity-participation',
+        icon: Activity,
+        description: '运营活动分析',
+        searchConfig: {
+          keywords: 'analytics activity participation 运营活动 分析',
+          searchShortcut: ['a'],
+          searchSection: '数据分析',
+          searchPriority: 8
         }
       }
     ]

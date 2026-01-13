@@ -239,8 +239,8 @@ export default function WithdrawOrdersPage() {
             <DialogHeader>
               <DialogTitle>确认导出</DialogTitle>
               <DialogDescription>
-                将导出当前筛选条件下的所有订单数据，预计导出 {pagination.total}{' '}
-                条记录。导出任务创建后，您可以在任务列表中查看进度。
+                将导出当前筛选条件下的所有订单数据为 CSV 文件，预计导出{' '}
+                {pagination.total} 条记录。文件将自动下载到您的设备。
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
@@ -251,7 +251,14 @@ export default function WithdrawOrdersPage() {
                 取消
               </Button>
               <Button onClick={handleConfirmExport} disabled={loading}>
-                确认导出
+                {loading ? (
+                  <>
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                    导出中...
+                  </>
+                ) : (
+                  '确认导出'
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>

@@ -81,15 +81,21 @@ export function GameFilters({
   const handleReset = () => {
     setFormData({
       keyword: '',
+      game_id: undefined,
+      name: undefined,
       provider_codes: [],
+      provider_code: undefined,
       categories: [],
+      category: undefined,
       lang: '',
       status: 'all',
+      disabled: undefined,
       is_new: undefined,
       is_featured: undefined,
       is_mobile_supported: undefined,
       is_demo_available: undefined,
       has_jackpot: undefined,
+      platform_id: undefined,
       sort_by: 'sort_order',
       sort_dir: 'desc',
       page: 1,
@@ -131,15 +137,21 @@ export function GameFilters({
    */
   const hasActiveFilters = Boolean(
     filters.keyword ||
+      filters.game_id ||
+      filters.name ||
       (filters.provider_codes && filters.provider_codes.length > 0) ||
+      filters.provider_code ||
       (filters.categories && filters.categories.length > 0) ||
+      filters.category ||
       filters.lang ||
       (filters.status && filters.status !== 'all') ||
+      (filters.disabled !== undefined && filters.disabled !== 'all') ||
       filters.is_new !== undefined ||
       filters.is_featured !== undefined ||
       filters.is_mobile_supported !== undefined ||
       filters.is_demo_available !== undefined ||
       filters.has_jackpot !== undefined ||
+      filters.platform_id ||
       filters.min_bet_min ||
       filters.min_bet_max ||
       filters.max_bet_min ||
@@ -150,8 +162,12 @@ export function GameFilters({
       filters.supported_currency ||
       filters.created_from ||
       filters.created_to ||
+      filters.created_at_start ||
+      filters.created_at_end ||
       filters.updated_from ||
       filters.updated_to ||
+      filters.updated_at_start ||
+      filters.updated_at_end ||
       filters.last_played_from ||
       filters.last_played_to
   );
@@ -182,6 +198,26 @@ export function GameFilters({
             value={formData.keyword || ''}
             onChange={(e) =>
               updateFormField('keyword', e.target.value || undefined)
+            }
+          />
+        </div>
+        <div className='space-y-2'>
+          <Label>游戏ID</Label>
+          <Input
+            placeholder='输入游戏ID（如：bg_2167600）'
+            value={formData.game_id || ''}
+            onChange={(e) =>
+              updateFormField('game_id', e.target.value || undefined)
+            }
+          />
+        </div>
+        <div className='space-y-2'>
+          <Label>游戏名称</Label>
+          <Input
+            placeholder='输入游戏名称（如：Wild Chicago）'
+            value={formData.name || ''}
+            onChange={(e) =>
+              updateFormField('name', e.target.value || undefined)
             }
           />
         </div>
@@ -297,6 +333,45 @@ export function GameFilters({
               ))}
             </SelectContent>
           </Select>
+        </div>
+        <div className='space-y-2'>
+          <Label>禁用状态</Label>
+          <Select
+            value={
+              formData.disabled === true
+                ? 'true'
+                : formData.disabled === false
+                  ? 'false'
+                  : 'all'
+            }
+            onValueChange={(value) =>
+              updateFormField(
+                'disabled',
+                value === 'all' ? undefined : value === 'true'
+              )
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder='全部' />
+            </SelectTrigger>
+            <SelectContent>
+              {BOOLEAN_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className='space-y-2'>
+          <Label>平台ID</Label>
+          <Input
+            placeholder='输入平台ID'
+            value={formData.platform_id || ''}
+            onChange={(e) =>
+              updateFormField('platform_id', e.target.value || undefined)
+            }
+          />
         </div>
         <div className='space-y-2'>
           <Label>排序方式</Label>

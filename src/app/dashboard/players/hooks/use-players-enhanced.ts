@@ -360,9 +360,9 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
     []
   );
 
-  // 导出玩家
-  const exportPlayers = useCallback(
-    async (filters?: Partial<PlayerFilters>): Promise<boolean> => {
+  // 获取所有玩家数据（用于导出）
+  const fetchAllPlayers = useCallback(
+    async (filters?: Partial<PlayerFilters>): Promise<Player[]> => {
       try {
         // 过滤掉空字符串值
         const cleanedFilters = filters
@@ -373,24 +373,160 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
               )
             )
           : undefined;
-        const response = await PlayerAPI.exportPlayers(cleanedFilters as any);
-        if (response.success) {
-          toast.success('导出任务创建成功');
-          // 如果返回了下载链接，可以触发下载
-          if (response.data?.download_url) {
-            window.open(response.data.download_url, '_blank');
+
+        const allPlayers: Player[] = [];
+        let currentPage = 1;
+        const pageSize = 100; // 每页获取100条数据
+        let hasMore = true;
+
+        while (hasMore) {
+          const response = await PlayerAPI.getPlayers({
+            ...cleanedFilters,
+            page: currentPage,
+            page_size: pageSize,
+            sortBy: sort.sort_by,
+            sortOrder: sort.sort_order
+          });
+
+          if (response.success && response.data) {
+            const players = response.data.list || response.data.items || [];
+            allPlayers.push(...players);
+
+            const total = response.data.total || 0;
+            const totalPages = Math.ceil(total / pageSize);
+
+            if (currentPage >= totalPages || players.length === 0) {
+              hasMore = false;
+            } else {
+              currentPage++;
+            }
+          } else {
+            hasMore = false;
           }
-          return true;
-        } else {
-          throw new Error(response.message || '导出失败');
         }
+
+        return allPlayers;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : '获取数据失败';
+        toast.error(message);
+        return [];
+      }
+    },
+    [sort]
+  );
+
+  // 导出玩家
+  const exportPlayers = useCallback(
+    async (filters?: Partial<PlayerFilters>): Promise<boolean> => {
+      try {
+        toast.info('正在准备导出数据...');
+
+        // 获取所有符合筛选条件的数据
+        const allPlayers = await fetchAllPlayers(filters);
+
+        if (allPlayers.length === 0) {
+          toast.warning('没有可导出的数据');
+          return false;
+        }
+
+        // 动态导入 CSV 导出工具
+        const { exportToCSV } = await import('@/lib/csv-export');
+        const {
+          formatCurrency,
+          formatDateTime,
+          getPlayerStatusText,
+          getRegistrationMethodText,
+          getIdentityCategoryText
+        } = await import('../utils');
+
+        // 定义 CSV 表头
+        const headers = [
+          '用户ID',
+          '用户名',
+          '邮箱',
+          '状态',
+          'VIP等级',
+          '注册方式',
+          '注册来源',
+          '身份类别',
+          '代理',
+          '上级ID',
+          '余额',
+          '奖金',
+          '信用',
+          '冻结余额',
+          '总存款',
+          '总提现',
+          '总投注',
+          '总赢取',
+          '注册时间',
+          '最后登录时间',
+          '登录失败次数',
+          '锁定时间'
+        ];
+
+        // 获取每行数据
+        const getRowData = (player: Player, index: number) => {
+          const wallet = player.wallet || {
+            balance: 0,
+            frozen_balance: 0,
+            bonus: 0,
+            credit: 0,
+            withdrawable: 0,
+            total_deposit: 0,
+            total_withdraw: 0,
+            total_bet: 0,
+            total_win: 0,
+            currency: '',
+            status: 'active' as const,
+            version: 0
+          };
+
+          return [
+            player.id,
+            player.username,
+            player.email,
+            getPlayerStatusText(player.status),
+            player.vip_level || 0,
+            getRegistrationMethodText(player.registration_method),
+            player.registration_source || '',
+            getIdentityCategoryText(player.identity_category),
+            player.agent || '',
+            player.direct_superior_id || '',
+            formatCurrency(wallet.balance),
+            formatCurrency(wallet.bonus),
+            formatCurrency(wallet.credit),
+            formatCurrency(wallet.frozen_balance),
+            formatCurrency(wallet.total_deposit),
+            formatCurrency(wallet.total_withdraw),
+            formatCurrency(wallet.total_bet),
+            formatCurrency(wallet.total_win),
+            formatDateTime(player.created_at),
+            formatDateTime(player.last_login),
+            player.login_failure_count || 0,
+            player.locked_at ? formatDateTime(player.locked_at) : ''
+          ];
+        };
+
+        // 生成文件名（包含时间戳）
+        const timestamp = new Date()
+          .toISOString()
+          .replace(/[:.]/g, '-')
+          .slice(0, -5);
+        const filename = `玩家列表_${timestamp}`;
+
+        // 导出 CSV
+        exportToCSV(allPlayers, headers, getRowData, filename);
+
+        toast.success(`成功导出 ${allPlayers.length} 条数据`);
+        return true;
       } catch (err) {
         const message = err instanceof Error ? err.message : '导出失败';
         toast.error(message);
         return false;
       }
     },
-    []
+    [fetchAllPlayers]
   );
 
   // 设置分页
