@@ -317,6 +317,7 @@ export default function ActivityDetailPage() {
                     width={64}
                     height={64}
                     className='h-16 w-16 rounded-md border'
+                    unoptimized={true}
                   />
                 ) : (
                   <p className='text-muted-foreground'>未设置</p>
@@ -331,6 +332,7 @@ export default function ActivityDetailPage() {
                     width={800}
                     height={128}
                     className='h-32 w-full rounded-md border object-cover'
+                    unoptimized={true}
                   />
                 ) : (
                   <p className='text-muted-foreground'>未设置</p>
