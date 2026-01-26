@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     canonical: siteConfig.url
   },
   openGraph: {
-    type: siteConfig.metadata.openGraph.type,
+    type: siteConfig.metadata.openGraph.type as 'website',
     locale: siteConfig.metadata.openGraph.locale,
     url: siteConfig.url,
     title: siteConfig.name,
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     images: siteConfig.metadata.openGraph.images
   },
   twitter: {
-    card: siteConfig.metadata.twitter.card,
+    card: siteConfig.metadata.twitter.card as 'summary_large_image',
     title: siteConfig.metadata.twitter.title,
     description: siteConfig.metadata.twitter.description,
     images: siteConfig.metadata.twitter.images,
