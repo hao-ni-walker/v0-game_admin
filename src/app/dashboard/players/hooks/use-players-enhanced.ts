@@ -380,13 +380,16 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
         let hasMore = true;
 
         while (hasMore) {
-          const response = await PlayerAPI.getPlayers({
-            ...cleanedFilters,
+          // 构建 API 参数，使用类型断言避免类型检查问题
+          const apiParams = {
+            ...(cleanedFilters as any),
             page: currentPage,
             page_size: pageSize,
-            sortBy: sort.sort_by,
-            sortOrder: sort.sort_order
-          });
+            ...(sort.sort_by && { sort_by: sort.sort_by }),
+            ...(sort.sort_order && { sort_order: sort.sort_order })
+          };
+
+          const response = await PlayerAPI.getPlayers(apiParams);
 
           if (response.success && response.data) {
             const players = response.data.list || response.data.items || [];

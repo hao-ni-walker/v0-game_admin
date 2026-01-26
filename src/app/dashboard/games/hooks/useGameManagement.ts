@@ -282,19 +282,37 @@ export function useGameManagement() {
   /**
    * 切换游戏状态
    */
-  const toggleGameStatus = useCallback(
-    async (game: Game): Promise<boolean> => {
+  const toggleGameStatus = useCallback(async (game: Game): Promise<boolean> => {
+    try {
       const newStatus = !game.status;
-      const success = await updateGame(game.id, { status: newStatus });
-      if (success) {
+      const response = await fetch(`/api/admin/games/${game.id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (!response.ok) {
+        throw new Error('更新游戏状态失败');
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
         toast.success(
           newStatus ? MESSAGES.SUCCESS.ENABLE : MESSAGES.SUCCESS.DISABLE
         );
+        return true;
+      } else {
+        throw new Error(result.message || '更新游戏状态失败');
       }
-      return success;
-    },
-    [updateGame]
-  );
+    } catch (error) {
+      console.error('切换游戏状态失败:', error);
+      toast.error(error instanceof Error ? error.message : '切换游戏状态失败');
+      return false;
+    }
+  }, []);
 
   /**
    * 切换推荐状态
