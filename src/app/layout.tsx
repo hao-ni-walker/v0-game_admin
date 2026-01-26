@@ -18,8 +18,55 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: siteConfig.name,
-  description: siteConfig.description
+  title: {
+    default: siteConfig.name,
+    template: `%s | ${siteConfig.name}`
+  },
+  description: siteConfig.description,
+  keywords: siteConfig.metadata.keywords,
+  authors: [
+    {
+      name: siteConfig.author.name,
+      url: siteConfig.author.url
+    }
+  ],
+  creator: 'N Admin Team',
+  alternates: {
+    canonical: siteConfig.url
+  },
+  openGraph: {
+    type: siteConfig.metadata.openGraph.type,
+    locale: siteConfig.metadata.openGraph.locale,
+    url: siteConfig.url,
+    title: siteConfig.name,
+    description: siteConfig.description,
+    siteName: siteConfig.metadata.openGraph.siteName,
+    images: siteConfig.metadata.openGraph.images
+  },
+  twitter: {
+    card: siteConfig.metadata.twitter.card,
+    title: siteConfig.metadata.twitter.title,
+    description: siteConfig.metadata.twitter.description,
+    images: siteConfig.metadata.twitter.images,
+    creator: '@guizimo'
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1
+    }
+  },
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon-16x16.png',
+    apple: '/apple-touch-icon.png'
+  },
+  manifest: '/site.webmanifest'
 };
 
 export default async function RootLayout({
@@ -29,7 +76,7 @@ export default async function RootLayout({
 }>) {
   const session = await auth();
   return (
-    <html lang='en' suppressHydrationWarning>
+    <html lang={siteConfig.locale.toLowerCase()} suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

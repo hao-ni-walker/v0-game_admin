@@ -30,6 +30,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'hgapi365.com'
+      },
+      {
+        protocol: 'https',
         hostname: '**.amazonaws.com'
       }
     ]

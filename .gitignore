@@ -43,3 +43,4 @@ next-env.d.ts
 
 # data folder (mock data not allowed)
 /data
+pnpm-lock.yaml
