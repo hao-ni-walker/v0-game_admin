@@ -1,25 +1,71 @@
-export type PaymentChannelType = 1 | 2; // 1=充值 2=提现
-export type ChannelType = 'alipay' | 'wechat' | 'bank' | 'usdt' | 'other';
+export type PaymentChannelType = 'collection' | 'disbursement'; // collection=充值 disbursement=提现
+export type ChannelType =
+  | 'CRYPTO'
+  | 'BANK'
+  | 'APP'
+  | 'ALIPAY'
+  | 'WECHAT'
+  | 'OTHER';
 
+// 支付渠道（属于某个平台）
 export interface PaymentChannel {
   id: number;
-  name: string; // 运营展示名称
-  code: string; // 全局唯一渠道代码
-  type: PaymentChannelType; // 1=充值 2=提现
-  channelType: ChannelType; // alipay/wechat/bank/usdt等
-  config: Record<string, unknown>; // JSON配置
-  minAmount: number; // 最小金额
-  maxAmount: number; // 最大金额
-  dailyLimit: number; // 每日限额
-  feeRate: number; // 费率
-  fixedFee: number; // 固定费用
-  sortOrder: number; // 排序
-  status: 0 | 1; // 1=启用 0=停用
+  name: string; // 渠道名称
+  code: string; // 渠道代码
+  type: PaymentChannelType; // collection=充值 disbursement=提现
+  platform_id: number; // 所属平台ID
+  channel_type: ChannelType; // CRYPTO/BANK/APP等
+  config: Record<string, unknown> | null; // JSON配置
+  min_amount: string; // 最小金额
+  max_amount: string; // 最大金额
+  daily_limit: string | null; // 每日限额
+  fee_rate: string; // 费率
+  fixed_fee: string; // 固定费用
+  sort_order: number; // 排序
   version: number; // 乐观锁版本
-  createdAt: string; // ISO
-  updatedAt: string; // ISO
+  created_at: string; // ISO
+  updated_at: string; // ISO
   removed: boolean; // 逻辑删除
-  disabled: boolean; // 紧急禁用开关
+  disabled: boolean; // 禁用开关
+}
+
+// 支付平台
+export interface PaymentPlatform {
+  id: number;
+  name: string; // 平台名称
+  enabled: boolean; // 是否启用
+  url: string; // 平台URL
+  platform_config: Record<string, unknown>; // 平台配置
+  channels: PaymentChannel[]; // 平台下的渠道列表
+}
+
+// 兼容旧类型（用于表格展示）
+export interface PaymentChannelDisplay {
+  id: number;
+  name: string;
+  code: string;
+  type: PaymentChannelType;
+  channelType: ChannelType;
+  config: Record<string, unknown> | null;
+  minAmount: number;
+  maxAmount: number;
+  dailyLimit: number | null;
+  feeRate: number;
+  fixedFee: number;
+  sortOrder: number;
+  status: 0 | 1;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+  removed: boolean;
+  disabled: boolean;
+}
+
+export interface PaymentPlatformFilters {
+  page: number;
+  page_size: number;
+  keyword?: string;
+  enabled?: boolean | 'all';
 }
 
 export interface PaymentChannelFilters {
@@ -51,11 +97,19 @@ export interface PaymentChannelPagination {
   page: number;
   page_size: number;
   total: number;
+  total_pages?: number;
+}
+
+export interface PaymentPlatformDialogState {
+  type: 'create' | 'edit' | 'view' | null;
+  platform: PaymentPlatform | null;
+  open: boolean;
 }
 
 export interface PaymentChannelDialogState {
   type: 'create' | 'edit' | 'view' | null;
   channel: PaymentChannel | null;
+  platformId?: number;
   open: boolean;
 }
 
