@@ -60,7 +60,8 @@ export function usePlayerFiltersEnhanced() {
     }
     const isLocked = searchParams.get('is_locked');
     if (isLocked !== null) {
-      filters.is_locked = isLocked === 'true' ? true : isLocked === 'false' ? false : '';
+      filters.is_locked =
+        isLocked === 'true' ? true : isLocked === 'false' ? false : '';
     }
 
     // 代理关系
@@ -68,7 +69,9 @@ export function usePlayerFiltersEnhanced() {
       filters.agent = searchParams.get('agent') || undefined;
     }
     if (searchParams.get('direct_superior_id')) {
-      filters.direct_superior_id = Number(searchParams.get('direct_superior_id'));
+      filters.direct_superior_id = Number(
+        searchParams.get('direct_superior_id')
+      );
     }
 
     // 注册信息
@@ -77,7 +80,8 @@ export function usePlayerFiltersEnhanced() {
       filters.registration_method = registrationMethod as any;
     }
     if (searchParams.get('registration_source')) {
-      filters.registration_source = searchParams.get('registration_source') || undefined;
+      filters.registration_source =
+        searchParams.get('registration_source') || undefined;
     }
     const identityCategory = searchParams.get('identity_category');
     if (identityCategory && identityCategory !== '') {
@@ -98,21 +102,27 @@ export function usePlayerFiltersEnhanced() {
       filters.total_deposit_max = Number(searchParams.get('total_deposit_max'));
     }
     if (searchParams.get('total_withdraw_min')) {
-      filters.total_withdraw_min = Number(searchParams.get('total_withdraw_min'));
+      filters.total_withdraw_min = Number(
+        searchParams.get('total_withdraw_min')
+      );
     }
     if (searchParams.get('total_withdraw_max')) {
-      filters.total_withdraw_max = Number(searchParams.get('total_withdraw_max'));
+      filters.total_withdraw_max = Number(
+        searchParams.get('total_withdraw_max')
+      );
     }
 
     // 时间范围
     if (searchParams.get('created_at_start')) {
-      filters.created_at_start = searchParams.get('created_at_start') || undefined;
+      filters.created_at_start =
+        searchParams.get('created_at_start') || undefined;
     }
     if (searchParams.get('created_at_end')) {
       filters.created_at_end = searchParams.get('created_at_end') || undefined;
     }
     if (searchParams.get('last_login_start')) {
-      filters.last_login_start = searchParams.get('last_login_start') || undefined;
+      filters.last_login_start =
+        searchParams.get('last_login_start') || undefined;
     }
     if (searchParams.get('last_login_end')) {
       filters.last_login_end = searchParams.get('last_login_end') || undefined;
@@ -123,17 +133,28 @@ export function usePlayerFiltersEnhanced() {
 
   const [filters, setFilters] = useState<PlayerFilters>(getInitialFilters);
 
+  // 监听 URL 参数变化，同步更新 filters
+  useEffect(() => {
+    setFilters(getInitialFilters());
+  }, [getInitialFilters]);
+
   // 更新筛选条件并同步到 URL
   const updateFilters = useCallback(
     (newFilters: Partial<PlayerFilters>) => {
       setFilters((prev) => {
-        const updated = { ...prev, ...newFilters };
+        // 合并筛选条件，undefined 值会删除对应的键
+        const updated: PlayerFilters = { ...prev };
+        Object.entries(newFilters).forEach(([key, value]) => {
+          if (value === undefined || value === null || value === '') {
+            delete updated[key as keyof PlayerFilters];
+          } else {
+            updated[key as keyof PlayerFilters] = value;
+          }
+        });
         // 同步到 URL
         const params = new URLSearchParams();
         Object.entries(updated).forEach(([key, value]) => {
-          if (value !== undefined && value !== null && value !== '') {
-            params.set(key, String(value));
-          }
+          params.set(key, String(value));
         });
         router.replace(`${pathname}?${params.toString()}`, { scroll: false });
         return updated;
@@ -188,4 +209,3 @@ export function usePlayerFiltersEnhanced() {
     hasActiveFilters
   };
 }
-

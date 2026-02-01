@@ -189,7 +189,7 @@ export default function WithdrawOrdersPage() {
 
         {/* 数据表格和分页 */}
         <div className='flex min-h-0 flex-1 flex-col'>
-          <div className='min-h-0 flex-1'>
+          <div className='min-h-0 flex-1 overflow-y-auto'>
             <WithdrawOrderTable
               orders={orders}
               loading={loading}
@@ -210,7 +210,7 @@ export default function WithdrawOrdersPage() {
           </div>
 
           {/* 分页 */}
-          <div className='bg-card mt-auto border-t pt-4'>
+          <div className='bg-card mt-auto shrink-0 border-t pt-4'>
             <Pagination
               pagination={{
                 page: pagination.page,

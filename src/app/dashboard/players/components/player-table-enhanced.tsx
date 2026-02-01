@@ -186,14 +186,15 @@ export function PlayerTableEnhanced({
               {renderSortableHeader('username', '用户名')}
               <TableHead>邮箱</TableHead>
               <TableHead>状态</TableHead>
-              <TableHead>上级</TableHead>
+              <TableHead>上级用户ID</TableHead>
               {renderSortableHeader('vip_level', 'VIP等级')}
               {renderSortableHeader('created_at', '注册时间')}
               {renderSortableHeader('last_login', '最后登录时间')}
               <TableHead>余额</TableHead>
               <TableHead>奖金</TableHead>
-              <TableHead>信用</TableHead>
+              <TableHead>积分</TableHead>
               <TableHead>冻结余额</TableHead>
+              <TableHead>可提现金额</TableHead>
               <TableHead>总存款</TableHead>
               <TableHead>总提现</TableHead>
               <TableHead>总投注</TableHead>
@@ -205,7 +206,7 @@ export function PlayerTableEnhanced({
             {players.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={19}
+                  colSpan={20}
                   className='text-muted-foreground text-center'
                 >
                   暂无数据
@@ -295,6 +296,13 @@ export function PlayerTableEnhanced({
                     <TableCell>
                       <span className='font-mono'>
                         {formatCurrency(Number(wallet.frozen_balance) || 0)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className='font-mono'>
+                        {formatCurrency(
+                          Number(wallet.amount_withdrawable) || 0
+                        )}
                       </span>
                     </TableCell>
                     <TableCell>

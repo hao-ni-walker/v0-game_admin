@@ -178,10 +178,11 @@ export function ActivityTable({
     }
   };
 
-  const renderSortableHeader = (column: string, label: string) => {
+  const renderSortableHeader = (column: string, label: string, key: string) => {
     const isActive = sortBy === column;
     return (
       <TableHead
+        key={key}
         className={onSort ? 'cursor-pointer' : ''}
         onClick={() => onSort && handleSort(column)}
       >
@@ -768,16 +769,24 @@ export function ActivityTable({
               <TableRow>
                 {visibleColumnConfigs.map((col) => {
                   if (col.key === 'id') {
-                    return renderSortableHeader('id', col.label);
+                    return renderSortableHeader('id', col.label, col.key);
                   }
                   if (col.key === 'time') {
-                    return renderSortableHeader('start_time', col.label);
+                    return renderSortableHeader(
+                      'start_time',
+                      col.label,
+                      col.key
+                    );
                   }
                   if (col.key === 'priority') {
-                    return renderSortableHeader('priority', col.label);
+                    return renderSortableHeader('priority', col.label, col.key);
                   }
                   if (col.key === 'created_at') {
-                    return renderSortableHeader('created_at', col.label);
+                    return renderSortableHeader(
+                      'created_at',
+                      col.label,
+                      col.key
+                    );
                   }
                   if (col.key === 'actions') {
                     return (
