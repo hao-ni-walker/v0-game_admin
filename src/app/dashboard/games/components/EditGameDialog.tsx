@@ -20,8 +20,8 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import { Game, GameFormData } from '../types';
-import { CATEGORY_OPTIONS } from '../constants';
+import { Game, GameFormData } from '../hgapi365/types';
+import { CATEGORY_OPTIONS } from '../hgapi365/constants';
 
 interface EditGameDialogProps {
   open: boolean;
