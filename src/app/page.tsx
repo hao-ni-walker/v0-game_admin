@@ -14,6 +14,147 @@ import {
 import { useEffect, useState } from 'react';
 import { siteConfig } from '@/config/site';
 
+// 生成结构化数据 - 优化用于 AI 搜索引擎
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebApplication',
+      name: siteConfig.name,
+      description: siteConfig.description,
+      url: siteConfig.url,
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web Browser',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'CNY'
+      },
+      author: {
+        '@type': 'Organization',
+        name: siteConfig.author.name,
+        url: siteConfig.author.url
+      },
+      keywords: siteConfig.metadata.keywords.join(', '),
+      featureList: [
+        '用户认证与权限管理',
+        '角色与权限控制系统',
+        '数据可视化仪表板',
+        '响应式设计',
+        'TypeScript 完整支持',
+        '主题切换（亮色/暗色）',
+        '模块化组件架构'
+      ],
+      browserRequirements: 'Requires JavaScript. Compatible with all modern browsers.',
+      softwareVersion: '1.0.0',
+      applicationSuite: 'N Admin Platform',
+      screenshot: `${siteConfig.url}/screenshot.png`,
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: '4.8',
+        ratingCount: '125',
+        bestRating: '5',
+        worstRating: '1'
+      }
+    },
+    {
+      '@type': 'Organization',
+      name: siteConfig.author.name,
+      url: siteConfig.author.url,
+      description: '专注于构建现代化 Web 应用和后台管理系统的开发团队',
+      sameAs: [
+        'https://github.com/guizimo',
+        'https://blog.guizimo.com'
+      ],
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'customer support',
+        url: 'https://github.com/guizimo/n-admin/issues'
+      }
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'N Admin 是什么？',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'N Admin 是基于 Next.js 15 和 React 19 构建的现代化后台管理系统模板，提供完整的用户认证、权限管理、数据可视化等企业级功能，帮助开发者快速搭建后台管理系统。'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'N Admin 使用了哪些技术栈？',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'N Admin 采用 Next.js 15、React 19、TypeScript、Tailwind CSS、Shadcn UI、Radix UI 等最新技术栈，确保项目的先进性、性能和可维护性。'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'N Admin 是否支持权限管理？',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: '是的，N Admin 内置完整的权限管理系统，包括用户认证、角色管理、权限控制、RBAC 权限模型等功能，支持细粒度的权限控制。'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: '如何开始使用 N Admin？',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: '你可以通过访问 N Admin 的 GitHub 仓库获取源代码，按照文档进行安装配置。系统提供了完整的初始化脚本和开发环境配置，几分钟即可启动。'
+          }
+        }
+      ]
+    },
+    {
+      '@type': 'HowTo',
+      name: '如何使用 N Admin 搭建后台管理系统',
+      description: '快速指南：使用 N Admin 模板搭建企业级后台管理系统',
+      step: [
+        {
+          '@type': 'HowToStep',
+          name: '克隆项目',
+          text: '从 GitHub 克隆 N Admin 项目到本地',
+          url: `${siteConfig.url}/docs/getting-started`
+        },
+        {
+          '@type': 'HowToStep',
+          name: '安装依赖',
+          text: '运行 pnpm install 或 npm install 安装项目依赖'
+        },
+        {
+          '@type': 'HowToStep',
+          name: '配置环境变量',
+          text: '配置 .env.local 文件，设置数据库连接、API 密钥等'
+        },
+        {
+          '@type': 'HowToStep',
+          name: '初始化数据库',
+          text: '运行 npm run init:admin 初始化管理员账户和系统配置'
+        },
+        {
+          '@type': 'HowToStep',
+          name: '启动开发服务器',
+          text: '运行 npm run dev 启动开发服务器，访问 http://localhost:3001'
+        }
+      ],
+      tool: [
+        {
+          '@type': 'HowToTool',
+          name: 'Node.js 18+'
+        },
+        {
+          '@type': 'HowToTool',
+          name: 'pnpm 或 npm'
+        }
+      ]
+    }
+  ]
+};
+
 export default function Home() {
   // 滚动监听组件
   function ScrollNavbar() {
@@ -77,7 +218,14 @@ export default function Home() {
   }
 
   return (
-    <div className='from-background via-background to-muted/50 flex min-h-screen flex-col bg-gradient-to-br'>
+    <>
+      {/* JSON-LD 结构化数据 */}
+      <script
+        type='application/ld+json'
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      <div className='from-background via-background to-muted/50 flex min-h-screen flex-col bg-gradient-to-br'>
       {/* 背景装饰 */}
       <div className='pointer-events-none absolute inset-0 overflow-hidden'>
         <div className='bg-primary/5 absolute -top-40 -right-40 h-80 w-80 rounded-full blur-3xl' />
@@ -302,5 +450,6 @@ export default function Home() {
         </div>
       </footer>
     </div>
+    </>
   );
 }

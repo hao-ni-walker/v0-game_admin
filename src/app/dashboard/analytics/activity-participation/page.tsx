@@ -63,11 +63,14 @@ export default function ActivityParticipationPage() {
 
           {data.total > 0 && (
             <Pagination
-              total={data.total}
-              page={data.page}
-              limit={data.page_size}
+              pagination={{
+                page: data.page,
+                limit: data.page_size,
+                total: data.total,
+                totalPages: Math.ceil(data.total / data.page_size)
+              }}
               onPageChange={handlePageChange}
-              onLimitChange={handlePageSizeChange}
+              onPageSizeChange={handlePageSizeChange}
             />
           )}
         </div>

@@ -121,7 +121,7 @@ export default function DepositOrdersPage() {
 
         {/* 数据表格和分页 */}
         <div className='flex min-h-0 flex-1 flex-col'>
-          <div className='min-h-0 flex-1'>
+          <div className='min-h-0 flex-1 overflow-y-auto'>
             <DepositOrderTable
               orders={orders}
               loading={loading}
@@ -138,19 +138,21 @@ export default function DepositOrdersPage() {
           </div>
 
           {/* 分页 */}
-          <div className='bg-card mt-auto border-t pt-4'>
-            <Pagination
-              pagination={{
-                page: pagination.page,
-                limit: pagination.pageSize,
-                total: pagination.total,
-                totalPages: pagination.totalPages
-              }}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-              pageSizeOptions={[20, 50, 100]}
-            />
-          </div>
+          {pagination.total > 0 && (
+            <div className='bg-card mt-auto shrink-0 border-t pt-4'>
+              <Pagination
+                pagination={{
+                  page: pagination.page,
+                  limit: pagination.pageSize,
+                  total: pagination.total,
+                  totalPages: pagination.totalPages
+                }}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+                pageSizeOptions={[20, 50, 100]}
+              />
+            </div>
+          )}
         </div>
 
         {/* 订单详情抽屉 */}

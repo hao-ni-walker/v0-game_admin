@@ -100,9 +100,22 @@ export const businessNavList: NavItem[] = [
       },
       {
         title: '游戏列表',
-        url: '/dashboard/games',
+        url: '#',
         icon: Gamepad2,
         description: '游戏列表',
+        items: [
+          {
+            title: 'hgapi365',
+            url: '/dashboard/games/hgapi365',
+            description: 'hgapi365',
+            searchConfig: {
+              keywords: 'game games hgapi365 游戏 列表',
+              searchShortcut: ['g'],
+              searchSection: '游戏管理',
+              searchPriority: 2
+            }
+          }
+        ],
         searchConfig: {
           keywords: 'game games 游戏 列表',
           searchShortcut: ['g'],
