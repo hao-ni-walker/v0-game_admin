@@ -300,9 +300,7 @@ export function PlayerTableEnhanced({
                     </TableCell>
                     <TableCell>
                       <span className='font-mono'>
-                        {formatCurrency(
-                          Number(wallet.amount_withdrawable) || 0
-                        )}
+                        {formatCurrency(Number(wallet.withdrawable) || 0)}
                       </span>
                     </TableCell>
                     <TableCell>

@@ -1,5 +1,4 @@
 {
-  "alwaysThinkingEnabled": true,
   "permissions": {
     "allow": [
       "Bash(npx tsc:*)",
@@ -14,9 +13,12 @@
       "Bash(taskkill:*)",
       "Edit",
       "Bash(npm:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(done)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "alwaysThinkingEnabled": true
 }

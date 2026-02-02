@@ -33,6 +33,7 @@ export default function GamesPage() {
     pagination,
     fetchGames,
     refreshGames,
+    updateGame,
     deleteGame,
     toggleGameStatus,
     toggleFeatured,

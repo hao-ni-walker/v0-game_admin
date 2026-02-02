@@ -148,7 +148,7 @@ export function usePlayerFiltersEnhanced() {
           if (value === undefined || value === null || value === '') {
             delete updated[key as keyof PlayerFilters];
           } else {
-            updated[key as keyof PlayerFilters] = value;
+            (updated as any)[key] = value;
           }
         });
         // 同步到 URL
