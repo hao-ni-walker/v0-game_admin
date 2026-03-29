@@ -9,18 +9,14 @@ import {
   Users,
   Shield,
   Key,
-  Gamepad2,
   List,
   BarChart3,
   LineChart,
   Megaphone,
-  Gift,
   ClipboardList,
   Image,
-  Receipt,
   Crown,
   Wallet,
-  ArrowDownCircle,
   Server,
   Activity
 } from 'lucide-react';
@@ -57,94 +53,6 @@ export const businessNavList: NavItem[] = [
           searchShortcut: ['p'],
           searchSection: '玩家管理',
           searchPriority: 3
-        }
-      },
-      {
-        title: '订单管理',
-        url: '#',
-        icon: Receipt,
-        isActive: false,
-        description: '订单管理',
-        items: [
-          {
-            title: '储值订单',
-            url: '/dashboard/orders/deposits',
-            icon: Wallet,
-            description: '储值订单',
-            searchConfig: {
-              keywords: 'deposit 储值 充值 订单 管理',
-              searchShortcut: ['d'],
-              searchSection: '订单管理',
-              searchPriority: 11
-            }
-          },
-          {
-            title: '提现管理',
-            url: '/dashboard/orders/withdrawals',
-            icon: ArrowDownCircle,
-            description: '提现管理',
-            searchConfig: {
-              keywords: 'withdrawal 提现 取现 管理',
-              searchShortcut: ['w'],
-              searchSection: '订单管理',
-              searchPriority: 12
-            }
-          }
-        ],
-        searchConfig: {
-          keywords: 'order 订单 管理',
-          searchShortcut: ['o'],
-          searchSection: '订单管理',
-          searchPriority: 10
-        }
-      },
-      {
-        title: '游戏列表',
-        url: '#',
-        icon: Gamepad2,
-        description: '游戏列表',
-        items: [
-          {
-            title: 'hgapi365',
-            url: '/dashboard/games/hgapi365',
-            description: 'hgapi365',
-            searchConfig: {
-              keywords: 'game games hgapi365 游戏 列表',
-              searchShortcut: ['g'],
-              searchSection: '游戏管理',
-              searchPriority: 2
-            }
-          }
-        ],
-        searchConfig: {
-          keywords: 'game games 游戏 列表',
-          searchShortcut: ['g'],
-          searchSection: '游戏管理',
-          searchPriority: 2
-        }
-      },
-      {
-        title: '活动列表',
-        url: '/dashboard/campaigns',
-        icon: Megaphone,
-        description: '活动列表',
-        searchConfig: {
-          keywords: 'campaign 活动 列表',
-          searchShortcut: ['c'],
-          searchSection: '活动管理',
-          searchPriority: 6
-        }
-      },
-      {
-        title: '礼包列表',
-        url: '/dashboard/gift-packs',
-        icon: Gift,
-        description: '礼包列表',
-        searchConfig: {
-          keywords: 'gift pack 礼包 列表',
-          searchShortcut: ['l'],
-          searchSection: '礼包管理',
-          searchPriority: 7
         }
       },
       {
