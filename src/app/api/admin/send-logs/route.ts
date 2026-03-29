@@ -29,84 +29,73 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const pageSize = parseInt(searchParams.get('page_size') || '20');
-    const telegramId = searchParams.get('telegram_id') || '';
-    const messageId = searchParams.get('message_id') || '';
-    const status = searchParams.get('status') || '';
     const keyword = searchParams.get('keyword') || '';
-    const sortBy = searchParams.get('sort_by') || 'sent_at';
-    const sortOrder = searchParams.get('sort_order') || 'desc';
+    const status = searchParams.get('status') || '';
 
     // 计算偏移量
     const offset = (page - 1) * pageSize;
 
-    // 构建搜索条件
-    let whereConditions: string[] = [];
-    let params: any[] = [];
-    let paramIndex = 1;
+    let countResult;
+    let dataResult;
 
-    // 关键词搜索（搜索 telegram_id、message_id、error_message）
-    if (keyword) {
-      whereConditions.push(`(
-        CAST(telegram_id AS TEXT) LIKE $${paramIndex} OR 
-        CAST(message_id AS TEXT) LIKE $${paramIndex} OR
-        error_message ILIKE $${paramIndex}
-      )`);
-      params.push(`%${keyword}%`);
-      paramIndex++;
+    if (keyword && status) {
+      const searchPattern = `%${keyword}%`;
+      countResult = await sql`
+        SELECT COUNT(*) as total FROM send_logs 
+        WHERE (CAST(telegram_id AS TEXT) LIKE ${searchPattern} 
+           OR CAST(message_id AS TEXT) LIKE ${searchPattern}
+           OR error_message ILIKE ${searchPattern})
+          AND status = ${status}
+      `;
+      dataResult = await sql`
+        SELECT id, message_id, telegram_id, status, error_message, retry_count, sent_at
+        FROM send_logs 
+        WHERE (CAST(telegram_id AS TEXT) LIKE ${searchPattern} 
+           OR CAST(message_id AS TEXT) LIKE ${searchPattern}
+           OR error_message ILIKE ${searchPattern})
+          AND status = ${status}
+        ORDER BY sent_at DESC
+        LIMIT ${pageSize} OFFSET ${offset}
+      `;
+    } else if (keyword) {
+      const searchPattern = `%${keyword}%`;
+      countResult = await sql`
+        SELECT COUNT(*) as total FROM send_logs 
+        WHERE CAST(telegram_id AS TEXT) LIKE ${searchPattern} 
+           OR CAST(message_id AS TEXT) LIKE ${searchPattern}
+           OR error_message ILIKE ${searchPattern}
+      `;
+      dataResult = await sql`
+        SELECT id, message_id, telegram_id, status, error_message, retry_count, sent_at
+        FROM send_logs 
+        WHERE CAST(telegram_id AS TEXT) LIKE ${searchPattern} 
+           OR CAST(message_id AS TEXT) LIKE ${searchPattern}
+           OR error_message ILIKE ${searchPattern}
+        ORDER BY sent_at DESC
+        LIMIT ${pageSize} OFFSET ${offset}
+      `;
+    } else if (status) {
+      countResult = await sql`
+        SELECT COUNT(*) as total FROM send_logs WHERE status = ${status}
+      `;
+      dataResult = await sql`
+        SELECT id, message_id, telegram_id, status, error_message, retry_count, sent_at
+        FROM send_logs 
+        WHERE status = ${status}
+        ORDER BY sent_at DESC
+        LIMIT ${pageSize} OFFSET ${offset}
+      `;
+    } else {
+      countResult = await sql`SELECT COUNT(*) as total FROM send_logs`;
+      dataResult = await sql`
+        SELECT id, message_id, telegram_id, status, error_message, retry_count, sent_at
+        FROM send_logs 
+        ORDER BY sent_at DESC
+        LIMIT ${pageSize} OFFSET ${offset}
+      `;
     }
 
-    // Telegram ID 搜索
-    if (telegramId && !keyword) {
-      whereConditions.push(`CAST(telegram_id AS TEXT) LIKE $${paramIndex}`);
-      params.push(`%${telegramId}%`);
-      paramIndex++;
-    }
-
-    // Message ID 搜索
-    if (messageId && !keyword) {
-      whereConditions.push(`message_id = $${paramIndex}`);
-      params.push(parseInt(messageId));
-      paramIndex++;
-    }
-
-    // 状态筛选
-    if (status) {
-      whereConditions.push(`status = $${paramIndex}`);
-      params.push(status);
-      paramIndex++;
-    }
-
-    const whereClause = whereConditions.length > 0 
-      ? `WHERE ${whereConditions.join(' AND ')}` 
-      : '';
-
-    // 验证排序字段（防止 SQL 注入）
-    const allowedSortFields = ['id', 'message_id', 'telegram_id', 'status', 'retry_count', 'sent_at'];
-    const safeSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'sent_at';
-    const safeSortOrder = sortOrder === 'asc' ? 'ASC' : 'DESC';
-
-    // 获取总数
-    const countQuery = `SELECT COUNT(*) as total FROM send_logs ${whereClause}`;
-    const countResult = await sql(countQuery, params);
     const total = parseInt(countResult[0]?.total || '0');
-
-    // 获取数据
-    const dataQuery = `
-      SELECT 
-        id,
-        message_id,
-        telegram_id,
-        status,
-        error_message,
-        retry_count,
-        sent_at
-      FROM send_logs 
-      ${whereClause}
-      ORDER BY ${safeSortBy} ${safeSortOrder}
-      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
-    `;
-    
-    const dataResult = await sql(dataQuery, [...params, pageSize, offset]);
 
     // 转换数据格式
     const logs = dataResult.map((row: any) => ({

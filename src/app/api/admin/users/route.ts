@@ -28,76 +28,51 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const pageSize = parseInt(searchParams.get('page_size') || '20');
-    const username = searchParams.get('username') || '';
-    const telegramId = searchParams.get('telegram_id') || '';
     const keyword = searchParams.get('keyword') || '';
-    const sortBy = searchParams.get('sort_by') || 'created_at';
-    const sortOrder = searchParams.get('sort_order') || 'desc';
 
     // 计算偏移量
     const offset = (page - 1) * pageSize;
 
-    // 构建搜索条件
-    let whereConditions: string[] = [];
-    let params: any[] = [];
-    let paramIndex = 1;
+    let countResult;
+    let dataResult;
 
-    // 关键词搜索（搜索 username、first_name、last_name）
+    // 使用 tagged template 语法查询
     if (keyword) {
-      whereConditions.push(`(
-        username ILIKE $${paramIndex} OR 
-        first_name ILIKE $${paramIndex} OR 
-        last_name ILIKE $${paramIndex} OR
-        CAST(telegram_id AS TEXT) LIKE $${paramIndex}
-      )`);
-      params.push(`%${keyword}%`);
-      paramIndex++;
+      const searchPattern = `%${keyword}%`;
+      
+      // 获取总数
+      countResult = await sql`
+        SELECT COUNT(*) as total FROM users 
+        WHERE username ILIKE ${searchPattern} 
+           OR first_name ILIKE ${searchPattern} 
+           OR last_name ILIKE ${searchPattern}
+           OR CAST(telegram_id AS TEXT) LIKE ${searchPattern}
+      `;
+      
+      // 获取数据
+      dataResult = await sql`
+        SELECT id, telegram_id, username, first_name, last_name, created_at
+        FROM users 
+        WHERE username ILIKE ${searchPattern} 
+           OR first_name ILIKE ${searchPattern} 
+           OR last_name ILIKE ${searchPattern}
+           OR CAST(telegram_id AS TEXT) LIKE ${searchPattern}
+        ORDER BY created_at DESC
+        LIMIT ${pageSize} OFFSET ${offset}
+      `;
+    } else {
+      // 无搜索条件
+      countResult = await sql`SELECT COUNT(*) as total FROM users`;
+      
+      dataResult = await sql`
+        SELECT id, telegram_id, username, first_name, last_name, created_at
+        FROM users 
+        ORDER BY created_at DESC
+        LIMIT ${pageSize} OFFSET ${offset}
+      `;
     }
 
-    // 用户名搜索
-    if (username && !keyword) {
-      whereConditions.push(`username ILIKE $${paramIndex}`);
-      params.push(`%${username}%`);
-      paramIndex++;
-    }
-
-    // Telegram ID 搜索
-    if (telegramId && !keyword) {
-      whereConditions.push(`CAST(telegram_id AS TEXT) LIKE $${paramIndex}`);
-      params.push(`%${telegramId}%`);
-      paramIndex++;
-    }
-
-    const whereClause = whereConditions.length > 0 
-      ? `WHERE ${whereConditions.join(' AND ')}` 
-      : '';
-
-    // 验证排序字段（防止 SQL 注入）
-    const allowedSortFields = ['id', 'telegram_id', 'username', 'first_name', 'last_name', 'created_at'];
-    const safeSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'created_at';
-    const safeSortOrder = sortOrder === 'asc' ? 'ASC' : 'DESC';
-
-    // 获取总数
-    const countQuery = `SELECT COUNT(*) as total FROM users ${whereClause}`;
-    const countResult = await sql(countQuery, params);
     const total = parseInt(countResult[0]?.total || '0');
-
-    // 获取数据
-    const dataQuery = `
-      SELECT 
-        id,
-        telegram_id,
-        username,
-        first_name,
-        last_name,
-        created_at
-      FROM users 
-      ${whereClause}
-      ORDER BY ${safeSortBy} ${safeSortOrder}
-      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
-    `;
-    
-    const dataResult = await sql(dataQuery, [...params, pageSize, offset]);
 
     // 转换数据格式以适配前端
     const users = dataResult.map((row: any) => ({

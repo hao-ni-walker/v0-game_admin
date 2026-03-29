@@ -21,50 +21,62 @@ export async function GET(request: Request) {
     const pageSize = parseInt(searchParams.get('page_size') || '20');
     const keyword = searchParams.get('keyword') || '';
     const status = searchParams.get('status') || '';
-    const sortBy = searchParams.get('sort_by') || 'created_at';
-    const sortOrder = searchParams.get('sort_order') || 'desc';
 
     const offset = (page - 1) * pageSize;
 
-    let whereConditions: string[] = [];
-    let params: any[] = [];
-    let paramIndex = 1;
+    let countResult;
+    let dataResult;
 
-    if (keyword) {
-      whereConditions.push(`(title ILIKE $${paramIndex} OR content ILIKE $${paramIndex})`);
-      params.push(`%${keyword}%`);
-      paramIndex++;
+    if (keyword && status) {
+      const searchPattern = `%${keyword}%`;
+      countResult = await sql`
+        SELECT COUNT(*) as total FROM messages 
+        WHERE (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
+          AND status = ${status}
+      `;
+      dataResult = await sql`
+        SELECT id, title, content, image_url, button_text, button_url, scheduled_at, status, created_at, sent_at
+        FROM messages 
+        WHERE (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
+          AND status = ${status}
+        ORDER BY created_at DESC
+        LIMIT ${pageSize} OFFSET ${offset}
+      `;
+    } else if (keyword) {
+      const searchPattern = `%${keyword}%`;
+      countResult = await sql`
+        SELECT COUNT(*) as total FROM messages 
+        WHERE title ILIKE ${searchPattern} OR content ILIKE ${searchPattern}
+      `;
+      dataResult = await sql`
+        SELECT id, title, content, image_url, button_text, button_url, scheduled_at, status, created_at, sent_at
+        FROM messages 
+        WHERE title ILIKE ${searchPattern} OR content ILIKE ${searchPattern}
+        ORDER BY created_at DESC
+        LIMIT ${pageSize} OFFSET ${offset}
+      `;
+    } else if (status) {
+      countResult = await sql`
+        SELECT COUNT(*) as total FROM messages WHERE status = ${status}
+      `;
+      dataResult = await sql`
+        SELECT id, title, content, image_url, button_text, button_url, scheduled_at, status, created_at, sent_at
+        FROM messages 
+        WHERE status = ${status}
+        ORDER BY created_at DESC
+        LIMIT ${pageSize} OFFSET ${offset}
+      `;
+    } else {
+      countResult = await sql`SELECT COUNT(*) as total FROM messages`;
+      dataResult = await sql`
+        SELECT id, title, content, image_url, button_text, button_url, scheduled_at, status, created_at, sent_at
+        FROM messages 
+        ORDER BY created_at DESC
+        LIMIT ${pageSize} OFFSET ${offset}
+      `;
     }
 
-    if (status) {
-      whereConditions.push(`status = $${paramIndex}`);
-      params.push(status);
-      paramIndex++;
-    }
-
-    const whereClause = whereConditions.length > 0 
-      ? `WHERE ${whereConditions.join(' AND ')}` 
-      : '';
-
-    const allowedSortFields = ['id', 'title', 'status', 'created_at', 'scheduled_at', 'sent_at'];
-    const safeSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'created_at';
-    const safeSortOrder = sortOrder === 'asc' ? 'ASC' : 'DESC';
-
-    const countQuery = `SELECT COUNT(*) as total FROM messages ${whereClause}`;
-    const countResult = await sql(countQuery, params);
     const total = parseInt(countResult[0]?.total || '0');
-
-    const dataQuery = `
-      SELECT 
-        id, title, content, image_url, button_text, button_url,
-        scheduled_at, status, created_at, sent_at
-      FROM messages 
-      ${whereClause}
-      ORDER BY ${safeSortBy} ${safeSortOrder}
-      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
-    `;
-    
-    const dataResult = await sql(dataQuery, [...params, pageSize, offset]);
 
     return successResponse(dataResult, {
       page,
