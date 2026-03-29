@@ -30,13 +30,13 @@ export async function GET(request: Request) {
     if (keyword && status) {
       const searchPattern = `%${keyword}%`;
       countResult = await sql`
-        SELECT COUNT(*) as total FROM messages 
+        SELECT COUNT(*) as total FROM bot_1.messages 
         WHERE (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
           AND status = ${status}
       `;
       dataResult = await sql`
         SELECT id, title, content, image_url, button_text, button_url, scheduled_at, status, created_at, sent_at
-        FROM messages 
+        FROM bot_1.messages 
         WHERE (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
           AND status = ${status}
         ORDER BY created_at DESC
@@ -45,32 +45,32 @@ export async function GET(request: Request) {
     } else if (keyword) {
       const searchPattern = `%${keyword}%`;
       countResult = await sql`
-        SELECT COUNT(*) as total FROM messages 
+        SELECT COUNT(*) as total FROM bot_1.messages 
         WHERE title ILIKE ${searchPattern} OR content ILIKE ${searchPattern}
       `;
       dataResult = await sql`
         SELECT id, title, content, image_url, button_text, button_url, scheduled_at, status, created_at, sent_at
-        FROM messages 
+        FROM bot_1.messages 
         WHERE title ILIKE ${searchPattern} OR content ILIKE ${searchPattern}
         ORDER BY created_at DESC
         LIMIT ${pageSize} OFFSET ${offset}
       `;
     } else if (status) {
       countResult = await sql`
-        SELECT COUNT(*) as total FROM messages WHERE status = ${status}
+        SELECT COUNT(*) as total FROM bot_1.messages WHERE status = ${status}
       `;
       dataResult = await sql`
         SELECT id, title, content, image_url, button_text, button_url, scheduled_at, status, created_at, sent_at
-        FROM messages 
+        FROM bot_1.messages 
         WHERE status = ${status}
         ORDER BY created_at DESC
         LIMIT ${pageSize} OFFSET ${offset}
       `;
     } else {
-      countResult = await sql`SELECT COUNT(*) as total FROM messages`;
+      countResult = await sql`SELECT COUNT(*) as total FROM bot_1.messages`;
       dataResult = await sql`
         SELECT id, title, content, image_url, button_text, button_url, scheduled_at, status, created_at, sent_at
-        FROM messages 
+        FROM bot_1.messages 
         ORDER BY created_at DESC
         LIMIT ${pageSize} OFFSET ${offset}
       `;
@@ -110,7 +110,7 @@ export async function POST(request: Request) {
     }
 
     const result = await sql`
-      INSERT INTO messages (title, content, image_url, button_text, button_url, scheduled_at, status, created_at)
+      INSERT INTO bot_1.messages (title, content, image_url, button_text, button_url, scheduled_at, status, created_at)
       VALUES (${title || null}, ${content}, ${image_url || null}, ${button_text || null}, ${button_url || null}, ${scheduled_at || null}, ${status || 'draft'}, NOW())
       RETURNING *
     `;
@@ -146,7 +146,7 @@ export async function PUT(request: Request) {
     }
 
     const result = await sql`
-      UPDATE messages 
+      UPDATE bot_1.messages 
       SET title = ${title || null},
           content = ${content},
           image_url = ${image_url || null},
@@ -188,7 +188,7 @@ export async function DELETE(request: Request) {
     }
 
     const result = await sql`
-      DELETE FROM messages WHERE id = ${parseInt(id)}
+      DELETE FROM bot_1.messages WHERE id = ${parseInt(id)}
       RETURNING id
     `;
 

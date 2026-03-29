@@ -41,7 +41,7 @@ export async function GET(request: Request) {
     if (keyword && status) {
       const searchPattern = `%${keyword}%`;
       countResult = await sql`
-        SELECT COUNT(*) as total FROM send_logs 
+        SELECT COUNT(*) as total FROM bot_1.send_logs 
         WHERE (CAST(telegram_id AS TEXT) LIKE ${searchPattern} 
            OR CAST(message_id AS TEXT) LIKE ${searchPattern}
            OR error_message ILIKE ${searchPattern})
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
       `;
       dataResult = await sql`
         SELECT id, message_id, telegram_id, status, error_message, retry_count, sent_at
-        FROM send_logs 
+        FROM bot_1.send_logs 
         WHERE (CAST(telegram_id AS TEXT) LIKE ${searchPattern} 
            OR CAST(message_id AS TEXT) LIKE ${searchPattern}
            OR error_message ILIKE ${searchPattern})
@@ -60,14 +60,14 @@ export async function GET(request: Request) {
     } else if (keyword) {
       const searchPattern = `%${keyword}%`;
       countResult = await sql`
-        SELECT COUNT(*) as total FROM send_logs 
+        SELECT COUNT(*) as total FROM bot_1.send_logs 
         WHERE CAST(telegram_id AS TEXT) LIKE ${searchPattern} 
            OR CAST(message_id AS TEXT) LIKE ${searchPattern}
            OR error_message ILIKE ${searchPattern}
       `;
       dataResult = await sql`
         SELECT id, message_id, telegram_id, status, error_message, retry_count, sent_at
-        FROM send_logs 
+        FROM bot_1.send_logs 
         WHERE CAST(telegram_id AS TEXT) LIKE ${searchPattern} 
            OR CAST(message_id AS TEXT) LIKE ${searchPattern}
            OR error_message ILIKE ${searchPattern}
@@ -76,20 +76,20 @@ export async function GET(request: Request) {
       `;
     } else if (status) {
       countResult = await sql`
-        SELECT COUNT(*) as total FROM send_logs WHERE status = ${status}
+        SELECT COUNT(*) as total FROM bot_1.send_logs WHERE status = ${status}
       `;
       dataResult = await sql`
         SELECT id, message_id, telegram_id, status, error_message, retry_count, sent_at
-        FROM send_logs 
+        FROM bot_1.send_logs 
         WHERE status = ${status}
         ORDER BY sent_at DESC
         LIMIT ${pageSize} OFFSET ${offset}
       `;
     } else {
-      countResult = await sql`SELECT COUNT(*) as total FROM send_logs`;
+      countResult = await sql`SELECT COUNT(*) as total FROM bot_1.send_logs`;
       dataResult = await sql`
         SELECT id, message_id, telegram_id, status, error_message, retry_count, sent_at
-        FROM send_logs 
+        FROM bot_1.send_logs 
         ORDER BY sent_at DESC
         LIMIT ${pageSize} OFFSET ${offset}
       `;

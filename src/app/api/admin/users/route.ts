@@ -36,13 +36,13 @@ export async function GET(request: Request) {
     let countResult;
     let dataResult;
 
-    // 使用 tagged template 语法查询
+    // 使用 tagged template 语法查询，使用 bot_1 schema
     if (keyword) {
       const searchPattern = `%${keyword}%`;
       
       // 获取总数
       countResult = await sql`
-        SELECT COUNT(*) as total FROM users 
+        SELECT COUNT(*) as total FROM bot_1.users 
         WHERE username ILIKE ${searchPattern} 
            OR first_name ILIKE ${searchPattern} 
            OR last_name ILIKE ${searchPattern}
@@ -52,7 +52,7 @@ export async function GET(request: Request) {
       // 获取数据
       dataResult = await sql`
         SELECT id, telegram_id, username, first_name, last_name, created_at
-        FROM users 
+        FROM bot_1.users 
         WHERE username ILIKE ${searchPattern} 
            OR first_name ILIKE ${searchPattern} 
            OR last_name ILIKE ${searchPattern}
@@ -62,11 +62,11 @@ export async function GET(request: Request) {
       `;
     } else {
       // 无搜索条件
-      countResult = await sql`SELECT COUNT(*) as total FROM users`;
+      countResult = await sql`SELECT COUNT(*) as total FROM bot_1.users`;
       
       dataResult = await sql`
         SELECT id, telegram_id, username, first_name, last_name, created_at
-        FROM users 
+        FROM bot_1.users 
         ORDER BY created_at DESC
         LIMIT ${pageSize} OFFSET ${offset}
       `;
