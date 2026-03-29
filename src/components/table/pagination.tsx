@@ -34,6 +34,16 @@ export function Pagination({
 }: PaginationProps) {
   const { page, limit, total, totalPages } = pagination;
 
+  // 确保 totalPages 至少为 1，避免显示 "共 0 页"
+  const safeTotalPages = Math.max(totalPages || 0, 1);
+  // 确保 page 不超过 safeTotalPages
+  const safePage = Math.min(page, safeTotalPages);
+
+  // 如果没有数据，不显示分页组件
+  if (total === 0) {
+    return null;
+  }
+
   return (
     <div className='mt-4'>
       {/* 移动端布局 */}
@@ -45,7 +55,7 @@ export function Pagination({
               variant='outline'
               size='sm'
               onClick={() => onPageChange(1)}
-              disabled={page <= 1}
+              disabled={safePage <= 1}
               className='h-9 w-9 cursor-pointer p-0'
             >
               «
@@ -53,20 +63,20 @@ export function Pagination({
             <Button
               variant='outline'
               size='sm'
-              onClick={() => onPageChange(page - 1)}
-              disabled={page <= 1}
+              onClick={() => onPageChange(safePage - 1)}
+              disabled={safePage <= 1}
               className='h-9 w-9 cursor-pointer p-0'
             >
               ‹
             </Button>
             <span className='mx-3 text-sm font-medium'>
-              {page} / {totalPages}
+              {safePage} / {safeTotalPages}
             </span>
             <Button
               variant='outline'
               size='sm'
-              onClick={() => onPageChange(page + 1)}
-              disabled={page >= totalPages}
+              onClick={() => onPageChange(safePage + 1)}
+              disabled={safePage >= safeTotalPages}
               className='h-9 w-9 cursor-pointer p-0'
             >
               ›
@@ -74,8 +84,8 @@ export function Pagination({
             <Button
               variant='outline'
               size='sm'
-              onClick={() => onPageChange(totalPages)}
-              disabled={page >= totalPages}
+              onClick={() => onPageChange(safeTotalPages)}
+              disabled={safePage >= safeTotalPages}
               className='h-9 w-9 cursor-pointer p-0'
             >
               »
@@ -145,14 +155,14 @@ export function Pagination({
           )}
           <div className='flex items-center gap-4'>
             <span className='text-muted-foreground text-sm'>
-              第 {page} 页，共 {totalPages} 页
+              第 {safePage} 页，共 {safeTotalPages} 页
             </span>
             <div className='flex items-center gap-1'>
               <Button
                 variant='outline'
                 size='sm'
                 onClick={() => onPageChange(1)}
-                disabled={page <= 1}
+                disabled={safePage <= 1}
                 className='h-8 w-8 cursor-pointer p-0'
               >
                 «
@@ -160,8 +170,8 @@ export function Pagination({
               <Button
                 variant='outline'
                 size='sm'
-                onClick={() => onPageChange(page - 1)}
-                disabled={page <= 1}
+                onClick={() => onPageChange(safePage - 1)}
+                disabled={safePage <= 1}
                 className='h-8 w-8 cursor-pointer p-0'
               >
                 ‹
@@ -169,8 +179,8 @@ export function Pagination({
               <Button
                 variant='outline'
                 size='sm'
-                onClick={() => onPageChange(page + 1)}
-                disabled={page >= totalPages}
+                onClick={() => onPageChange(safePage + 1)}
+                disabled={safePage >= safeTotalPages}
                 className='h-8 w-8 cursor-pointer p-0'
               >
                 ›
@@ -178,8 +188,8 @@ export function Pagination({
               <Button
                 variant='outline'
                 size='sm'
-                onClick={() => onPageChange(totalPages)}
-                disabled={page >= totalPages}
+                onClick={() => onPageChange(safeTotalPages)}
+                disabled={safePage >= safeTotalPages}
                 className='h-8 w-8 cursor-pointer p-0'
               >
                 »

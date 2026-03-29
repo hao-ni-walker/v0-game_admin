@@ -245,7 +245,9 @@ export function DepositOrderTable({
                 )}
               </TableCell>
               <TableCell className='text-right font-semibold text-green-600'>
-                {formatCurrency(order.actualAmount)}
+                {order.actualAmount !== null && order.actualAmount !== undefined
+                  ? formatCurrency(order.actualAmount)
+                  : '—'}
               </TableCell>
               <TableCell>
                 <Badge className={ORDER_STATUS_COLORS[order.status] || ''}>

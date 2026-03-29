@@ -136,6 +136,22 @@ export default function UserManagementPage() {
     }
   };
 
+  /**
+   * 切换用户状态
+   */
+  const handleToggleStatus = async (user: User) => {
+    // 超级管理员不能被禁用
+    if (user.isSuperAdmin) {
+      return;
+    }
+
+    const newStatus = user.status === 'active' ? 'disabled' : 'active';
+    const success = await updateUser(user.id, { status: newStatus });
+    if (success) {
+      fetchUsers(filters);
+    }
+  };
+
   return (
     <PageContainer scrollable={false}>
       <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
@@ -160,6 +176,7 @@ export default function UserManagementPage() {
               pagination={pagination}
               onEdit={handleOpenEditDialog}
               onDelete={handleDeleteUser}
+              onToggleStatus={handleToggleStatus}
               onEnable={handleEnableUser}
               onDisable={handleDisableUser}
               emptyState={{
@@ -169,7 +186,11 @@ export default function UserManagementPage() {
                   ? '请尝试调整筛选条件以查看更多结果'
                   : '开始添加用户来管理您的系统',
                 action: !hasActiveFilters ? (
-                  <Button onClick={handleOpenCreateDialog} size='sm' className='mt-2'>
+                  <Button
+                    onClick={handleOpenCreateDialog}
+                    size='sm'
+                    className='mt-2'
+                  >
                     <Plus className='mr-2 h-4 w-4' />
                     添加用户
                   </Button>
@@ -183,9 +204,7 @@ export default function UserManagementPage() {
             <Pagination
               pagination={pagination}
               onPageChange={(page) => updatePagination({ page })}
-              onPageSizeChange={(limit) =>
-                updatePagination({ limit, page: 1 })
-              }
+              onPageSizeChange={(limit) => updatePagination({ limit, page: 1 })}
               pageSizeOptions={PAGE_SIZE_OPTIONS}
             />
           </div>

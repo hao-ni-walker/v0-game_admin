@@ -1,6 +1,11 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { GiftPack, GiftPackFilters, PaginationInfo, GiftPackFormData } from '../types';
+import {
+  GiftPack,
+  GiftPackFilters,
+  PaginationInfo,
+  GiftPackFormData
+} from '../types';
 import { DEFAULT_PAGINATION, MESSAGES } from '../constants';
 
 /**
@@ -10,7 +15,8 @@ import { DEFAULT_PAGINATION, MESSAGES } from '../constants';
 export function useGiftPackManagement() {
   const [giftPacks, setGiftPacks] = useState<GiftPack[]>([]);
   const [loading, setLoading] = useState(false);
-  const [pagination, setPagination] = useState<PaginationInfo>(DEFAULT_PAGINATION);
+  const [pagination, setPagination] =
+    useState<PaginationInfo>(DEFAULT_PAGINATION);
 
   /**
    * 获取礼包列表
@@ -22,7 +28,7 @@ export function useGiftPackManagement() {
       const page = filters.page || 1;
       const page_size = filters.page_size || 20;
       const params = new URLSearchParams();
-      
+
       // 分页参数（转换为 limit 和 offset）
       params.append('limit', String(page_size));
       params.append('offset', String((page - 1) * page_size));
@@ -33,13 +39,13 @@ export function useGiftPackManagement() {
         params.append('locale', filters.locale);
       }
       if (filters.categories && filters.categories.length > 0) {
-        filters.categories.forEach(cat => params.append('category', cat));
+        filters.categories.forEach((cat) => params.append('category', cat));
       }
       if (filters.rarities && filters.rarities.length > 0) {
-        filters.rarities.forEach(rarity => params.append('rarity', rarity));
+        filters.rarities.forEach((rarity) => params.append('rarity', rarity));
       }
       if (filters.statuses && filters.statuses.length > 0) {
-        filters.statuses.forEach(status => params.append('status', status));
+        filters.statuses.forEach((status) => params.append('status', status));
       }
       if (filters.is_consumable !== undefined) {
         params.append('is_consumable', String(filters.is_consumable));
@@ -65,9 +71,11 @@ export function useGiftPackManagement() {
       if (filters.usage_limit_max !== undefined) {
         params.append('usage_limit_max', String(filters.usage_limit_max));
       }
-      if (filters.created_from) params.append('created_from', filters.created_from);
+      if (filters.created_from)
+        params.append('created_from', filters.created_from);
       if (filters.created_to) params.append('created_to', filters.created_to);
-      if (filters.updated_from) params.append('updated_from', filters.updated_from);
+      if (filters.updated_from)
+        params.append('updated_from', filters.updated_from);
       if (filters.updated_to) params.append('updated_to', filters.updated_to);
       if (filters.sort_by) params.append('sort_by', filters.sort_by);
       if (filters.sort_dir) params.append('sort_dir', filters.sort_dir);
@@ -79,22 +87,29 @@ export function useGiftPackManagement() {
         }
       });
 
+      const result = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        throw new Error('获取礼包列表失败');
+        throw new Error(
+          (result as { message?: string }).message || MESSAGES.ERROR.FETCH
+        );
       }
 
-      const result = await response.json();
-      
       // 处理响应格式：{ code: 0, data: { total, page, page_size, list: [...] } }
       if (result.code === 0 && result.data) {
-        const { total, page: responsePage, page_size: responsePageSize, list } = result.data;
-        
+        const {
+          total,
+          page: responsePage,
+          page_size: responsePageSize,
+          list
+        } = result.data;
+
         // 为每个礼包添加 id 字段（如果没有的话，使用 item_id）
         const giftPacksWithId = (list || []).map((item: GiftPack) => ({
           ...item,
           id: item.id || item.item_id
         }));
-        
+
         setGiftPacks(giftPacksWithId);
         setPagination({
           page: responsePage || page,
@@ -103,11 +118,13 @@ export function useGiftPackManagement() {
           totalPages: Math.ceil((total || 0) / (responsePageSize || page_size))
         });
       } else {
-        throw new Error(result.message || '获取礼包列表失败');
+        throw new Error(result.message || MESSAGES.ERROR.FETCH);
       }
     } catch (error) {
-      console.error('获取礼包列表失败:', error);
-      toast.error(MESSAGES.ERROR.FETCH);
+      const message =
+        error instanceof Error ? error.message : MESSAGES.ERROR.FETCH;
+      console.error('获取礼包列表失败:', message, error);
+      toast.error(message);
       setGiftPacks([]);
       setPagination(DEFAULT_PAGINATION);
     } finally {
@@ -128,28 +145,31 @@ export function useGiftPackManagement() {
   /**
    * 创建礼包
    */
-  const createGiftPack = useCallback(async (data: GiftPackFormData): Promise<boolean> => {
-    try {
-      const response = await fetch('/api/items', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
+  const createGiftPack = useCallback(
+    async (data: GiftPackFormData): Promise<boolean> => {
+      try {
+        const response = await fetch('/api/items', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
 
-      if (!response.ok) {
-        throw new Error('创建礼包失败');
+        if (!response.ok) {
+          throw new Error('创建礼包失败');
+        }
+
+        toast.success(MESSAGES.SUCCESS.CREATE);
+        return true;
+      } catch (error) {
+        console.error('创建礼包失败:', error);
+        toast.error(MESSAGES.ERROR.CREATE);
+        return false;
       }
-
-      toast.success(MESSAGES.SUCCESS.CREATE);
-      return true;
-    } catch (error) {
-      console.error('创建礼包失败:', error);
-      toast.error(MESSAGES.ERROR.CREATE);
-      return false;
-    }
-  }, []);
+    },
+    []
+  );
 
   /**
    * 更新礼包
@@ -211,7 +231,11 @@ export function useGiftPackManagement() {
       const itemId = giftPack.id || giftPack.item_id;
       const success = await updateGiftPack(itemId, { status: newStatus });
       if (success) {
-        toast.success(newStatus === 'active' ? MESSAGES.SUCCESS.ENABLE : MESSAGES.SUCCESS.DISABLE);
+        toast.success(
+          newStatus === 'active'
+            ? MESSAGES.SUCCESS.ENABLE
+            : MESSAGES.SUCCESS.DISABLE
+        );
       }
       return success;
     },

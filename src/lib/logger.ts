@@ -19,14 +19,14 @@ export interface LogData {
  */
 export async function createLog(data: LogData) {
   try {
-    const headersList = headers();
-    const userAgent = (await headersList).get('user-agent') || undefined;
-    const forwardedFor = (await headersList).get('x-forwarded-for');
-    const realIp = (await headersList).get('x-real-ip');
+    const headersList = await headers();
+    const userAgent = headersList.get('user-agent') || undefined;
+    const forwardedFor = headersList.get('x-forwarded-for');
+    const realIp = headersList.get('x-real-ip');
     const ip =
       forwardedFor?.split(',')[0] ||
       realIp ||
-      (await headersList).get('host') ||
+      headersList.get('host') ||
       'unknown';
 
     const requestId = uuidv4();

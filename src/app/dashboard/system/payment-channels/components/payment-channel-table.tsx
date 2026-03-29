@@ -1,4 +1,11 @@
-import { Eye, Pencil, Power, PowerOff, Trash2, AlertTriangle } from 'lucide-react';
+import {
+  Eye,
+  Pencil,
+  Power,
+  PowerOff,
+  Trash2,
+  AlertTriangle
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -82,7 +89,8 @@ export function PaymentChannelTable({
 
   // 计算手续费示例
   const calculateFee = (channel: PaymentChannel, amount: number = 100) => {
-    const fee = amount * channel.feeRate + channel.fixedFee;
+    const fee =
+      amount * parseFloat(channel.fee_rate) + parseFloat(channel.fixed_fee);
     return fee.toFixed(2);
   };
 
@@ -110,7 +118,7 @@ export function PaymentChannelTable({
         <div className='mx-auto flex max-w-[420px] flex-col items-center justify-center text-center'>
           {emptyState.icon}
           <h3 className='mt-4 text-lg font-semibold'>{emptyState.title}</h3>
-          <p className='mb-4 mt-2 text-sm text-muted-foreground'>
+          <p className='text-muted-foreground mt-2 mb-4 text-sm'>
             {emptyState.description}
           </p>
           {emptyState.action}
@@ -160,7 +168,7 @@ export function PaymentChannelTable({
 
               {/* 渠道代码 */}
               <TableCell>
-                <code className='rounded bg-muted px-2 py-1 text-xs'>
+                <code className='bg-muted rounded px-2 py-1 text-xs'>
                   {channel.code}
                 </code>
               </TableCell>
@@ -174,8 +182,8 @@ export function PaymentChannelTable({
 
               {/* 渠道类型 */}
               <TableCell>
-                <Badge className={CHANNEL_TYPE_COLORS[channel.channelType]}>
-                  {CHANNEL_TYPE_LABELS[channel.channelType]}
+                <Badge className={CHANNEL_TYPE_COLORS[channel.channel_type]}>
+                  {CHANNEL_TYPE_LABELS[channel.channel_type]}
                 </Badge>
               </TableCell>
 
@@ -183,10 +191,10 @@ export function PaymentChannelTable({
               <TableCell className='text-right'>
                 <div className='flex flex-col text-xs'>
                   <span className='text-muted-foreground'>
-                    最小: ¥{formatAmount(channel.minAmount)}
+                    最小: ¥{formatAmount(parseFloat(channel.min_amount))}
                   </span>
                   <span className='text-muted-foreground'>
-                    最大: ¥{formatAmount(channel.maxAmount)}
+                    最大: ¥{formatAmount(parseFloat(channel.max_amount))}
                   </span>
                 </div>
               </TableCell>
@@ -194,7 +202,7 @@ export function PaymentChannelTable({
               {/* 每日限额 */}
               <TableCell className='text-right'>
                 <span className='font-medium'>
-                  ¥{formatAmount(channel.dailyLimit)}
+                  ¥{formatAmount(parseFloat(channel.daily_limit ?? '0'))}
                 </span>
               </TableCell>
 
@@ -202,7 +210,7 @@ export function PaymentChannelTable({
               <TableCell className='text-right'>
                 <div className='flex flex-col text-xs'>
                   <span className='font-medium text-orange-600'>
-                    {formatFeeRate(channel.feeRate)}
+                    {formatFeeRate(parseFloat(channel.fee_rate))}
                   </span>
                   <span className='text-muted-foreground'>
                     100元收¥{calculateFee(channel)}
@@ -213,25 +221,27 @@ export function PaymentChannelTable({
               {/* 固定费用 */}
               <TableCell className='text-right'>
                 <span className='font-medium'>
-                  {channel.fixedFee > 0 ? `¥${formatAmount(channel.fixedFee)}` : '-'}
+                  {parseFloat(channel.fixed_fee) > 0
+                    ? `¥${formatAmount(parseFloat(channel.fixed_fee))}`
+                    : '-'}
                 </span>
               </TableCell>
 
               {/* 排序 */}
               <TableCell className='text-center'>
-                <Badge variant='outline'>{channel.sortOrder}</Badge>
+                <Badge variant='outline'>{channel.sort_order}</Badge>
               </TableCell>
 
               {/* 状态 */}
               <TableCell className='text-center'>
-                <Badge variant={channel.status === 1 ? 'default' : 'secondary'}>
-                  {channel.status === 1 ? '启用' : '停用'}
+                <Badge variant={!channel.disabled ? 'default' : 'secondary'}>
+                  {!channel.disabled ? '启用' : '停用'}
                 </Badge>
               </TableCell>
 
               {/* 更新时间 */}
-              <TableCell className='text-center text-xs text-muted-foreground'>
-                {formatDate(channel.updatedAt)}
+              <TableCell className='text-muted-foreground text-center text-xs'>
+                {formatDate(channel.updated_at)}
               </TableCell>
 
               {/* 操作 */}
@@ -263,9 +273,9 @@ export function PaymentChannelTable({
                       <Button
                         variant='ghost'
                         size='icon'
-                        title={channel.status === 1 ? '停用' : '启用'}
+                        title={!channel.disabled ? '停用' : '启用'}
                       >
-                        {channel.status === 1 ? (
+                        {!channel.disabled ? (
                           <PowerOff className='h-4 w-4 text-orange-600' />
                         ) : (
                           <Power className='h-4 w-4 text-green-600' />
@@ -275,16 +285,18 @@ export function PaymentChannelTable({
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>
-                          {channel.status === 1 ? '停用渠道' : '启用渠道'}
+                          {!channel.disabled ? '停用渠道' : '启用渠道'}
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                          确定要{channel.status === 1 ? '停用' : '启用'}渠道 "
+                          确定要{!channel.disabled ? '停用' : '启用'}渠道 "
                           {channel.name}" 吗?
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>取消</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => onToggleStatus(channel)}>
+                        <AlertDialogAction
+                          onClick={() => onToggleStatus(channel)}
+                        >
                           确定
                         </AlertDialogAction>
                       </AlertDialogFooter>
@@ -340,7 +352,8 @@ export function PaymentChannelTable({
                       <AlertDialogHeader>
                         <AlertDialogTitle>删除渠道</AlertDialogTitle>
                         <AlertDialogDescription>
-                          确定要删除渠道 "{channel.name}" 吗? 此操作为逻辑删除,可以恢复。
+                          确定要删除渠道 "{channel.name}" 吗?
+                          此操作为逻辑删除,可以恢复。
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

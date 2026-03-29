@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { ArrowUpDown, Eye, Edit, MoreHorizontal, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUpDown, MoreHorizontal, ArrowUp, ArrowDown } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,6 +51,11 @@ interface PlayerTableEnhancedProps {
   onResetPassword: (player: Player) => void;
   onSendNotification: (player: Player) => void;
   onViewLogs: (player: Player) => void;
+  onStatusChange?: (playerId: number, status: boolean) => void;
+  onViewSpinQuota?: (player: Player) => void;
+  onViewSignRecords?: (player: Player) => void;
+  onViewActivities?: (player: Player) => void;
+  onModifyRTP?: (player: Player) => void;
 }
 
 /**
@@ -70,16 +76,26 @@ export function PlayerTableEnhanced({
   onEdit,
   onResetPassword,
   onSendNotification,
-  onViewLogs
+  onViewLogs,
+  onStatusChange,
+  onViewSpinQuota,
+  onViewSignRecords,
+  onViewActivities,
+  onModifyRTP
 }: PlayerTableEnhancedProps) {
   // 是否全选
   const isAllSelected = useMemo(() => {
-    return players.length > 0 && players.every((player) => selectedPlayerIds.includes(player.id));
+    return (
+      players.length > 0 &&
+      players.every((player) => selectedPlayerIds.includes(player.id))
+    );
   }, [players, selectedPlayerIds]);
 
   // 是否部分选中
   const isIndeterminate = useMemo(() => {
-    return selectedPlayerIds.length > 0 && selectedPlayerIds.length < players.length;
+    return (
+      selectedPlayerIds.length > 0 && selectedPlayerIds.length < players.length
+    );
   }, [selectedPlayerIds, players]);
 
   /**
@@ -92,6 +108,29 @@ export function PlayerTableEnhanced({
     } else {
       // 新列，默认升序
       onSort(column, 'asc');
+    }
+  };
+
+  /**
+   * 判断状态是否为启用
+   */
+  const isStatusActive = (status: string | boolean): boolean => {
+    if (typeof status === 'boolean') {
+      return status;
+    }
+    return status === 'active';
+  };
+
+  /**
+   * 处理状态切换
+   */
+  const handleStatusChange = (
+    playerId: number,
+    currentStatus: string | boolean
+  ) => {
+    if (onStatusChange) {
+      const newStatus = !isStatusActive(currentStatus);
+      onStatusChange(playerId, newStatus);
     }
   };
 
@@ -111,7 +150,7 @@ export function PlayerTableEnhanced({
               <ArrowDown className='h-4 w-4' />
             )
           ) : (
-            <ArrowUpDown className='h-4 w-4 text-muted-foreground' />
+            <ArrowUpDown className='text-muted-foreground h-4 w-4' />
           )}
         </div>
       </TableHead>
@@ -143,118 +182,208 @@ export function PlayerTableEnhanced({
                   aria-label='全选'
                 />
               </TableHead>
-              {renderSortableHeader('id', '玩家ID')}
-              <TableHead>用户名</TableHead>
+              {renderSortableHeader('id', '用户ID')}
+              {renderSortableHeader('username', '用户名')}
               <TableHead>邮箱</TableHead>
-              <TableHead>账户状态</TableHead>
+              <TableHead>状态</TableHead>
+              <TableHead>上级用户ID</TableHead>
               {renderSortableHeader('vip_level', 'VIP等级')}
-              <TableHead>可用余额</TableHead>
-              {renderSortableHeader('total_deposit', '总存款')}
-              {renderSortableHeader('total_bet', '总投注')}
-              <TableHead>代理商</TableHead>
               {renderSortableHeader('created_at', '注册时间')}
-              {renderSortableHeader('last_login', '最后登录')}
+              {renderSortableHeader('last_login', '最后登录时间')}
+              <TableHead>余额</TableHead>
+              <TableHead>奖金</TableHead>
+              <TableHead>积分</TableHead>
+              <TableHead>冻结余额</TableHead>
+              <TableHead>可提现金额</TableHead>
+              <TableHead>总存款</TableHead>
+              <TableHead>总提现</TableHead>
+              <TableHead>总投注</TableHead>
+              <TableHead>总赢取</TableHead>
               <TableHead className='text-right'>操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {players.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={13} className='text-center text-muted-foreground'>
+                <TableCell
+                  colSpan={20}
+                  className='text-muted-foreground text-center'
+                >
                   暂无数据
                 </TableCell>
               </TableRow>
             ) : (
-              players.map((player) => (
-                <TableRow key={player.id}>
-                  <TableCell>
-                    <Checkbox
-                      checked={selectedPlayerIds.includes(player.id)}
-                      onCheckedChange={(checked) =>
-                        onSelectPlayer(player.id, checked === true)
-                      }
-                      aria-label={`选择玩家 ${player.username}`}
-                    />
-                  </TableCell>
-                  <TableCell className='font-medium'>{player.id}</TableCell>
-                  <TableCell>{player.username}</TableCell>
-                  <TableCell className='text-xs'>{maskEmail(player.email)}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant='default'
-                      className={getPlayerStatusColor(player.status)}
-                    >
-                      {getPlayerStatusText(player.status)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant='outline'
-                      className={getVipLevelColor(player.vip_level)}
-                    >
-                      VIP {player.vip_level}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <span className='font-mono'>
-                      {formatCurrency(player.wallet?.balance || 0)}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className='font-mono'>
-                      {formatCurrency(player.wallet?.total_deposit || 0)}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className='font-mono'>
-                      {formatCurrency(player.wallet?.total_bet || 0)}
-                    </span>
-                  </TableCell>
-                  <TableCell>{player.agent || '-'}</TableCell>
-                  <TableCell className='text-xs'>
-                    {formatDateTime(player.created_at)}
-                  </TableCell>
-                  <TableCell className='text-xs'>
-                    {formatDateTime(player.last_login)}
-                  </TableCell>
-                  <TableCell className='text-right'>
-                    <div className='flex justify-end gap-2'>
-                      <Button
-                        variant='ghost'
-                        size='sm'
-                        onClick={() => onViewDetail(player)}
+              players.map((player) => {
+                // 获取 VIP 等级，优先从 vip_info 对象获取（支持 vip_level 和 level 两种字段名），否则从直接字段获取
+                const vipInfo = (player as any).vip_info;
+                const vipLevel =
+                  vipInfo?.vip_level ?? vipInfo?.level ?? player.vip_level ?? 0;
+                // 获取钱包信息
+                const wallet = player.wallet || {
+                  balance: 0,
+                  frozen_balance: 0,
+                  bonus: 0,
+                  credit: 0,
+                  withdrawable: 0,
+                  total_deposit: 0,
+                  total_withdraw: 0,
+                  total_bet: 0,
+                  total_win: 0,
+                  currency: '',
+                  status: 'active' as const,
+                  version: 0
+                };
+
+                return (
+                  <TableRow key={player.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedPlayerIds.includes(player.id)}
+                        onCheckedChange={(checked) =>
+                          onSelectPlayer(player.id, checked === true)
+                        }
+                        aria-label={`选择玩家 ${player.username}`}
+                      />
+                    </TableCell>
+                    <TableCell className='font-medium'>{player.id}</TableCell>
+                    <TableCell>{player.username}</TableCell>
+                    <TableCell className='text-xs'>
+                      {maskEmail(player.email)}
+                    </TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={isStatusActive(player.status)}
+                        onCheckedChange={() =>
+                          handleStatusChange(player.id, player.status)
+                        }
+                        disabled={!onStatusChange}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {player.direct_superior_id
+                        ? player.direct_superior_id
+                        : '-'}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant='outline'
+                        className={getVipLevelColor(vipLevel)}
                       >
-                        <Eye className='h-4 w-4' />
-                      </Button>
-                      <Button
-                        variant='ghost'
-                        size='sm'
-                        onClick={() => onEdit(player)}
-                      >
-                        <Edit className='h-4 w-4' />
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant='ghost' size='sm'>
-                            <MoreHorizontal className='h-4 w-4' />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align='end'>
-                          <DropdownMenuItem onClick={() => onResetPassword(player)}>
-                            重置密码
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onSendNotification(player)}>
-                            发送通知
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onViewLogs(player)}>
-                            查看操作日志
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                        VIP {vipLevel}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className='text-xs'>
+                      {formatDateTime(player.created_at)}
+                    </TableCell>
+                    <TableCell className='text-xs'>
+                      {formatDateTime(player.last_login)}
+                    </TableCell>
+                    <TableCell>
+                      <span className='font-mono'>
+                        {formatCurrency(Number(wallet.balance) || 0)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className='font-mono'>
+                        {formatCurrency(Number(wallet.bonus) || 0)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className='font-mono'>
+                        {formatCurrency(Number(wallet.credit) || 0)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className='font-mono'>
+                        {formatCurrency(Number(wallet.frozen_balance) || 0)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className='font-mono'>
+                        {formatCurrency(Number(wallet.withdrawable) || 0)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className='font-mono'>
+                        {formatCurrency(Number(wallet.total_deposit) || 0)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className='font-mono'>
+                        {formatCurrency(Number(wallet.total_withdraw) || 0)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className='font-mono'>
+                        {formatCurrency(Number(wallet.total_bet) || 0)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className='font-mono'>
+                        {formatCurrency(Number(wallet.total_win) || 0)}
+                      </span>
+                    </TableCell>
+                    <TableCell className='text-right'>
+                      <div className='flex justify-end gap-2'>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant='ghost' size='sm'>
+                              <MoreHorizontal className='h-4 w-4' />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align='end'>
+                            <DropdownMenuItem onClick={() => onEdit(player)}>
+                              编辑
+                            </DropdownMenuItem>
+                            {onViewSpinQuota && (
+                              <DropdownMenuItem
+                                onClick={() => onViewSpinQuota(player)}
+                              >
+                                查看大转盘次数
+                              </DropdownMenuItem>
+                            )}
+                            {onViewLogs && (
+                              <DropdownMenuItem
+                                onClick={() => onViewLogs(player)}
+                              >
+                                查看操作记录
+                              </DropdownMenuItem>
+                            )}
+                            {onSendNotification && (
+                              <DropdownMenuItem
+                                onClick={() => onSendNotification(player)}
+                              >
+                                发送通知
+                              </DropdownMenuItem>
+                            )}
+                            {onViewSignRecords && (
+                              <DropdownMenuItem
+                                onClick={() => onViewSignRecords(player)}
+                              >
+                                查看签到记录
+                              </DropdownMenuItem>
+                            )}
+                            {onViewActivities && (
+                              <DropdownMenuItem
+                                onClick={() => onViewActivities(player)}
+                              >
+                                查看参与的活动
+                              </DropdownMenuItem>
+                            )}
+                            {onModifyRTP && (
+                              <DropdownMenuItem
+                                onClick={() => onModifyRTP(player)}
+                              >
+                                修改RTP
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
@@ -277,4 +406,3 @@ export function PlayerTableEnhanced({
     </div>
   );
 }
-

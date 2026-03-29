@@ -44,19 +44,31 @@ export async function POST(request: NextRequest) {
     // 搜索参数
     if (body.keyword) queryParams.append('keyword', body.keyword);
     if (body.name) queryParams.append('name', body.name);
-    if (body.activity_code) queryParams.append('activity_code', body.activity_code);
-    if (body.activityCode) queryParams.append('activity_code', body.activityCode);
+    if (body.activity_code)
+      queryParams.append('activity_code', body.activity_code);
+    if (body.activityCode)
+      queryParams.append('activity_code', body.activityCode);
 
     // 活动类型
-    if (body.activity_type) queryParams.append('activity_type', body.activity_type);
-    if (body.activityType) queryParams.append('activity_type', body.activityType);
-    if (body.activityTypes && Array.isArray(body.activityTypes) && body.activityTypes.length > 0) {
+    if (body.activity_type)
+      queryParams.append('activity_type', body.activity_type);
+    if (body.activityType)
+      queryParams.append('activity_type', body.activityType);
+    if (
+      body.activityTypes &&
+      Array.isArray(body.activityTypes) &&
+      body.activityTypes.length > 0
+    ) {
       queryParams.append('activity_type', body.activityTypes[0]);
     }
 
     // 状态
     if (body.status) queryParams.append('status', body.status);
-    if (body.statuses && Array.isArray(body.statuses) && body.statuses.length > 0) {
+    if (
+      body.statuses &&
+      Array.isArray(body.statuses) &&
+      body.statuses.length > 0
+    ) {
       queryParams.append('status', body.statuses[0]);
     }
 
@@ -84,7 +96,9 @@ export async function POST(request: NextRequest) {
 
     // 构建远程 API URL
     const queryString = queryParams.toString();
-    const remoteUrl = queryString ? `${REMOTE_API_URL}?${queryString}` : REMOTE_API_URL;
+    const remoteUrl = queryString
+      ? `${REMOTE_API_URL}?${queryString}`
+      : REMOTE_API_URL;
 
     // 记录发送到远程 API 的请求日志
     console.log('[活动列表] 发送请求到远程API:', remoteUrl);
@@ -121,23 +135,66 @@ export async function POST(request: NextRequest) {
     const result = await remoteResponse.json();
 
     // 控制台打印完整响应（调试用）
-    console.log('[活动列表] 远程API响应:', JSON.stringify({
-      code: result.code,
-      msg: result.msg,
-      dataInfo: {
-        total: result.data?.total,
-        page: result.data?.page,
-        page_size: result.data?.page_size,
-        itemsCount: Array.isArray(result.data?.items) ? result.data.items.length : 0
-      }
-    }, null, 2));
+    console.log(
+      '[活动列表] 远程API响应:',
+      JSON.stringify(
+        {
+          code: result.code,
+          msg: result.msg,
+          dataInfo: {
+            total: result.data?.total,
+            page: result.data?.page,
+            page_size: result.data?.page_size,
+            itemsCount: Array.isArray(result.data?.items)
+              ? result.data.items.length
+              : 0
+          }
+        },
+        null,
+        2
+      )
+    );
 
     // 转换响应格式以匹配前端期望的结构
     // 远程 API 返回: { code: 200, msg: "SUCCESS", data: { items: [], total, page, page_size } }
     // 前端期望: { code: 0, data: { list: [], total, page, page_size } }
     if ((result.code === 200 || result.code === 0) && result.data) {
+      // 处理活动数据，确保字段映射正确
+      // activity_code -> 活动编码
+      // activity_type -> 活动类型
+      // start_time, end_time -> 活动时间
+      // created_at -> 创建时间
+      // updated_at -> 更新时间
+      const activities = (result.data.items || result.data.list || []).map(
+        (activity: any) => {
+          const transformed: any = { ...activity };
+
+          // 确保字段名正确（如果后端返回的是驼峰格式，转换为下划线格式）
+          if (activity.activityCode && !activity.activity_code) {
+            transformed.activity_code = activity.activityCode;
+          }
+          if (activity.activityType && !activity.activity_type) {
+            transformed.activity_type = activity.activityType;
+          }
+          if (activity.startTime && !activity.start_time) {
+            transformed.start_time = activity.startTime;
+          }
+          if (activity.endTime && !activity.end_time) {
+            transformed.end_time = activity.endTime;
+          }
+          if (activity.createdAt && !activity.created_at) {
+            transformed.created_at = activity.createdAt;
+          }
+          if (activity.updatedAt && !activity.updated_at) {
+            transformed.updated_at = activity.updatedAt;
+          }
+
+          return transformed;
+        }
+      );
+
       const transformedData = {
-        list: result.data.items || result.data.list || [],
+        list: activities,
         total: result.data.total || 0,
         page: result.data.page || 1,
         page_size: result.data.page_size || result.data.pageSize || 20
@@ -145,12 +202,15 @@ export async function POST(request: NextRequest) {
 
       // 记录返回给前端的响应日志
       const requestDuration = Date.now() - requestStartTime;
-      console.log('[活动列表] 返回给前端:', JSON.stringify({
-        code: 0,
-        listCount: transformedData.list.length,
-        total: transformedData.total,
-        requestDuration: `${requestDuration}ms`
-      }));
+      console.log(
+        '[活动列表] 返回给前端:',
+        JSON.stringify({
+          code: 0,
+          listCount: transformedData.list.length,
+          total: transformedData.total,
+          requestDuration: `${requestDuration}ms`
+        })
+      );
 
       return successResponse(transformedData);
     }

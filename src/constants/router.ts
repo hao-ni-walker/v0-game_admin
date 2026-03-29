@@ -20,7 +20,9 @@ import {
   Receipt,
   Crown,
   Wallet,
-  ArrowDownCircle
+  ArrowDownCircle,
+  Server,
+  Activity
 } from 'lucide-react';
 
 // 业务导航列表
@@ -98,9 +100,22 @@ export const businessNavList: NavItem[] = [
       },
       {
         title: '游戏列表',
-        url: '/dashboard/games',
-        icon: List,
+        url: '#',
+        icon: Gamepad2,
         description: '游戏列表',
+        items: [
+          {
+            title: 'hgapi365',
+            url: '/dashboard/games/hgapi365',
+            description: 'hgapi365',
+            searchConfig: {
+              keywords: 'game games hgapi365 游戏 列表',
+              searchShortcut: ['g'],
+              searchSection: '游戏管理',
+              searchPriority: 2
+            }
+          }
+        ],
         searchConfig: {
           keywords: 'game games 游戏 列表',
           searchShortcut: ['g'],
@@ -111,7 +126,7 @@ export const businessNavList: NavItem[] = [
       {
         title: '活动列表',
         url: '/dashboard/campaigns',
-        icon: List,
+        icon: Megaphone,
         description: '活动列表',
         searchConfig: {
           keywords: 'campaign 活动 列表',
@@ -123,7 +138,7 @@ export const businessNavList: NavItem[] = [
       {
         title: '礼包列表',
         url: '/dashboard/gift-packs',
-        icon: List,
+        icon: Gift,
         description: '礼包列表',
         searchConfig: {
           keywords: 'gift pack 礼包 列表',
@@ -133,14 +148,41 @@ export const businessNavList: NavItem[] = [
         }
       },
       {
-        title: '通告列表',
-        url: '/dashboard/announcements',
-        icon: List,
-        description: '通告列表',
+        title: '通知管理',
+        url: '#',
+        icon: Megaphone,
+        isActive: false,
+        description: '通知管理',
+        items: [
+          {
+            title: '通告列表',
+            url: '/dashboard/announcements',
+            icon: List,
+            description: '通告列表',
+            searchConfig: {
+              keywords: 'announcement 通告 公告 列表',
+              searchShortcut: ['n'],
+              searchSection: '通知管理',
+              searchPriority: 8
+            }
+          },
+          {
+            title: '通告模板',
+            url: '/dashboard/announcements/templates',
+            icon: ScrollText,
+            description: '通告模板',
+            searchConfig: {
+              keywords: 'announcement template 通告 模板',
+              searchShortcut: ['t'],
+              searchSection: '通知管理',
+              searchPriority: 9
+            }
+          }
+        ],
         searchConfig: {
-          keywords: 'announcement 通告 公告 列表',
+          keywords: 'announcement 通知 通告',
           searchShortcut: ['n'],
-          searchSection: '通告管理',
+          searchSection: '通知管理',
           searchPriority: 8
         }
       },
@@ -186,6 +228,42 @@ export const businessNavList: NavItem[] = [
           searchShortcut: ['r'],
           searchSection: '数据分析',
           searchPriority: 5
+        }
+      },
+      {
+        title: '用户留存',
+        url: '/dashboard/analytics/user-retention',
+        icon: Users,
+        description: '用户留存',
+        searchConfig: {
+          keywords: 'analytics user retention 用户留存 数据 分析',
+          searchShortcut: ['u'],
+          searchSection: '数据分析',
+          searchPriority: 6
+        }
+      },
+      {
+        title: '储值分布',
+        url: '/dashboard/analytics/deposit-distribution',
+        icon: Wallet,
+        description: '储值分布',
+        searchConfig: {
+          keywords: 'analytics deposit distribution 储值分布 数据 分析',
+          searchShortcut: ['d'],
+          searchSection: '数据分析',
+          searchPriority: 7
+        }
+      },
+      {
+        title: '运营活动分析',
+        url: '/dashboard/analytics/activity-participation',
+        icon: Activity,
+        description: '运营活动分析',
+        searchConfig: {
+          keywords: 'analytics activity participation 运营活动 分析',
+          searchShortcut: ['a'],
+          searchSection: '数据分析',
+          searchPriority: 8
         }
       }
     ]
@@ -278,6 +356,18 @@ export const systemNavList: NavItem[] = [
           searchShortcut: ['y'],
           searchSection: '系统管理',
           searchPriority: 7
+        }
+      },
+      {
+        title: '平台管理',
+        url: '/dashboard/system/platform',
+        icon: Server,
+        description: '平台管理',
+        searchConfig: {
+          keywords: 'platform 平台 管理',
+          searchShortcut: ['m'],
+          searchSection: '系统管理',
+          searchPriority: 8
         }
       },
       {

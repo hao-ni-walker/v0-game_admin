@@ -63,26 +63,28 @@ export function ActivityFilters({
       name: filters.name,
       activity_type: filters.activity_type,
       statuses: filters.statuses || [],
-      startTimeRange: filters.start_time_start || filters.start_time_end
-        ? {
-            from: filters.start_time_start
-              ? new Date(filters.start_time_start)
-              : undefined,
-            to: filters.start_time_end
-              ? new Date(filters.start_time_end)
-              : undefined
-          }
-        : undefined,
-      endTimeRange: filters.end_time_start || filters.end_time_end
-        ? {
-            from: filters.end_time_start
-              ? new Date(filters.end_time_start)
-              : undefined,
-            to: filters.end_time_end
-              ? new Date(filters.end_time_end)
-              : undefined
-          }
-        : undefined,
+      startTimeRange:
+        filters.start_time_start || filters.start_time_end
+          ? {
+              from: filters.start_time_start
+                ? new Date(filters.start_time_start)
+                : undefined,
+              to: filters.start_time_end
+                ? new Date(filters.start_time_end)
+                : undefined
+            }
+          : undefined,
+      endTimeRange:
+        filters.end_time_start || filters.end_time_end
+          ? {
+              from: filters.end_time_start
+                ? new Date(filters.end_time_start)
+                : undefined,
+              to: filters.end_time_end
+                ? new Date(filters.end_time_end)
+                : undefined
+            }
+          : undefined,
       display_time_active: filters.display_time_active,
       has_active_trigger: filters.has_active_trigger
     });
@@ -156,7 +158,8 @@ export function ActivityFilters({
 
     // 活动开始时间范围
     if (formData.startTimeRange?.from) {
-      searchFilters.start_time_start = formData.startTimeRange.from.toISOString();
+      searchFilters.start_time_start =
+        formData.startTimeRange.from.toISOString();
     }
     if (formData.startTimeRange?.to) {
       searchFilters.start_time_end = formData.startTimeRange.to.toISOString();
@@ -194,7 +197,7 @@ export function ActivityFilters({
   const renderQuickSearch = () => (
     <div className='flex items-center gap-2'>
       <div className='relative flex-1'>
-        <Search className='text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2' />
+        <Search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
         <Input
           placeholder='搜索活动编码或名称...'
           value={quickSearch}
@@ -211,10 +214,15 @@ export function ActivityFilters({
         <Filter className='mr-2 h-4 w-4' />
         高级筛选
         {hasActiveFilters() && (
-          <span className='bg-primary ml-2 flex h-5 w-5 items-center justify-center rounded-full text-xs text-primary-foreground'>
-            {Object.values(filters).filter(
-              (v) => v !== undefined && v !== '' && (!Array.isArray(v) || v.length > 0)
-            ).length}
+          <span className='bg-primary text-primary-foreground ml-2 flex h-5 w-5 items-center justify-center rounded-full text-xs'>
+            {
+              Object.values(filters).filter(
+                (v) =>
+                  v !== undefined &&
+                  v !== '' &&
+                  (!Array.isArray(v) || v.length > 0)
+              ).length
+            }
           </span>
         )}
       </Button>
@@ -259,16 +267,19 @@ export function ActivityFilters({
         <div className='space-y-2'>
           <Label>活动类型</Label>
           <Select
-            value={formData.activity_type || ''}
+            value={formData.activity_type || 'all'}
             onValueChange={(value) =>
-              updateFormField('activity_type', value || undefined)
+              updateFormField(
+                'activity_type',
+                value === 'all' ? undefined : value
+              )
             }
           >
             <SelectTrigger>
               <SelectValue placeholder='请选择活动类型' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value=''>全部</SelectItem>
+              <SelectItem value='all'>全部</SelectItem>
               {Object.entries(TYPE_LABELS).map(([value, label]) => (
                 <SelectItem key={value} value={value}>
                   {label}
@@ -385,7 +396,10 @@ export function ActivityFilters({
               id='display_time_active'
               checked={formData.display_time_active === true}
               onCheckedChange={(checked) =>
-                updateFormField('display_time_active', checked ? true : undefined)
+                updateFormField(
+                  'display_time_active',
+                  checked ? true : undefined
+                )
               }
             />
             <Label
@@ -400,7 +414,10 @@ export function ActivityFilters({
               id='has_active_trigger'
               checked={formData.has_active_trigger === true}
               onCheckedChange={(checked) =>
-                updateFormField('has_active_trigger', checked ? true : undefined)
+                updateFormField(
+                  'has_active_trigger',
+                  checked ? true : undefined
+                )
               }
             />
             <Label

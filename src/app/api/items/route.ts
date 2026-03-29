@@ -99,14 +99,42 @@ export async function GET(request: NextRequest) {
     // 如果格式不匹配，直接返回原始数据
     return successResponse(result.data || result);
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const isNetworkError =
+      errorMessage.includes('fetch') ||
+      errorMessage.includes('network') ||
+      errorMessage.includes('ECONNREFUSED') ||
+      errorMessage.includes('ETIMEDOUT');
+
     // 记录错误日志
     await logger.error('礼包管理', '获取礼包列表', '获取礼包列表失败', {
-      error: error instanceof Error ? error.message : String(error),
+      error: errorMessage,
       stack: error instanceof Error ? error.stack : undefined,
       timestamp: new Date().toISOString()
     });
 
-    return errorResponse('获取礼包列表失败');
+    // 开发环境下远程不可用时返回空列表，避免页面报错
+    if (process.env.NODE_ENV === 'development' && isNetworkError) {
+      return successResponse(
+        {
+          total: 0,
+          page: 1,
+          page_size: 20,
+          list: []
+        },
+        {
+          page: 1,
+          limit: 20,
+          total: 0,
+          totalPages: 0
+        }
+      );
+    }
+
+    const message = isNetworkError
+      ? '无法连接礼包服务，请检查网络或稍后重试'
+      : `获取礼包列表失败: ${errorMessage}`;
+    return errorResponse(message);
   }
 }
 

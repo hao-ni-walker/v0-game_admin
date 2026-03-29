@@ -61,7 +61,7 @@ export function WithdrawOrderFilters({
   );
   const [userKeyword, setUserKeyword] = useState(filters.userKeyword || '');
   const [paymentChannelId, setPaymentChannelId] = useState<string>(
-    filters.paymentChannelId?.toString() || ''
+    filters.paymentChannelId?.toString() || 'all'
   );
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(
     filters.statuses || []
@@ -149,7 +149,7 @@ export function WithdrawOrderFilters({
       searchFilters.userKeyword = userKeyword.trim();
     }
 
-    if (paymentChannelId) {
+    if (paymentChannelId && paymentChannelId !== 'all') {
       searchFilters.paymentChannelId = parseInt(paymentChannelId);
     }
 
@@ -204,7 +204,7 @@ export function WithdrawOrderFilters({
     setOrderNo('');
     setChannelOrderNo('');
     setUserKeyword('');
-    setPaymentChannelId('');
+    setPaymentChannelId('all');
     setSelectedStatuses([]);
     setCreatedDateRange(getDefaultDateRange());
     setMinAmount('');
@@ -231,7 +231,7 @@ export function WithdrawOrderFilters({
     orderNo ||
     channelOrderNo ||
     userKeyword ||
-    paymentChannelId ||
+    (paymentChannelId && paymentChannelId !== 'all') ||
     selectedStatuses.length > 0 ||
     minAmount ||
     maxAmount ||
@@ -295,7 +295,7 @@ export function WithdrawOrderFilters({
               <SelectValue placeholder='提现渠道' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value=''>全部渠道</SelectItem>
+              <SelectItem value='all'>全部渠道</SelectItem>
               {paymentChannels.map((channel) => (
                 <SelectItem key={channel.id} value={channel.id.toString()}>
                   {channel.name}

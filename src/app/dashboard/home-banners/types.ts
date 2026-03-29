@@ -8,10 +8,12 @@ export interface Banner {
   link_url?: string;
   target: '_self' | '_blank';
   position: string;
+  page?: string;
   sort_order: number;
   start_time?: string;
   end_time?: string;
   status: 0 | 1;
+  status_text?: string;
   version: number;
   created_at: string;
   updated_at: string;
@@ -59,6 +61,7 @@ export interface BannerFormData {
   image_url: string;
   link_url?: string;
   target: '_self' | '_blank';
+  page?: string;
   position: string;
   sort_order: number;
   start_time?: string;

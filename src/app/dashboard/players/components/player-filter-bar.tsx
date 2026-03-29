@@ -36,10 +36,14 @@ interface PlayerFilterBarProps {
 /**
  * 玩家筛选组件
  */
-export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarProps) {
+export function PlayerFilterBar({
+  onSearch,
+  loading = false
+}: PlayerFilterBarProps) {
   const {
     filters,
     updateFilter,
+    updateFilters,
     resetFilters,
     applyFilters,
     hasActiveFilters
@@ -68,12 +72,10 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
    * 执行查询
    */
   const handleSearch = () => {
-    // 将表单数据同步到筛选条件
-    Object.entries(formData).forEach(([key, value]) => {
-      updateFilter(key as keyof PlayerFilters, value);
-    });
+    // 将表单数据同步到筛选条件（一次性更新所有字段，避免多次触发 URL 更新）
+    updateFilters(formData);
     applyFilters();
-    onSearch?.();
+    // 不需要立即调用 onSearch，让页面的 useEffect 自然响应 URL 变化
   };
 
   /**
@@ -82,6 +84,7 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
   const handleReset = () => {
     setFormData({});
     resetFilters();
+    // 不需要立即调用 onSearch，让页面的 useEffect 自然响应 URL 变化
   };
 
   /**
@@ -90,7 +93,7 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
   const handleQuickSearch = (value: string) => {
     updateFilter('username', value || undefined);
     applyFilters();
-    onSearch?.();
+    // 不需要立即调用 onSearch，让页面的 useEffect 自然响应 URL 变化
   };
 
   /**
@@ -107,7 +110,10 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
             placeholder='精确ID'
             value={formData.id || ''}
             onChange={(e) =>
-              updateFormField('id', e.target.value ? Number(e.target.value) : undefined)
+              updateFormField(
+                'id',
+                e.target.value ? Number(e.target.value) : undefined
+              )
             }
           />
         </div>
@@ -119,16 +125,22 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
               placeholder='最小ID'
               value={formData.id_min || ''}
               onChange={(e) =>
-                updateFormField('id_min', e.target.value ? Number(e.target.value) : undefined)
+                updateFormField(
+                  'id_min',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
               }
             />
-            <span className='self-center text-muted-foreground'>-</span>
+            <span className='text-muted-foreground self-center'>-</span>
             <Input
               type='number'
               placeholder='最大ID'
               value={formData.id_max || ''}
               onChange={(e) =>
-                updateFormField('id_max', e.target.value ? Number(e.target.value) : undefined)
+                updateFormField(
+                  'id_max',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
               }
             />
           </div>
@@ -138,7 +150,9 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
           <Input
             placeholder='模糊匹配'
             value={formData.username || ''}
-            onChange={(e) => updateFormField('username', e.target.value || undefined)}
+            onChange={(e) =>
+              updateFormField('username', e.target.value || undefined)
+            }
           />
         </div>
         <div className='space-y-2'>
@@ -146,7 +160,9 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
           <Input
             placeholder='模糊匹配'
             value={formData.email || ''}
-            onChange={(e) => updateFormField('email', e.target.value || undefined)}
+            onChange={(e) =>
+              updateFormField('email', e.target.value || undefined)
+            }
           />
         </div>
         <div className='space-y-2'>
@@ -154,7 +170,9 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
           <Input
             placeholder='精确匹配'
             value={formData.idname || ''}
-            onChange={(e) => updateFormField('idname', e.target.value || undefined)}
+            onChange={(e) =>
+              updateFormField('idname', e.target.value || undefined)
+            }
           />
         </div>
       </div>
@@ -202,16 +220,22 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
               placeholder='最小等级'
               value={formData.vip_level_min || ''}
               onChange={(e) =>
-                updateFormField('vip_level_min', e.target.value ? Number(e.target.value) : undefined)
+                updateFormField(
+                  'vip_level_min',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
               }
             />
-            <span className='self-center text-muted-foreground'>-</span>
+            <span className='text-muted-foreground self-center'>-</span>
             <Input
               type='number'
               placeholder='最大等级'
               value={formData.vip_level_max || ''}
               onChange={(e) =>
-                updateFormField('vip_level_max', e.target.value ? Number(e.target.value) : undefined)
+                updateFormField(
+                  'vip_level_max',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
               }
             />
           </div>
@@ -225,7 +249,10 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
                 : String(formData.is_locked)
             }
             onValueChange={(value) =>
-              updateFormField('is_locked', value === 'all' ? undefined : value === 'true')
+              updateFormField(
+                'is_locked',
+                value === 'all' ? undefined : value === 'true'
+              )
             }
           >
             <SelectTrigger>
@@ -247,7 +274,9 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
           <Input
             placeholder='代理商名称'
             value={formData.agent || ''}
-            onChange={(e) => updateFormField('agent', e.target.value || undefined)}
+            onChange={(e) =>
+              updateFormField('agent', e.target.value || undefined)
+            }
           />
         </div>
         <div className='space-y-2'>
@@ -257,7 +286,10 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
             placeholder='上级用户ID'
             value={formData.direct_superior_id || ''}
             onChange={(e) =>
-              updateFormField('direct_superior_id', e.target.value ? Number(e.target.value) : undefined)
+              updateFormField(
+                'direct_superior_id',
+                e.target.value ? Number(e.target.value) : undefined
+              )
             }
           />
         </div>
@@ -270,7 +302,10 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
           <Select
             value={formData.registration_method || 'all'}
             onValueChange={(value) =>
-              updateFormField('registration_method', value === 'all' ? undefined : (value as any))
+              updateFormField(
+                'registration_method',
+                value === 'all' ? undefined : (value as any)
+              )
             }
           >
             <SelectTrigger>
@@ -292,7 +327,12 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
           <Input
             placeholder='注册来源'
             value={formData.registration_source || ''}
-            onChange={(e) => updateFormField('registration_source', e.target.value || undefined)}
+            onChange={(e) =>
+              updateFormField(
+                'registration_source',
+                e.target.value || undefined
+              )
+            }
           />
         </div>
         <div className='space-y-2'>
@@ -300,7 +340,10 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
           <Select
             value={formData.identity_category || 'all'}
             onValueChange={(value) =>
-              updateFormField('identity_category', value === 'all' ? undefined : (value as any))
+              updateFormField(
+                'identity_category',
+                value === 'all' ? undefined : (value as any)
+              )
             }
           >
             <SelectTrigger>
@@ -328,17 +371,23 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
               placeholder='最小余额'
               value={formData.balance_min || ''}
               onChange={(e) =>
-                updateFormField('balance_min', e.target.value ? Number(e.target.value) : undefined)
+                updateFormField(
+                  'balance_min',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
               }
             />
-            <span className='self-center text-muted-foreground'>-</span>
+            <span className='text-muted-foreground self-center'>-</span>
             <Input
               type='number'
               step='0.01'
               placeholder='最大余额'
               value={formData.balance_max || ''}
               onChange={(e) =>
-                updateFormField('balance_max', e.target.value ? Number(e.target.value) : undefined)
+                updateFormField(
+                  'balance_max',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
               }
             />
           </div>
@@ -352,17 +401,23 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
               placeholder='最小存款'
               value={formData.total_deposit_min || ''}
               onChange={(e) =>
-                updateFormField('total_deposit_min', e.target.value ? Number(e.target.value) : undefined)
+                updateFormField(
+                  'total_deposit_min',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
               }
             />
-            <span className='self-center text-muted-foreground'>-</span>
+            <span className='text-muted-foreground self-center'>-</span>
             <Input
               type='number'
               step='0.01'
               placeholder='最大存款'
               value={formData.total_deposit_max || ''}
               onChange={(e) =>
-                updateFormField('total_deposit_max', e.target.value ? Number(e.target.value) : undefined)
+                updateFormField(
+                  'total_deposit_max',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
               }
             />
           </div>
@@ -376,17 +431,23 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
               placeholder='最小取款'
               value={formData.total_withdraw_min || ''}
               onChange={(e) =>
-                updateFormField('total_withdraw_min', e.target.value ? Number(e.target.value) : undefined)
+                updateFormField(
+                  'total_withdraw_min',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
               }
             />
-            <span className='self-center text-muted-foreground'>-</span>
+            <span className='text-muted-foreground self-center'>-</span>
             <Input
               type='number'
               step='0.01'
               placeholder='最大取款'
               value={formData.total_withdraw_max || ''}
               onChange={(e) =>
-                updateFormField('total_withdraw_max', e.target.value ? Number(e.target.value) : undefined)
+                updateFormField(
+                  'total_withdraw_max',
+                  e.target.value ? Number(e.target.value) : undefined
+                )
               }
             />
           </div>
@@ -403,7 +464,8 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
                 variant='outline'
                 className={cn(
                   'w-full justify-start text-left font-normal',
-                  (!formData.created_at_start || !formData.created_at_end) && 'text-muted-foreground'
+                  (!formData.created_at_start || !formData.created_at_end) &&
+                    'text-muted-foreground'
                 )}
               >
                 <Calendar className='mr-2 h-4 w-4' />
@@ -425,8 +487,14 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
                 }
                 onSelect={(range) => {
                   if (range?.from && range?.to) {
-                    updateFormField('created_at_start', format(range.from, 'yyyy-MM-dd'));
-                    updateFormField('created_at_end', format(range.to, 'yyyy-MM-dd'));
+                    updateFormField(
+                      'created_at_start',
+                      format(range.from, 'yyyy-MM-dd')
+                    );
+                    updateFormField(
+                      'created_at_end',
+                      format(range.to, 'yyyy-MM-dd')
+                    );
                   } else {
                     updateFormField('created_at_start', undefined);
                     updateFormField('created_at_end', undefined);
@@ -446,7 +514,8 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
                 variant='outline'
                 className={cn(
                   'w-full justify-start text-left font-normal',
-                  (!formData.last_login_start || !formData.last_login_end) && 'text-muted-foreground'
+                  (!formData.last_login_start || !formData.last_login_end) &&
+                    'text-muted-foreground'
                 )}
               >
                 <Calendar className='mr-2 h-4 w-4' />
@@ -468,8 +537,14 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
                 }
                 onSelect={(range) => {
                   if (range?.from && range?.to) {
-                    updateFormField('last_login_start', format(range.from, 'yyyy-MM-dd'));
-                    updateFormField('last_login_end', format(range.to, 'yyyy-MM-dd'));
+                    updateFormField(
+                      'last_login_start',
+                      format(range.from, 'yyyy-MM-dd')
+                    );
+                    updateFormField(
+                      'last_login_end',
+                      format(range.to, 'yyyy-MM-dd')
+                    );
                   } else {
                     updateFormField('last_login_start', undefined);
                     updateFormField('last_login_end', undefined);
@@ -490,7 +565,7 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
       {/* 快速搜索栏 */}
       <div className='flex items-center gap-2'>
         <div className='relative flex-1'>
-          <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+          <Search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
           <Input
             placeholder='搜索用户名或邮箱...'
             className='pl-9'
@@ -511,8 +586,14 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
           <Filter className='mr-2 h-4 w-4' />
           高级筛选
           {hasActiveFilters && (
-            <span className='ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground'>
-              {Object.keys(filters).filter((k) => filters[k as keyof PlayerFilters] !== undefined && filters[k as keyof PlayerFilters] !== '').length}
+            <span className='bg-primary text-primary-foreground ml-2 rounded-full px-2 py-0.5 text-xs'>
+              {
+                Object.keys(filters).filter(
+                  (k) =>
+                    filters[k as keyof PlayerFilters] !== undefined &&
+                    filters[k as keyof PlayerFilters] !== ''
+                ).length
+              }
             </span>
           )}
         </Button>
@@ -539,4 +620,3 @@ export function PlayerFilterBar({ onSearch, loading = false }: PlayerFilterBarPr
     </div>
   );
 }
-

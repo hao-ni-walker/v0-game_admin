@@ -26,6 +26,7 @@ import { usePlayersEnhanced } from './hooks/use-players-enhanced';
 import { usePlayerFiltersEnhanced } from './hooks/use-player-filters-enhanced';
 import { Player, PlayerDetail } from './types';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 /**
  * 玩家管理页面
@@ -57,13 +58,20 @@ export default function PlayersPage() {
   // 弹窗状态
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<number[]>([]);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailModalDefaultTab, setDetailModalDefaultTab] = useState<
+    'basic' | 'wallet' | 'vip' | 'spin' | 'agency'
+  >('basic');
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const [currentPlayer, setCurrentPlayer] = useState<PlayerDetail | null>(null);
   const [batchConfirmOpen, setBatchConfirmOpen] = useState(false);
-  const [batchOperationType, setBatchOperationType] = useState<'enable' | 'disable' | null>(null);
+  const [batchOperationType, setBatchOperationType] = useState<
+    'enable' | 'disable' | null
+  >(null);
   const [notificationModalOpen, setNotificationModalOpen] = useState(false);
-  const [notificationPlayer, setNotificationPlayer] = useState<Player | null>(null);
+  const [notificationPlayer, setNotificationPlayer] = useState<Player | null>(
+    null
+  );
 
   // 使用 useMemo 稳定 appliedFilters 的引用，通过 JSON.stringify 比较内容
   const appliedFiltersKey = useMemo(
@@ -81,7 +89,13 @@ export default function PlayersPage() {
       sortOrder: sort.sort_order
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appliedFiltersKey, pagination.page, pagination.page_size, sort.sort_by, sort.sort_order]);
+  }, [
+    appliedFiltersKey,
+    pagination.page,
+    pagination.page_size,
+    sort.sort_by,
+    sort.sort_order
+  ]);
 
   // 加载统计数据 - 使用防抖避免频繁请求
   useEffect(() => {
@@ -97,6 +111,7 @@ export default function PlayersPage() {
   const handleViewDetail = useCallback(
     async (player: Player) => {
       setCurrentPlayer(null);
+      setDetailModalDefaultTab('basic');
       setDetailModalOpen(true);
       const playerDetail = await fetchPlayerDetail(player.id);
       if (playerDetail) {
@@ -123,13 +138,10 @@ export default function PlayersPage() {
   );
 
   // 调整钱包
-  const handleAdjustWallet = useCallback(
-    async (player: PlayerDetail) => {
-      setCurrentPlayer(player);
-      setWalletModalOpen(true);
-    },
-    []
-  );
+  const handleAdjustWallet = useCallback(async (player: PlayerDetail) => {
+    setCurrentPlayer(player);
+    setWalletModalOpen(true);
+  }, []);
 
   // 保存编辑
   const handleSaveEdit = useCallback(
@@ -155,7 +167,16 @@ export default function PlayersPage() {
       }
       return success;
     },
-    [updatePlayer, appliedFilters, pagination, sort, currentPlayer, fetchPlayerDetail, fetchPlayers, fetchStatistics]
+    [
+      updatePlayer,
+      appliedFilters,
+      pagination,
+      sort,
+      currentPlayer,
+      fetchPlayerDetail,
+      fetchPlayers,
+      fetchStatistics
+    ]
   );
 
   // 保存钱包调整
@@ -175,7 +196,14 @@ export default function PlayersPage() {
       }
       return success;
     },
-    [adjustWallet, appliedFilters, pagination, sort, fetchPlayers, fetchStatistics]
+    [
+      adjustWallet,
+      appliedFilters,
+      pagination,
+      sort,
+      fetchPlayers,
+      fetchStatistics
+    ]
   );
 
   // 刷新玩家详情
@@ -218,12 +246,23 @@ export default function PlayersPage() {
     }
     setBatchConfirmOpen(false);
     setBatchOperationType(null);
-  }, [batchOperationType, selectedPlayerIds, batchOperation, appliedFilters, pagination, sort, fetchPlayers, fetchStatistics]);
+  }, [
+    batchOperationType,
+    selectedPlayerIds,
+    batchOperation,
+    appliedFilters,
+    pagination,
+    sort,
+    fetchPlayers,
+    fetchStatistics
+  ]);
 
   // 重置密码
   const handleResetPassword = useCallback(
     async (player: Player) => {
-      const confirmed = window.confirm(`确定要重置玩家 ${player.username} 的密码吗？`);
+      const confirmed = window.confirm(
+        `确定要重置玩家 ${player.username} 的密码吗？`
+      );
       if (confirmed) {
         await resetPassword(player.id);
       }
@@ -238,7 +277,10 @@ export default function PlayersPage() {
   }, []);
 
   const handleSaveNotification = useCallback(
-    async (playerId: number, data: { channel: string; title: string; content: string }) => {
+    async (
+      playerId: number,
+      data: { channel: string; title: string; content: string }
+    ) => {
       const success = await sendNotification(playerId, data);
       if (success) {
         setNotificationModalOpen(false);
@@ -257,40 +299,101 @@ export default function PlayersPage() {
     [router]
   );
 
+  // 处理状态切换
+  const handleStatusChange = useCallback(
+    async (playerId: number, newStatus: boolean) => {
+      const success = await updatePlayer(playerId, { status: newStatus });
+      if (success) {
+        // 刷新列表和统计
+        fetchPlayers({
+          filters: appliedFilters,
+          page: pagination.page,
+          pageSize: pagination.page_size,
+          sortBy: sort.sort_by,
+          sortOrder: sort.sort_order
+        });
+        fetchStatistics(appliedFilters);
+      }
+    },
+    [
+      updatePlayer,
+      appliedFilters,
+      pagination,
+      sort,
+      fetchPlayers,
+      fetchStatistics
+    ]
+  );
+
+  // 查看大转盘次数
+  const handleViewSpinQuota = useCallback(
+    async (player: Player) => {
+      setCurrentPlayer(null);
+      setDetailModalDefaultTab('spin');
+      setDetailModalOpen(true);
+      const playerDetail = await fetchPlayerDetail(player.id);
+      if (playerDetail) {
+        setCurrentPlayer(playerDetail);
+      }
+    },
+    [fetchPlayerDetail]
+  );
+
+  // 查看签到记录
+  const handleViewSignRecords = useCallback((player: Player) => {
+    // TODO: 实现查看签到记录功能
+    toast.info('查看签到记录功能开发中...');
+  }, []);
+
+  // 查看参与的活动
+  const handleViewActivities = useCallback((player: Player) => {
+    // TODO: 实现查看参与活动功能
+    toast.info('查看参与活动功能开发中...');
+  }, []);
+
+  // 修改RTP
+  const handleModifyRTP = useCallback((player: Player) => {
+    // TODO: 实现修改RTP功能
+    toast.info('修改RTP功能开发中...');
+  }, []);
+
   // 导出
   const handleExport = useCallback(async () => {
     await exportPlayers(appliedFilters);
   }, [exportPlayers, appliedFilters]);
 
   // 选择玩家
-  const handleSelectPlayer = useCallback((playerId: number, selected: boolean) => {
-    setSelectedPlayerIds((prev) => {
-      if (selected) {
-        return [...prev, playerId];
-      } else {
-        return prev.filter((id) => id !== playerId);
-      }
-    });
-  }, []);
+  const handleSelectPlayer = useCallback(
+    (playerId: number, selected: boolean) => {
+      setSelectedPlayerIds((prev) => {
+        if (selected) {
+          return [...prev, playerId];
+        } else {
+          return prev.filter((id) => id !== playerId);
+        }
+      });
+    },
+    []
+  );
 
   // 全选
-  const handleSelectAll = useCallback((selected: boolean) => {
-    if (selected) {
-      setSelectedPlayerIds(players.map((p) => p.id));
-    } else {
-      setSelectedPlayerIds([]);
-    }
-  }, [players]);
+  const handleSelectAll = useCallback(
+    (selected: boolean) => {
+      if (selected) {
+        setSelectedPlayerIds(players.map((p) => p.id));
+      } else {
+        setSelectedPlayerIds([]);
+      }
+    },
+    [players]
+  );
 
   return (
     <PageContainer>
       <div className='flex w-full flex-1 flex-col space-y-4'>
         {/* 页面头部 */}
         <div className='flex items-center justify-between'>
-          <Heading
-            title='玩家管理'
-            description='查看和管理所有玩家账户信息'
-          />
+          <Heading title='玩家管理' description='查看和管理所有玩家账户信息' />
           <div className='flex items-center gap-2'>
             <Button variant='outline' onClick={handleExport}>
               <Download className='mr-2 h-4 w-4' />
@@ -339,7 +442,7 @@ export default function PlayersPage() {
 
         {/* 批量操作栏 */}
         {selectedPlayerIds.length > 0 && (
-          <div className='flex items-center gap-2 rounded-lg border bg-muted/50 p-3'>
+          <div className='bg-muted/50 flex items-center gap-2 rounded-lg border p-3'>
             <span className='text-sm font-medium'>
               已选择 {selectedPlayerIds.length} 个玩家
             </span>
@@ -386,15 +489,22 @@ export default function PlayersPage() {
           onResetPassword={handleResetPassword}
           onSendNotification={handleSendNotification}
           onViewLogs={handleViewLogs}
+          onStatusChange={handleStatusChange}
+          onViewSpinQuota={handleViewSpinQuota}
+          onViewSignRecords={handleViewSignRecords}
+          onViewActivities={handleViewActivities}
+          onModifyRTP={handleModifyRTP}
         />
 
         {/* 详情弹窗 */}
         <PlayerDetailModal
           open={detailModalOpen}
           playerId={currentPlayer?.id || null}
+          defaultTab={detailModalDefaultTab}
           onClose={() => {
             setDetailModalOpen(false);
             setCurrentPlayer(null);
+            setDetailModalDefaultTab('basic');
           }}
           onEdit={handleEdit}
           onAdjustWallet={handleAdjustWallet}
@@ -457,4 +567,3 @@ export default function PlayersPage() {
     </PageContainer>
   );
 }
-

@@ -21,29 +21,33 @@ export function useAnnouncementFilters() {
       return;
     }
 
-    const types = searchParams.get('types');
-    
     const urlFilters: AnnouncementFilters = {
       keyword: searchParams.get('keyword') || '',
-      types: types ? types.split(',').map(Number) : [],
-      status: searchParams.get('status') === 'all' ? 'all' : searchParams.get('status') === '1' ? 1 : searchParams.get('status') === '0' ? 0 : 'all',
-      disabled: searchParams.get('disabled') === 'true' ? true : searchParams.get('disabled') === 'false' ? false : false,
-      show_removed: searchParams.get('show_removed') === 'true',
-      active_only: searchParams.get('active_only') === 'true',
-      start_from: searchParams.get('start_from') || undefined,
-      start_to: searchParams.get('start_to') || undefined,
-      end_from: searchParams.get('end_from') || undefined,
-      end_to: searchParams.get('end_to') || undefined,
+      notification_type: searchParams.get('notification_type') || undefined,
+      status:
+        (searchParams.get('status') as 'pending' | 'read' | 'sent' | 'all') ||
+        'all',
+      is_read:
+        searchParams.get('is_read') === 'true'
+          ? true
+          : searchParams.get('is_read') === 'false'
+            ? false
+            : undefined,
+      user_id: searchParams.get('user_id')
+        ? parseInt(searchParams.get('user_id')!)
+        : undefined,
       created_from: searchParams.get('created_from') || undefined,
       created_to: searchParams.get('created_to') || undefined,
-      updated_from: searchParams.get('updated_from') || undefined,
-      updated_to: searchParams.get('updated_to') || undefined,
-      sort_by: searchParams.get('sort_by') || 'default',
-      sort_dir: (searchParams.get('sort_dir') as 'asc' | 'desc') || 'asc',
+      sent_from: searchParams.get('sent_from') || undefined,
+      sent_to: searchParams.get('sent_to') || undefined,
+      read_from: searchParams.get('read_from') || undefined,
+      read_to: searchParams.get('read_to') || undefined,
+      sort_by: searchParams.get('sort_by') || 'created_at',
+      sort_dir: (searchParams.get('sort_dir') as 'asc' | 'desc') || 'desc',
       page: parseInt(searchParams.get('page') || '1'),
-      page_size: parseInt(searchParams.get('page_size') || '20')
+      page_size: parseInt(searchParams.get('page_size') || '10')
     };
-    
+
     setFilters(urlFilters);
   }, [searchParams]);
 
@@ -56,7 +60,9 @@ export function useAnnouncementFilters() {
 
       // 如果是筛选条件变化（非分页），重置到第一页
       if (
-        Object.keys(newFilters).some((key) => !['page', 'page_size'].includes(key))
+        Object.keys(newFilters).some(
+          (key) => !['page', 'page_size'].includes(key)
+        )
       ) {
         updatedFilters.page = 1;
       }
@@ -69,7 +75,13 @@ export function useAnnouncementFilters() {
       // 更新 URL
       const params = new URLSearchParams();
       Object.entries(updatedFilters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '' && value !== 'all' && value !== false) {
+        if (
+          value !== undefined &&
+          value !== null &&
+          value !== '' &&
+          value !== 'all' &&
+          value !== false
+        ) {
           if (Array.isArray(value)) {
             if (value.length > 0) {
               params.set(key, value.join(','));
@@ -99,7 +111,13 @@ export function useAnnouncementFilters() {
       // 更新 URL
       const params = new URLSearchParams();
       Object.entries(updatedFilters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '' && value !== 'all' && value !== false) {
+        if (
+          value !== undefined &&
+          value !== null &&
+          value !== '' &&
+          value !== 'all' &&
+          value !== false
+        ) {
           if (Array.isArray(value)) {
             if (value.length > 0) {
               params.set(key, value.join(','));
@@ -121,19 +139,16 @@ export function useAnnouncementFilters() {
   const clearFilters = useCallback(() => {
     searchFilters({
       keyword: '',
-      types: [],
+      notification_type: undefined,
       status: 'all',
-      disabled: false,
-      show_removed: false,
-      active_only: false,
-      start_from: undefined,
-      start_to: undefined,
-      end_from: undefined,
-      end_to: undefined,
+      is_read: undefined,
+      user_id: undefined,
       created_from: undefined,
       created_to: undefined,
-      updated_from: undefined,
-      updated_to: undefined,
+      sent_from: undefined,
+      sent_to: undefined,
+      read_from: undefined,
+      read_to: undefined,
       page: 1
     });
   }, [searchFilters]);
@@ -143,19 +158,16 @@ export function useAnnouncementFilters() {
    */
   const hasActiveFilters = Boolean(
     filters.keyword ||
-      (filters.types && filters.types.length > 0) ||
-      (filters.status !== 'all') ||
-      filters.disabled ||
-      filters.show_removed ||
-      filters.active_only ||
-      filters.start_from ||
-      filters.start_to ||
-      filters.end_from ||
-      filters.end_to ||
+      filters.notification_type ||
+      filters.status !== 'all' ||
+      filters.is_read !== undefined ||
+      filters.user_id ||
       filters.created_from ||
       filters.created_to ||
-      filters.updated_from ||
-      filters.updated_to
+      filters.sent_from ||
+      filters.sent_to ||
+      filters.read_from ||
+      filters.read_to
   );
 
   return {

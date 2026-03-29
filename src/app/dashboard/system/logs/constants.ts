@@ -75,7 +75,11 @@ export const OPERATION_TYPE_OPTIONS = [
   { label: '导出', value: 'EXPORT' },
   { label: '登录', value: 'LOGIN' },
   { label: '登出', value: 'LOGOUT' },
-  { label: '重置密码', value: 'RESET_PWD' }
+  { label: '重置密码', value: 'RESET_PWD' },
+  { label: '插入', value: 'INSERT' },
+  { label: '游戏启动', value: 'GAME_LAUNCH' },
+  { label: '签到', value: 'CHECKIN' },
+  { label: '抽奖', value: 'LOTTERY_DRAW' }
 ];
 
 /**
@@ -99,7 +103,11 @@ export const OPERATION_TYPE_COLORS: Record<string, string> = {
   EXPORT: 'bg-purple-100 text-purple-800',
   LOGIN: 'bg-cyan-100 text-cyan-800',
   LOGOUT: 'bg-slate-100 text-slate-800',
-  RESET_PWD: 'bg-orange-100 text-orange-800'
+  RESET_PWD: 'bg-orange-100 text-orange-800',
+  INSERT: 'bg-emerald-100 text-emerald-800',
+  GAME_LAUNCH: 'bg-indigo-100 text-indigo-800',
+  CHECKIN: 'bg-amber-100 text-amber-800',
+  LOTTERY_DRAW: 'bg-pink-100 text-pink-800'
 };
 
 /**

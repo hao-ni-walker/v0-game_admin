@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Search, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, Filter, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,21 +10,13 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import type {
-  PaymentChannelFilters,
-  ChannelType,
-  PaymentChannelType
-} from '../types';
-import {
-  PAYMENT_TYPE_OPTIONS,
-  CHANNEL_TYPE_OPTIONS,
-  STATUS_OPTIONS
-} from '../constants';
+import { AdvancedFilterContainer } from '@/components/shared/advanced-filter-container';
+import type { PaymentPlatformFilters } from '../types';
+import { STATUS_OPTIONS } from '../constants';
 
 interface PaymentChannelFiltersProps {
-  filters: PaymentChannelFilters;
-  onSearch: (filters: Partial<PaymentChannelFilters>) => void;
+  filters: PaymentPlatformFilters;
+  onSearch: (filters: Partial<PaymentPlatformFilters>) => void;
   onReset: () => void;
   loading?: boolean;
 }
@@ -36,17 +28,23 @@ export function PaymentChannelFilters({
   loading
 }: PaymentChannelFiltersProps) {
   const [localFilters, setLocalFilters] = useState<
-    Partial<PaymentChannelFilters>
+    Partial<PaymentPlatformFilters>
   >({
     keyword: filters.keyword || '',
-    types: filters.types || [],
-    channel_types: filters.channel_types || [],
-    status: filters.status || 'all',
-    disabled: filters.disabled
+    enabled: filters.enabled ?? 'all'
   });
+  const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
+
+  // 同步外部 filters 到本地表单状态
+  useEffect(() => {
+    setLocalFilters({
+      keyword: filters.keyword || '',
+      enabled: filters.enabled ?? 'all'
+    });
+  }, [filters]);
 
   const handleInputChange = (
-    field: keyof PaymentChannelFilters,
+    field: keyof PaymentPlatformFilters,
     value: any
   ) => {
     setLocalFilters((prev) => ({
@@ -55,153 +53,153 @@ export function PaymentChannelFilters({
     }));
   };
 
-  const handleTypeToggle = (type: PaymentChannelType) => {
-    const currentTypes = localFilters.types || [];
-    const newTypes = currentTypes.includes(type)
-      ? currentTypes.filter((t) => t !== type)
-      : [...currentTypes, type];
-    handleInputChange('types', newTypes);
-  };
-
-  const handleChannelTypeToggle = (channelType: ChannelType) => {
-    const currentTypes = localFilters.channel_types || [];
-    const newTypes = currentTypes.includes(channelType)
-      ? currentTypes.filter((t) => t !== channelType)
-      : [...currentTypes, channelType];
-    handleInputChange('channel_types', newTypes);
-  };
-
   const handleSearch = () => {
-    onSearch(localFilters);
+    onSearch({
+      ...localFilters,
+      page: 1 // 查询时重置到第一页
+    });
   };
 
   const handleReset = () => {
     setLocalFilters({
       keyword: '',
-      types: [],
-      channel_types: [],
-      status: 'all',
-      disabled: undefined
+      enabled: 'all'
     });
     onReset();
   };
 
-  return (
-    <div className='bg-card space-y-4 rounded-lg border p-4'>
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-        {/* 关键词搜索 */}
+  // 检查是否有激活的筛选条件
+  const hasActiveFilters = Boolean(
+    filters.keyword ||
+      (filters.enabled !== undefined && filters.enabled !== 'all')
+  );
+
+  /**
+   * 渲染快速搜索栏
+   */
+  const renderQuickSearch = () => (
+    <div className='flex items-center gap-3'>
+      {/* 关键词搜索 */}
+      <div className='relative max-w-sm flex-1'>
+        <Search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
+        <Input
+          placeholder='搜索平台名称...'
+          value={localFilters.keyword || ''}
+          onChange={(e) => handleInputChange('keyword', e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          className='pl-10'
+        />
+      </div>
+
+      {/* 状态筛选 */}
+      <Select
+        value={String(localFilters.enabled ?? 'all')}
+        onValueChange={(value) =>
+          handleInputChange(
+            'enabled',
+            value === 'all' ? 'all' : value === 'true'
+          )
+        }
+      >
+        <SelectTrigger className='w-[120px]'>
+          <SelectValue placeholder='状态' />
+        </SelectTrigger>
+        <SelectContent>
+          {STATUS_OPTIONS.map((option) => (
+            <SelectItem key={String(option.value)} value={String(option.value)}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {/* 查询按钮 */}
+      <Button
+        onClick={handleSearch}
+        disabled={loading}
+        className='shrink-0 cursor-pointer'
+      >
+        <Search className='mr-2 h-4 w-4' />
+        查询
+      </Button>
+
+      {/* 重置按钮 */}
+      {hasActiveFilters && (
+        <Button
+          variant='ghost'
+          onClick={handleReset}
+          className='text-muted-foreground hover:text-foreground shrink-0 cursor-pointer'
+        >
+          <RotateCcw className='mr-1 h-4 w-4' />
+          重置
+        </Button>
+      )}
+    </div>
+  );
+
+  /**
+   * 渲染高级筛选表单内容
+   */
+  const renderAdvancedFilterForm = () => (
+    <div className='grid gap-4'>
+      {/* 第一行：关键词和状态 */}
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
         <div className='space-y-2'>
-          <Label htmlFor='keyword'>关键词</Label>
+          <Label>关键词</Label>
           <Input
-            id='keyword'
-            placeholder='搜索名称或代码'
+            placeholder='搜索平台名称...'
             value={localFilters.keyword || ''}
             onChange={(e) => handleInputChange('keyword', e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           />
         </div>
-
-        {/* 状态筛选 */}
         <div className='space-y-2'>
-          <Label htmlFor='status'>状态</Label>
+          <Label>状态</Label>
           <Select
-            value={String(localFilters.status || 'all')}
+            value={String(localFilters.enabled ?? 'all')}
             onValueChange={(value) =>
               handleInputChange(
-                'status',
-                value === 'all' ? 'all' : parseInt(value)
+                'enabled',
+                value === 'all' ? 'all' : value === 'true'
               )
             }
           >
-            <SelectTrigger id='status'>
+            <SelectTrigger className='w-full'>
               <SelectValue placeholder='选择状态' />
             </SelectTrigger>
             <SelectContent>
               {STATUS_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={String(option.value)}>
+                <SelectItem
+                  key={String(option.value)}
+                  value={String(option.value)}
+                >
                   {option.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-
-        {/* 禁用状态 */}
-        <div className='space-y-2'>
-          <Label>禁用状态</Label>
-          <div className='flex items-center space-x-2 pt-2'>
-            <Checkbox
-              id='disabled'
-              checked={localFilters.disabled === true}
-              onCheckedChange={(checked) =>
-                handleInputChange('disabled', checked ? true : undefined)
-              }
-            />
-            <label
-              htmlFor='disabled'
-              className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
-            >
-              仅显示禁用渠道
-            </label>
-          </div>
-        </div>
       </div>
+    </div>
+  );
 
-      {/* 支付类型多选 */}
-      <div className='space-y-2'>
-        <Label>支付类型</Label>
-        <div className='flex flex-wrap gap-2'>
-          {PAYMENT_TYPE_OPTIONS.map((option) => (
-            <Button
-              key={option.value}
-              type='button'
-              variant={
-                localFilters.types?.includes(option.value)
-                  ? 'default'
-                  : 'outline'
-              }
-              size='sm'
-              onClick={() => handleTypeToggle(option.value)}
-            >
-              {option.label}
-            </Button>
-          ))}
-        </div>
-      </div>
+  return (
+    <div className='space-y-4'>
+      {/* 快速搜索栏 */}
+      {renderQuickSearch()}
 
-      {/* 渠道类型多选 */}
-      <div className='space-y-2'>
-        <Label>渠道类型</Label>
-        <div className='flex flex-wrap gap-2'>
-          {CHANNEL_TYPE_OPTIONS.map((option) => (
-            <Button
-              key={option.value}
-              type='button'
-              variant={
-                localFilters.channel_types?.includes(option.value)
-                  ? 'default'
-                  : 'outline'
-              }
-              size='sm'
-              onClick={() => handleChannelTypeToggle(option.value)}
-            >
-              {option.label}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {/* 操作按钮 */}
-      <div className='flex items-center gap-2'>
-        <Button onClick={handleSearch} disabled={loading}>
-          <Search className='mr-2 h-4 w-4' />
-          查询
-        </Button>
-        <Button variant='outline' onClick={handleReset} disabled={loading}>
-          <X className='mr-2 h-4 w-4' />
-          重置
-        </Button>
-      </div>
+      {/* 高级筛选弹窗 */}
+      <AdvancedFilterContainer
+        open={isAdvancedFilterOpen}
+        onClose={() => setIsAdvancedFilterOpen(false)}
+        title='支付平台筛选'
+        hasActiveFilters={hasActiveFilters}
+        onSearch={handleSearch}
+        onReset={handleReset}
+        loading={loading}
+      >
+        {renderAdvancedFilterForm()}
+      </AdvancedFilterContainer>
     </div>
   );
 }

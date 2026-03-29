@@ -265,7 +265,9 @@ export function DepositOrderDetailDrawer({
                   <div className='space-y-2'>
                     <Label className='text-muted-foreground'>实收金额</Label>
                     <div className='font-semibold text-green-600'>
-                      {formatCurrency(order.actualAmount)}
+                      {order.actualAmount !== null
+                        ? formatCurrency(order.actualAmount)
+                        : '—'}
                     </div>
                   </div>
 

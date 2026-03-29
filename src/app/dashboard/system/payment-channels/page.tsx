@@ -1,19 +1,31 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CreditCard, Plus } from 'lucide-react';
+import { CreditCard, Plus, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/table/pagination';
 import PageContainer from '@/components/layout/page-container';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
 
 import {
   PaymentChannelPageHeader,
   PaymentChannelFilters,
-  PaymentChannelTable
+  PaymentPlatformTable
 } from './components';
 import { usePaymentChannelFilters, usePaymentChannelManagement } from './hooks';
 import { PAGE_SIZE_OPTIONS } from './constants';
-import { PaymentChannel, PaymentChannelDialogState } from './types';
+import {
+  PaymentPlatform,
+  PaymentChannel,
+  PaymentPlatformDialogState,
+  PaymentChannelDialogState
+} from './types';
 
 export default function PaymentChannelsPage() {
   // 使用自定义hooks
@@ -26,70 +38,140 @@ export default function PaymentChannelsPage() {
   } = usePaymentChannelFilters();
 
   const {
-    channels,
+    platforms,
     loading,
     pagination,
-    fetchChannels,
-    refreshChannels,
-    deleteChannel,
-    toggleChannelStatus,
-    disableChannel
+    fetchPlatforms,
+    refreshPlatforms,
+    togglePlatformStatus,
+    toggleChannelDisabled,
+    deleteChannel
   } = usePaymentChannelManagement();
 
-  // 对话框状态
-  const [dialogState, setDialogState] = useState<PaymentChannelDialogState>({
-    type: null,
-    channel: null,
-    open: false
-  });
-
-  // 初始化和筛选条件变化时获取数据
-  useEffect(() => {
-    fetchChannels(filters);
-  }, [filters, fetchChannels]);
-
-  /**
-   * 打开创建对话框
-   */
-  const handleOpenCreateDialog = () => {
-    setDialogState({
-      type: 'create',
-      channel: null,
-      open: true
+  // 平台对话框状态
+  const [platformDialogState, setPlatformDialogState] =
+    useState<PaymentPlatformDialogState>({
+      type: null,
+      platform: null,
+      open: false
     });
-  };
 
-  /**
-   * 打开编辑对话框
-   */
-  const handleOpenEditDialog = (channel: PaymentChannel) => {
-    setDialogState({
-      type: 'edit',
-      channel,
-      open: true
-    });
-  };
-
-  /**
-   * 打开查看详情对话框
-   */
-  const handleOpenViewDialog = (channel: PaymentChannel) => {
-    setDialogState({
-      type: 'view',
-      channel,
-      open: true
-    });
-  };
-
-  /**
-   * 关闭对话框
-   */
-  const handleCloseDialog = () => {
-    setDialogState({
+  // 渠道对话框状态
+  const [channelDialogState, setChannelDialogState] =
+    useState<PaymentChannelDialogState>({
       type: null,
       channel: null,
       open: false
     });
+
+  // 初始化和筛选条件变化时获取数据
+  useEffect(() => {
+    fetchPlatforms(filters);
+  }, [filters, fetchPlatforms]);
+
+  /**
+   * 打开创建平台对话框
+   */
+  const handleOpenCreatePlatformDialog = () => {
+    setPlatformDialogState({
+      type: 'create',
+      platform: null,
+      open: true
+    });
+  };
+
+  /**
+   * 打开编辑平台对话框
+   */
+  const handleOpenEditPlatformDialog = (platform: PaymentPlatform) => {
+    setPlatformDialogState({
+      type: 'edit',
+      platform,
+      open: true
+    });
+  };
+
+  /**
+   * 打开查看平台配置对话框
+   */
+  const handleOpenViewPlatformDialog = (platform: PaymentPlatform) => {
+    setPlatformDialogState({
+      type: 'view',
+      platform,
+      open: true
+    });
+  };
+
+  /**
+   * 关闭平台对话框
+   */
+  const handleClosePlatformDialog = () => {
+    setPlatformDialogState({
+      type: null,
+      platform: null,
+      open: false
+    });
+  };
+
+  /**
+   * 打开编辑渠道对话框
+   */
+  const handleOpenEditChannelDialog = (
+    channel: PaymentChannel,
+    platform: PaymentPlatform
+  ) => {
+    setChannelDialogState({
+      type: 'edit',
+      channel,
+      platformId: platform.id,
+      open: true
+    });
+  };
+
+  /**
+   * 打开查看渠道对话框
+   */
+  const handleOpenViewChannelDialog = (
+    channel: PaymentChannel,
+    platform: PaymentPlatform
+  ) => {
+    setChannelDialogState({
+      type: 'view',
+      channel,
+      platformId: platform.id,
+      open: true
+    });
+  };
+
+  /**
+   * 关闭渠道对话框
+   */
+  const handleCloseChannelDialog = () => {
+    setChannelDialogState({
+      type: null,
+      channel: null,
+      open: false
+    });
+  };
+
+  /**
+   * 切换平台状态
+   */
+  const handleTogglePlatformStatus = async (platform: PaymentPlatform) => {
+    const success = await togglePlatformStatus(platform);
+    if (success) {
+      fetchPlatforms(filters);
+    }
+  };
+
+  /**
+   * 切换渠道禁用状态
+   */
+  const handleToggleChannelDisabled = async (channel: PaymentChannel) => {
+    const success = await toggleChannelDisabled(channel);
+    if (success) {
+      fetchPlatforms(filters);
+    }
   };
 
   /**
@@ -98,27 +180,7 @@ export default function PaymentChannelsPage() {
   const handleDeleteChannel = async (channel: PaymentChannel) => {
     const success = await deleteChannel(channel.id);
     if (success) {
-      fetchChannels(filters);
-    }
-  };
-
-  /**
-   * 切换渠道状态
-   */
-  const handleToggleStatus = async (channel: PaymentChannel) => {
-    const success = await toggleChannelStatus(channel);
-    if (success) {
-      fetchChannels(filters);
-    }
-  };
-
-  /**
-   * 禁用渠道
-   */
-  const handleDisableChannel = async (channel: PaymentChannel) => {
-    const success = await disableChannel(channel);
-    if (success) {
-      fetchChannels(filters);
+      fetchPlatforms(filters);
     }
   };
 
@@ -126,7 +188,7 @@ export default function PaymentChannelsPage() {
    * 刷新数据
    */
   const handleRefresh = () => {
-    refreshChannels(filters);
+    refreshPlatforms(filters);
   };
 
   /**
@@ -162,7 +224,7 @@ export default function PaymentChannelsPage() {
       <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
         {/* 页面头部 */}
         <PaymentChannelPageHeader
-          onCreateChannel={handleOpenCreateDialog}
+          onCreateChannel={handleOpenCreatePlatformDialog}
           onRefresh={handleRefresh}
           loading={loading}
         />
@@ -176,33 +238,35 @@ export default function PaymentChannelsPage() {
         />
 
         {/* 数据表格和分页 */}
-        <div className='flex min-h-0 flex-1 flex-col'>
-          <div className='min-h-0'>
-            <PaymentChannelTable
-              channels={channels}
+        <div className='flex min-h-0 flex-1 flex-col overflow-hidden'>
+          <div className='min-h-0 flex-1 overflow-auto'>
+            <PaymentPlatformTable
+              platforms={platforms}
               loading={loading}
               pagination={pagination}
-              onEdit={handleOpenEditDialog}
-              onView={handleOpenViewDialog}
-              onDelete={handleDeleteChannel}
-              onToggleStatus={handleToggleStatus}
-              onDisable={handleDisableChannel}
+              onEditPlatform={handleOpenEditPlatformDialog}
+              onViewPlatform={handleOpenViewPlatformDialog}
+              onTogglePlatformStatus={handleTogglePlatformStatus}
+              onEditChannel={handleOpenEditChannelDialog}
+              onViewChannel={handleOpenViewChannelDialog}
+              onToggleChannelDisabled={handleToggleChannelDisabled}
+              onDeleteChannel={handleDeleteChannel}
               emptyState={{
-                icon: <CreditCard className='text-muted-foreground h-8 w-8' />,
+                icon: <Wallet className='text-muted-foreground h-8 w-8' />,
                 title: hasActiveFilters
-                  ? '未找到匹配的支付渠道'
-                  : '还没有支付渠道',
+                  ? '未找到匹配的支付平台'
+                  : '还没有支付平台',
                 description: hasActiveFilters
                   ? '请尝试调整筛选条件以查看更多结果'
-                  : '开始添加支付渠道来管理充值和提现',
+                  : '开始添加支付平台来管理充值和提现渠道',
                 action: !hasActiveFilters ? (
                   <Button
-                    onClick={handleOpenCreateDialog}
+                    onClick={handleOpenCreatePlatformDialog}
                     size='sm'
                     className='mt-2'
                   >
                     <Plus className='mr-2 h-4 w-4' />
-                    新增支付渠道
+                    新增支付平台
                   </Button>
                 ) : undefined
               }}
@@ -215,7 +279,9 @@ export default function PaymentChannelsPage() {
               pagination={{
                 ...pagination,
                 limit: pagination.page_size,
-                totalPages: Math.ceil(pagination.total / pagination.page_size)
+                totalPages:
+                  pagination.total_pages ||
+                  Math.ceil(pagination.total / pagination.page_size)
               }}
               onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
@@ -224,6 +290,220 @@ export default function PaymentChannelsPage() {
           </div>
         </div>
       </div>
+
+      {/* 平台配置查看对话框 */}
+      <Dialog
+        open={platformDialogState.open && platformDialogState.type === 'view'}
+        onOpenChange={handleClosePlatformDialog}
+      >
+        <DialogContent className='max-w-2xl'>
+          <DialogHeader>
+            <DialogTitle>
+              平台配置 - {platformDialogState.platform?.name}
+            </DialogTitle>
+            <DialogDescription>查看支付平台的详细配置信息</DialogDescription>
+          </DialogHeader>
+          {platformDialogState.platform && (
+            <div className='space-y-4'>
+              <div className='grid grid-cols-2 gap-4'>
+                <div>
+                  <label className='text-muted-foreground text-sm'>
+                    平台ID
+                  </label>
+                  <p className='font-medium'>
+                    {platformDialogState.platform.id}
+                  </p>
+                </div>
+                <div>
+                  <label className='text-muted-foreground text-sm'>
+                    平台名称
+                  </label>
+                  <p className='font-medium'>
+                    {platformDialogState.platform.name}
+                  </p>
+                </div>
+                <div>
+                  <label className='text-muted-foreground text-sm'>状态</label>
+                  <p className='font-medium'>
+                    {platformDialogState.platform.enabled ? '启用' : '停用'}
+                  </p>
+                </div>
+                <div>
+                  <label className='text-muted-foreground text-sm'>
+                    平台地址
+                  </label>
+                  <p className='font-medium break-all'>
+                    {platformDialogState.platform.url}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <label className='text-muted-foreground text-sm'>
+                  平台配置
+                </label>
+                <pre className='bg-muted mt-2 overflow-auto rounded-md p-4 text-sm'>
+                  {JSON.stringify(
+                    platformDialogState.platform.platform_config,
+                    null,
+                    2
+                  )}
+                </pre>
+              </div>
+              <div>
+                <label className='text-muted-foreground text-sm'>
+                  渠道数量
+                </label>
+                <p className='font-medium'>
+                  {platformDialogState.platform.channels.length} 个渠道
+                </p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 渠道详情查看对话框 */}
+      <Dialog
+        open={channelDialogState.open && channelDialogState.type === 'view'}
+        onOpenChange={handleCloseChannelDialog}
+      >
+        <DialogContent className='max-w-2xl'>
+          <DialogHeader>
+            <DialogTitle>
+              渠道详情 - {channelDialogState.channel?.name}
+            </DialogTitle>
+            <DialogDescription>查看支付渠道的详细配置信息</DialogDescription>
+          </DialogHeader>
+          {channelDialogState.channel && (
+            <div className='space-y-4'>
+              <div className='grid grid-cols-2 gap-4'>
+                <div>
+                  <label className='text-muted-foreground text-sm'>
+                    渠道ID
+                  </label>
+                  <p className='font-medium'>{channelDialogState.channel.id}</p>
+                </div>
+                <div>
+                  <label className='text-muted-foreground text-sm'>
+                    渠道名称
+                  </label>
+                  <p className='font-medium'>
+                    {channelDialogState.channel.name}
+                  </p>
+                </div>
+                <div>
+                  <label className='text-muted-foreground text-sm'>
+                    渠道代码
+                  </label>
+                  <p className='font-medium'>
+                    {channelDialogState.channel.code}
+                  </p>
+                </div>
+                <div>
+                  <label className='text-muted-foreground text-sm'>类型</label>
+                  <p className='font-medium'>
+                    {channelDialogState.channel.type === 'collection'
+                      ? '充值'
+                      : '提现'}
+                  </p>
+                </div>
+                <div>
+                  <label className='text-muted-foreground text-sm'>
+                    渠道类型
+                  </label>
+                  <p className='font-medium'>
+                    {channelDialogState.channel.channel_type}
+                  </p>
+                </div>
+                <div>
+                  <label className='text-muted-foreground text-sm'>状态</label>
+                  <p className='font-medium'>
+                    {channelDialogState.channel.disabled ? '已禁用' : '正常'}
+                  </p>
+                </div>
+                <div>
+                  <label className='text-muted-foreground text-sm'>
+                    最小金额
+                  </label>
+                  <p className='font-medium'>
+                    ${channelDialogState.channel.min_amount}
+                  </p>
+                </div>
+                <div>
+                  <label className='text-muted-foreground text-sm'>
+                    最大金额
+                  </label>
+                  <p className='font-medium'>
+                    ${channelDialogState.channel.max_amount}
+                  </p>
+                </div>
+                <div>
+                  <label className='text-muted-foreground text-sm'>
+                    每日限额
+                  </label>
+                  <p className='font-medium'>
+                    {channelDialogState.channel.daily_limit
+                      ? `$${channelDialogState.channel.daily_limit}`
+                      : '-'}
+                  </p>
+                </div>
+                <div>
+                  <label className='text-muted-foreground text-sm'>费率</label>
+                  <p className='font-medium'>
+                    {parseFloat(channelDialogState.channel.fee_rate) * 100}%
+                  </p>
+                </div>
+                <div>
+                  <label className='text-muted-foreground text-sm'>
+                    固定费用
+                  </label>
+                  <p className='font-medium'>
+                    ${channelDialogState.channel.fixed_fee}
+                  </p>
+                </div>
+                <div>
+                  <label className='text-muted-foreground text-sm'>排序</label>
+                  <p className='font-medium'>
+                    {channelDialogState.channel.sort_order}
+                  </p>
+                </div>
+              </div>
+              {channelDialogState.channel.config && (
+                <div>
+                  <label className='text-muted-foreground text-sm'>
+                    渠道配置
+                  </label>
+                  <pre className='bg-muted mt-2 overflow-auto rounded-md p-4 text-sm'>
+                    {JSON.stringify(channelDialogState.channel.config, null, 2)}
+                  </pre>
+                </div>
+              )}
+              <div className='grid grid-cols-2 gap-4'>
+                <div>
+                  <label className='text-muted-foreground text-sm'>
+                    创建时间
+                  </label>
+                  <p className='font-medium'>
+                    {new Date(
+                      channelDialogState.channel.created_at
+                    ).toLocaleString('zh-CN')}
+                  </p>
+                </div>
+                <div>
+                  <label className='text-muted-foreground text-sm'>
+                    更新时间
+                  </label>
+                  <p className='font-medium'>
+                    {new Date(
+                      channelDialogState.channel.updated_at
+                    ).toLocaleString('zh-CN')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </PageContainer>
   );
 }

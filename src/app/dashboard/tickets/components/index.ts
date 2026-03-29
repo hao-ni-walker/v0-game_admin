@@ -4,5 +4,6 @@ export { TicketTable } from './ticket-table';
 export { TicketDetailDrawer } from './ticket-detail-drawer';
 export { TicketForm } from './ticket-form';
 export { TicketCommentList } from './ticket-comment-list';
+export { TicketCommentInline } from './ticket-comment-inline';
 export { TicketAttachmentList } from './ticket-attachment-list';
 export { TicketEventTimeline } from './ticket-event-timeline';

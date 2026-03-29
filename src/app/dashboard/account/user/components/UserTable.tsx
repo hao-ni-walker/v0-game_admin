@@ -1,6 +1,7 @@
 import React from 'react';
 import { Edit, UserCheck, UserX, Crown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { DataTable } from '@/components/table/data-table';
 import {
   ActionDropdown,
@@ -29,6 +30,8 @@ interface UserTableProps {
   onEdit: (user: User) => void;
   /** 删除用户回调 */
   onDelete: (user: User) => void;
+  /** 切换用户状态回调 */
+  onToggleStatus?: (user: User) => void;
   /** 启用用户回调 */
   onEnable?: (user: User) => void;
   /** 禁用用户回调 */
@@ -47,6 +50,7 @@ export function UserTable({
   pagination,
   onEdit,
   onDelete,
+  onToggleStatus,
   onEnable,
   onDisable,
   emptyState
@@ -88,8 +92,22 @@ export function UserTable({
       return {
         ...col,
         render: (value: any, record: User) => {
-          const statusInfo = STATUS_MAP[record.status];
-          return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
+          const isActive = record.status === 'active';
+          const isDisabled = record.isSuperAdmin || !onToggleStatus;
+
+          return (
+            <div className='flex justify-center'>
+              <Switch
+                checked={isActive}
+                onCheckedChange={() => {
+                  if (onToggleStatus && !record.isSuperAdmin) {
+                    onToggleStatus(record);
+                  }
+                }}
+                disabled={isDisabled}
+              />
+            </div>
+          );
         }
       };
     }

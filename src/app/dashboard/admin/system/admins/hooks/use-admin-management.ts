@@ -39,8 +39,14 @@ interface UseAdminManagementResult {
   fetchRoles: () => Promise<void>;
   createAdmin: (data: CreateAdminFormData) => Promise<boolean>;
   updateAdmin: (adminId: number, data: EditAdminFormData) => Promise<boolean>;
-  updateAdminStatus: (adminId: number, data: StatusChangeData) => Promise<boolean>;
-  updateAdminPassword: (adminId: number, data: PasswordResetFormData) => Promise<boolean>;
+  updateAdminStatus: (
+    adminId: number,
+    data: StatusChangeData
+  ) => Promise<boolean>;
+  updateAdminPassword: (
+    adminId: number,
+    data: PasswordResetFormData
+  ) => Promise<boolean>;
   deleteAdmin: (adminId: number) => Promise<boolean>;
   setPage: (page: number) => void;
   setPageSize: (pageSize: number) => void;
@@ -109,7 +115,8 @@ export function useAdminManagement(): UseAdminManagementResult {
           throw new Error(response.message || '获取管理员列表失败');
         }
       } catch (err) {
-        const message = err instanceof Error ? err.message : '获取管理员列表失败';
+        const message =
+          err instanceof Error ? err.message : '获取管理员列表失败';
         setError(message);
         toast.error(message);
       } finally {
@@ -131,7 +138,8 @@ export function useAdminManagement(): UseAdminManagementResult {
           throw new Error(response.message || '获取管理员详情失败');
         }
       } catch (err) {
-        const message = err instanceof Error ? err.message : '获取管理员详情失败';
+        const message =
+          err instanceof Error ? err.message : '获取管理员详情失败';
         toast.error(message);
         return null;
       } finally {
@@ -168,7 +176,8 @@ export function useAdminManagement(): UseAdminManagementResult {
       setRolesLoading(true);
       const response = await AdminAPI.getAdminRoles();
       if (response.success && response.data) {
-        setRoles(response.data);
+        // response.data 是包含 items 的对象，需要提取 items 数组
+        setRoles(response.data.items || []);
       } else {
         throw new Error(response.message || '获取角色列表失败');
       }
@@ -315,4 +324,3 @@ export function useAdminManagement(): UseAdminManagementResult {
     setSort
   };
 }
-

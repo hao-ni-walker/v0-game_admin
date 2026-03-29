@@ -23,15 +23,22 @@ export function useTicketManagement() {
   const fetchTickets = useCallback(async (params: TicketListParams) => {
     setLoading(true);
     try {
+      console.log('[工单管理] 请求参数:', params);
       const response = await TicketAPI.getTickets(params);
+      console.log('[工单管理] API 响应:', response);
       if (response.success && response.data) {
-        setTickets(response.data.list || []);
+        // 远程 API 返回的是 items 而不是 list
+        const items = response.data.items || response.data.list || [];
+        console.log('[工单管理] 工单数据:', items);
+        console.log('[工单管理] 工单数量:', items.length);
+        setTickets(items);
         setPagination({
           page: response.data.page || 1,
           page_size: response.data.page_size || 20,
           total: response.data.total || 0
         });
       } else {
+        console.error('[工单管理] 响应失败:', response);
         toast.error(response.message || '获取工单列表失败');
       }
     } catch (error) {

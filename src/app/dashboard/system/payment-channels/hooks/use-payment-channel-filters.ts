@@ -1,22 +1,22 @@
 import { useState, useCallback, useMemo } from 'react';
-import type { PaymentChannelFilters } from '../types';
+import type { PaymentPlatformFilters } from '../types';
 import { DEFAULT_PAGE_SIZE } from '../constants';
 
 /**
- * 支付渠道筛选hooks
+ * 支付平台筛选hooks
  */
 export function usePaymentChannelFilters() {
-  const [filters, setFilters] = useState<PaymentChannelFilters>({
+  const [filters, setFilters] = useState<PaymentPlatformFilters>({
     page: 1,
     page_size: DEFAULT_PAGE_SIZE,
-    status: 'all'
+    enabled: 'all'
   });
 
   /**
    * 更新筛选条件
    */
   const searchFilters = useCallback(
-    (newFilters: Partial<PaymentChannelFilters>) => {
+    (newFilters: Partial<PaymentPlatformFilters>) => {
       setFilters((prev) => ({
         ...prev,
         ...newFilters,
@@ -46,7 +46,7 @@ export function usePaymentChannelFilters() {
     setFilters({
       page: 1,
       page_size: DEFAULT_PAGE_SIZE,
-      status: 'all'
+      enabled: 'all'
     });
   }, []);
 
@@ -56,23 +56,7 @@ export function usePaymentChannelFilters() {
   const hasActiveFilters = useMemo(() => {
     return !!(
       filters.keyword ||
-      (filters.types && filters.types.length > 0) ||
-      (filters.channel_types && filters.channel_types.length > 0) ||
-      (filters.status !== undefined && filters.status !== 'all') ||
-      filters.disabled !== undefined ||
-      filters.show_removed ||
-      filters.min_amount_maxlte !== undefined ||
-      filters.max_amount_mingte !== undefined ||
-      filters.fee_rate_min !== undefined ||
-      filters.fee_rate_max !== undefined ||
-      filters.fixed_fee_min !== undefined ||
-      filters.fixed_fee_max !== undefined ||
-      filters.daily_limit_min !== undefined ||
-      filters.daily_limit_max !== undefined ||
-      filters.created_from ||
-      filters.created_to ||
-      filters.updated_from ||
-      filters.updated_to
+      (filters.enabled !== undefined && filters.enabled !== 'all')
     );
   }, [filters]);
 

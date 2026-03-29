@@ -1,14 +1,5 @@
 import React from 'react';
-import {
-  Edit,
-  Eye,
-  Copy,
-  Power,
-  PowerOff,
-  Ban,
-  Check,
-  AlertTriangle
-} from 'lucide-react';
+import { Edit, Eye, Copy, Check, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/table/data-table';
 import {
@@ -68,13 +59,10 @@ export function AnnouncementTable({
     toast.success('ID已复制');
   };
 
-  // 判断是否生效中
-  const isActive = (announcement: Announcement): boolean => {
-    if (announcement.disabled || announcement.status === 0) return false;
-    const now = new Date().toISOString();
-    const startOk = !announcement.start_time || announcement.start_time <= now;
-    const endOk = !announcement.end_time || announcement.end_time >= now;
-    return startOk && endOk;
+  // 复制用户ID
+  const handleCopyUserId = (userId: number) => {
+    navigator.clipboard.writeText(String(userId));
+    toast.success('用户ID已复制');
   };
 
   // 表格列配置
@@ -96,8 +84,25 @@ export function AnnouncementTable({
             <div className='flex items-center justify-center gap-1'>
               <span className='truncate font-mono text-xs'>{value}</span>
               <Copy
-                className='h-3 w-3 cursor-pointer text-muted-foreground hover:text-foreground'
+                className='text-muted-foreground hover:text-foreground h-3 w-3 cursor-pointer'
                 onClick={() => handleCopyId(value)}
+              />
+            </div>
+          );
+        }
+      };
+    }
+
+    if (col.key === 'user_id') {
+      return {
+        ...col,
+        render: (value: number) => {
+          return (
+            <div className='flex items-center justify-center gap-1'>
+              <span className='truncate font-mono text-xs'>{value}</span>
+              <Copy
+                className='text-muted-foreground hover:text-foreground h-3 w-3 cursor-pointer'
+                onClick={() => handleCopyUserId(value)}
               />
             </div>
           );
@@ -111,34 +116,22 @@ export function AnnouncementTable({
         render: (value: string, record: Announcement) => {
           return (
             <div className='space-y-1'>
-              <div className='flex items-center gap-2'>
-                <span className='font-medium line-clamp-1' title={value}>
-                  {value}
-                </span>
-                {record.removed && (
-                  <Badge variant='outline' className='text-xs'>
-                    已删除
-                  </Badge>
-                )}
-              </div>
-              {isActive(record) && (
-                <Badge variant='default' className='text-xs'>
-                  生效中
-                </Badge>
-              )}
+              <span className='line-clamp-2 font-medium' title={value}>
+                {value}
+              </span>
             </div>
           );
         }
       };
     }
 
-    if (col.key === 'type') {
+    if (col.key === 'notification_type') {
       return {
         ...col,
-        render: (value: number) => {
-          const variant = ANNOUNCEMENT_TYPE_COLORS[value] as any;
+        render: (value: string) => {
+          const variant = ANNOUNCEMENT_TYPE_COLORS[value] || 'default';
           return (
-            <Badge variant={variant}>
+            <Badge variant={variant as any}>
               {ANNOUNCEMENT_TYPE_LABELS[value] || value}
             </Badge>
           );
@@ -149,7 +142,7 @@ export function AnnouncementTable({
     if (col.key === 'priority') {
       return {
         ...col,
-        render: (value: number) => {
+        render: (value: string) => {
           const config = PRIORITY_LABELS[value];
           return (
             <div className='flex justify-center'>
@@ -162,49 +155,39 @@ export function AnnouncementTable({
       };
     }
 
-    if (col.key === 'time_range') {
-      return {
-        ...col,
-        render: (value: any, record: Announcement) => {
-          return (
-            <div className='space-y-1 text-xs'>
-              <div>
-                开始: {record.start_time ? formatDateTime(record.start_time) : <span className='text-muted-foreground'>不限</span>}
-              </div>
-              <div>
-                结束: {record.end_time ? formatDateTime(record.end_time) : <span className='text-muted-foreground'>不限</span>}
-              </div>
-            </div>
-          );
-        }
-      };
-    }
-
     if (col.key === 'status') {
       return {
         ...col,
-        render: (value: number) => {
+        render: (value: string) => {
+          const statusMap: Record<string, { label: string; variant: string }> =
+            {
+              pending: { label: '待发送', variant: 'secondary' },
+              sent: { label: '已发送', variant: 'default' },
+              read: { label: '已读', variant: 'outline' }
+            };
+          const config = statusMap[value] || {
+            label: value,
+            variant: 'default'
+          };
           return (
             <div className='flex justify-center'>
-              <Badge variant={value === 1 ? 'default' : 'secondary'}>
-                {value === 1 ? '上线' : '下线'}
-              </Badge>
+              <Badge variant={config.variant as any}>{config.label}</Badge>
             </div>
           );
         }
       };
     }
 
-    if (col.key === 'disabled') {
+    if (col.key === 'is_read') {
       return {
         ...col,
         render: (value: boolean) => {
           return (
             <div className='flex justify-center'>
               {value ? (
-                <Ban className='h-4 w-4 text-destructive' />
+                <Check className='h-4 w-4 text-green-600' />
               ) : (
-                <Check className='h-4 w-4 text-muted-foreground' />
+                <AlertTriangle className='text-muted-foreground h-4 w-4' />
               )}
             </div>
           );
@@ -212,20 +195,41 @@ export function AnnouncementTable({
       };
     }
 
-    if (col.key === 'version') {
-      return {
-        ...col,
-        render: (value: number) => {
-          return <span className='text-xs'>{value}</span>;
-        }
-      };
-    }
-
-    if (col.key === 'updated_at') {
+    if (col.key === 'created_at') {
       return {
         ...col,
         render: (value: string) => (
           <span className='font-mono text-xs'>{formatDateTime(value)}</span>
+        )
+      };
+    }
+
+    if (col.key === 'sent_at') {
+      return {
+        ...col,
+        render: (value: string | null) => (
+          <span className='font-mono text-xs'>
+            {value ? (
+              formatDateTime(value)
+            ) : (
+              <span className='text-muted-foreground'>-</span>
+            )}
+          </span>
+        )
+      };
+    }
+
+    if (col.key === 'read_at') {
+      return {
+        ...col,
+        render: (value: string | null) => (
+          <span className='font-mono text-xs'>
+            {value ? (
+              formatDateTime(value)
+            ) : (
+              <span className='text-muted-foreground'>-</span>
+            )}
+          </span>
         )
       };
     }
@@ -261,37 +265,13 @@ export function AnnouncementTable({
             }
           ];
 
-          // 上线/下线
-          if (record.status === 1) {
+          // 标记已读/未读
+          if (!record.is_read) {
             actions.push({
-              key: 'offline',
-              label: '下线',
-              icon: <PowerOff className='mr-2 h-4 w-4' />,
-              onClick: () => onToggleStatus(record)
-            });
-          } else {
-            actions.push({
-              key: 'publish',
-              label: '上线',
-              icon: <Power className='mr-2 h-4 w-4' />,
-              onClick: () => onToggleStatus(record)
-            });
-          }
-
-          // 禁用/启用
-          if (record.disabled) {
-            actions.push({
-              key: 'enable',
-              label: '启用',
+              key: 'mark_read',
+              label: '标记已读',
               icon: <Check className='mr-2 h-4 w-4' />,
-              onClick: () => onToggleDisabled(record)
-            });
-          } else {
-            actions.push({
-              key: 'disable',
-              label: '紧急禁用',
-              icon: <AlertTriangle className='mr-2 h-4 w-4' />,
-              onClick: () => onToggleDisabled(record)
+              onClick: () => onToggleStatus(record)
             });
           }
 

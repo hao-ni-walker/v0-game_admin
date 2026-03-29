@@ -1,4 +1,4 @@
-import { apiRequest } from './base';
+import { apiRequest, buildSearchParams } from './base';
 import type {
   TicketStatus,
   TicketPriority,
@@ -59,9 +59,53 @@ export interface UpdateTicketParams {
 export class TicketAPI {
   // 获取工单列表
   static async getTickets(params?: TicketListParams) {
-    return apiRequest('/tickets/list', {
-      method: 'POST',
-      body: JSON.stringify(params || {})
+    // 将参数转换为查询参数
+    const queryParams: Record<string, any> = {};
+
+    if (params) {
+      // 分页参数
+      if (params.page !== undefined) {
+        queryParams.page = params.page;
+      }
+      if (params.pageSize !== undefined) {
+        queryParams.page_size = params.pageSize;
+      }
+
+      // 其他可能的查询参数
+      if (params.keyword) {
+        queryParams.keyword = params.keyword;
+      }
+      if (params.statuses && params.statuses.length > 0) {
+        queryParams.status = params.statuses.join(',');
+      }
+      if (params.priorities && params.priorities.length > 0) {
+        queryParams.priority = params.priorities.join(',');
+      }
+      if (params.categories && params.categories.length > 0) {
+        queryParams.category = params.categories.join(',');
+      }
+      if (params.userIds && params.userIds.length > 0) {
+        queryParams.user_id = params.userIds.join(',');
+      }
+      if (params.assigneeIds && params.assigneeIds.length > 0) {
+        queryParams.assignee_id = params.assigneeIds.join(',');
+      }
+      if (params.onlyUnassigned !== undefined) {
+        queryParams.only_unassigned = params.onlyUnassigned;
+      }
+      if (params.sortBy) {
+        queryParams.sort_by = params.sortBy;
+      }
+      if (params.sortDir) {
+        queryParams.sort_dir = params.sortDir;
+      }
+    }
+
+    const searchParams = buildSearchParams(queryParams);
+    const endpoint = `/admin/tickets${searchParams ? `?${searchParams}` : ''}`;
+
+    return apiRequest(endpoint, {
+      method: 'GET'
     });
   }
 
@@ -119,9 +163,11 @@ export class TicketAPI {
     content: string,
     isInternal: boolean = false
   ) {
-    return apiRequest(`/tickets/${id}/comment`, {
+    // 注意：远程 API 只支持 content 字段，isInternal 参数暂不支持
+    // 如果未来需要支持 isInternal，可能需要使用不同的端点或字段
+    return apiRequest(`/tickets/${id}/comments`, {
       method: 'POST',
-      body: JSON.stringify({ content, isInternal })
+      body: JSON.stringify({ content })
     });
   }
 
@@ -148,7 +194,19 @@ export class TicketAPI {
     message?: string;
     success: boolean;
   }> {
-    return apiRequest(`/tickets/${ticketId}/comments`);
+    const response = await apiRequest(`/tickets/${ticketId}/comments`);
+    // 处理返回的数据格式：可能直接是数组，也可能在 data.items 中
+    if (response.success && response.data) {
+      // 如果 data 是数组，直接返回；如果不是，尝试从 data.items 获取
+      const comments = Array.isArray(response.data)
+        ? response.data
+        : (response.data as any)?.items || response.data || [];
+      return {
+        ...response,
+        data: comments
+      };
+    }
+    return response;
   }
 
   // 获取附件列表

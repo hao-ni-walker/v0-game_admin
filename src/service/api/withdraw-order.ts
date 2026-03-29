@@ -1,4 +1,4 @@
-import { apiRequest } from './base';
+import { apiRequest, buildSearchParams } from './base';
 import type {
   WithdrawOrder,
   WithdrawOrderFilters,
@@ -38,9 +38,43 @@ export class WithdrawOrderAPI {
     message?: string;
     code?: number;
   }> {
-    return apiRequest<WithdrawOrderListResponse>('/withdraw-orders/list', {
-      method: 'POST',
-      body: JSON.stringify(params || {})
+    // 构建查询参数
+    const queryParams: Record<string, any> = {};
+
+    if (params) {
+      // 分页参数
+      if (params.page) queryParams.page = params.page;
+      if (params.pageSize) queryParams.page_size = params.pageSize;
+
+      // 筛选参数
+      if (params.orderNo) queryParams.order_no = params.orderNo;
+      if (params.channelOrderNo)
+        queryParams.channel_order_no = params.channelOrderNo;
+      if (params.userKeyword) queryParams.username = params.userKeyword;
+      if (params.paymentChannelId)
+        queryParams.payment_channel_id = params.paymentChannelId;
+
+      // 状态处理
+      if (params.statuses && params.statuses.length > 0) {
+        queryParams.status = params.statuses[0];
+      }
+
+      // 时间范围
+      if (params.createdFrom) queryParams.created_from = params.createdFrom;
+      if (params.createdTo) queryParams.created_to = params.createdTo;
+
+      // 金额范围
+      if (params.minAmount) queryParams.min_amount = params.minAmount;
+      if (params.maxAmount) queryParams.max_amount = params.maxAmount;
+    }
+
+    const queryString = buildSearchParams(queryParams);
+    const endpoint = queryString
+      ? `/admin/withdraw-orders?${queryString}`
+      : '/admin/withdraw-orders';
+
+    return apiRequest<WithdrawOrderListResponse>(endpoint, {
+      method: 'GET'
     });
   }
 

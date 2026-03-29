@@ -449,7 +449,10 @@ export function WithdrawOrderDetailDrawer({
                       </div>
                       <div className='text-muted-foreground mt-1 text-sm'>
                         手续费: {formatCurrency(order.fee)} | 实际出款:{' '}
-                        {formatCurrency(order.actualAmount)}
+                        {order.actualAmount !== null &&
+                        order.actualAmount !== undefined
+                          ? formatCurrency(order.actualAmount)
+                          : '—'}
                       </div>
                     </div>
                   </div>

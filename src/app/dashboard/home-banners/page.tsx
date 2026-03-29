@@ -9,11 +9,12 @@ import PageContainer from '@/components/layout/page-container';
 import {
   BannerPageHeader,
   BannerFilters,
-  BannerTable
+  BannerTable,
+  BannerEditDialog
 } from './components';
 import { useBannerFilters, useBannerManagement } from './hooks';
 import { PAGE_SIZE_OPTIONS } from './constants';
-import { Banner, BannerDialogState } from './types';
+import { Banner, BannerDialogState, BannerFormData } from './types';
 
 export default function HomeBannersPage() {
   // 使用自定义hooks
@@ -34,7 +35,8 @@ export default function HomeBannersPage() {
     deleteBanner,
     toggleBannerStatus,
     disableBanner,
-    restoreBanner
+    restoreBanner,
+    updateBanner
   } = useBannerManagement();
 
   // 对话框状态
@@ -168,6 +170,22 @@ export default function HomeBannersPage() {
     updatePagination({ page_size, page: 1 });
   };
 
+  /**
+   * 处理编辑提交
+   */
+  const handleEditSubmit = async (
+    data: BannerFormData & { version: number }
+  ) => {
+    if (!dialogState.banner) {
+      return false;
+    }
+    const success = await updateBanner(dialogState.banner.id, data);
+    if (success) {
+      fetchBanners(filters);
+    }
+    return success;
+  };
+
   return (
     <PageContainer scrollable={false}>
       <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
@@ -200,13 +218,17 @@ export default function HomeBannersPage() {
               onDisable={handleDisableBanner}
               onRestore={handleRestoreBanner}
               emptyState={{
-                icon: <ImageIcon className='h-8 w-8 text-muted-foreground' />,
+                icon: <ImageIcon className='text-muted-foreground h-8 w-8' />,
                 title: hasActiveFilters ? '未找到匹配的轮播图' : '还没有轮播图',
                 description: hasActiveFilters
                   ? '请尝试调整筛选条件以查看更多结果'
                   : '开始添加轮播图来管理网站广告',
                 action: !hasActiveFilters ? (
-                  <Button onClick={handleOpenCreateDialog} size='sm' className='mt-2'>
+                  <Button
+                    onClick={handleOpenCreateDialog}
+                    size='sm'
+                    className='mt-2'
+                  >
                     <Plus className='mr-2 h-4 w-4' />
                     新增轮播图
                   </Button>
@@ -229,8 +251,16 @@ export default function HomeBannersPage() {
           </div>
         </div>
 
-        {/* TODO: 轮播图对话框（创建/编辑/查看） */}
-        {/* 可以后续添加 BannerDialogs 组件 */}
+        {/* 编辑对话框 */}
+        {dialogState.type === 'edit' && (
+          <BannerEditDialog
+            open={dialogState.open}
+            banner={dialogState.banner}
+            onClose={handleCloseDialog}
+            onSubmit={handleEditSubmit}
+            loading={loading}
+          />
+        )}
       </div>
     </PageContainer>
   );

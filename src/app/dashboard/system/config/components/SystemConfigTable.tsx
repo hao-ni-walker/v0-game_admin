@@ -1,16 +1,7 @@
 import React from 'react';
-import {
-  Edit,
-  Eye,
-  Copy,
-  Power,
-  PowerOff,
-  Lock,
-  Unlock,
-  Globe,
-  EyeOff
-} from 'lucide-react';
+import { Edit, Copy, Globe, EyeOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { DataTable } from '@/components/table/data-table';
 import {
   ActionDropdown,
@@ -39,7 +30,6 @@ interface SystemConfigTableProps {
   loading: boolean;
   pagination: PaginationInfo;
   onEdit: (config: SystemConfig) => void;
-  onView: (config: SystemConfig) => void;
   onDelete: (config: SystemConfig) => void;
   onToggleDisabled: (config: SystemConfig) => void;
   emptyState?: EmptyStateProps;
@@ -53,7 +43,6 @@ export function SystemConfigTable({
   loading,
   pagination,
   onEdit,
-  onView,
   onDelete,
   onToggleDisabled,
   emptyState
@@ -95,11 +84,7 @@ export function SystemConfigTable({
       return {
         ...col,
         render: (value: string) => {
-          return (
-            <div className='font-mono font-medium break-all'>
-              {value}
-            </div>
-          );
+          return <div className='font-mono font-medium break-all'>{value}</div>;
         }
       };
     }
@@ -126,11 +111,11 @@ export function SystemConfigTable({
           const displayValue = parseValue(value, record.config_type);
           return (
             <div className='flex items-center gap-1'>
-              <span className='font-mono text-xs truncate max-w-[200px]'>
+              <span className='max-w-[200px] truncate font-mono text-xs'>
                 {displayValue}
               </span>
               <Copy
-                className='h-3 w-3 flex-shrink-0 cursor-pointer text-muted-foreground hover:text-foreground'
+                className='text-muted-foreground hover:text-foreground h-3 w-3 flex-shrink-0 cursor-pointer'
                 onClick={() => handleCopyValue(value)}
               />
             </div>
@@ -144,7 +129,7 @@ export function SystemConfigTable({
         ...col,
         render: (value: string) => {
           return (
-            <span className='text-sm line-clamp-2'>
+            <span className='line-clamp-2 text-sm'>
               {value || <span className='text-muted-foreground'>无描述</span>}
             </span>
           );
@@ -181,17 +166,10 @@ export function SystemConfigTable({
         render: (value: any, record: SystemConfig) => {
           return (
             <div className='flex justify-center'>
-              {record.disabled ? (
-                <Badge variant='destructive' className='gap-1'>
-                  <Lock className='h-3 w-3' />
-                  禁用
-                </Badge>
-              ) : (
-                <Badge variant='default' className='gap-1'>
-                  <Unlock className='h-3 w-3' />
-                  启用
-                </Badge>
-              )}
+              <Switch
+                checked={!record.disabled}
+                onCheckedChange={() => onToggleDisabled(record)}
+              />
             </div>
           );
         }
@@ -202,11 +180,7 @@ export function SystemConfigTable({
       return {
         ...col,
         render: (value: number) => {
-          return (
-            <div className='text-center font-mono text-sm'>
-              v{value}
-            </div>
-          );
+          return <div className='text-center font-mono text-sm'>v{value}</div>;
         }
       };
     }
@@ -226,35 +200,12 @@ export function SystemConfigTable({
         render: (value: any, record: SystemConfig) => {
           const actions: ActionItem[] = [
             {
-              key: 'view',
-              label: '查看详情',
-              icon: <Eye className='mr-2 h-4 w-4' />,
-              onClick: () => onView(record)
-            },
-            {
               key: 'edit',
               label: '编辑',
               icon: <Edit className='mr-2 h-4 w-4' />,
               onClick: () => onEdit(record)
             }
           ];
-
-          // 禁用/启用
-          if (record.disabled) {
-            actions.push({
-              key: 'enable',
-              label: '启用',
-              icon: <Unlock className='mr-2 h-4 w-4' />,
-              onClick: () => onToggleDisabled(record)
-            });
-          } else {
-            actions.push({
-              key: 'disable',
-              label: '禁用',
-              icon: <Lock className='mr-2 h-4 w-4' />,
-              onClick: () => onToggleDisabled(record)
-            });
-          }
 
           const deleteAction: DeleteAction = {
             description: MESSAGES.CONFIRM.DELETE(record.config_key),
