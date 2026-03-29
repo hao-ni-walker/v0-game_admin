@@ -5,24 +5,11 @@ import {
   Settings,
   ScrollText,
   Cog,
-  CreditCard,
   Users,
   Shield,
   Key,
-  Gamepad2,
-  List,
-  BarChart3,
-  LineChart,
-  Megaphone,
-  Gift,
-  ClipboardList,
-  Image,
-  Receipt,
-  Crown,
-  Wallet,
-  ArrowDownCircle,
-  Server,
-  Activity
+  MessageSquare,
+  Send
 } from 'lucide-react';
 
 // 业务导航列表
@@ -42,228 +29,45 @@ export const businessNavList: NavItem[] = [
     }
   },
   {
-    title: '游戏运营',
+    title: 'PopGameHubbot 频道运营',
     url: '#',
     icon: Users,
     isActive: false,
     items: [
       {
-        title: '玩家列表',
+        title: '用户列表',
         url: '/dashboard/players',
         icon: Users,
-        description: '玩家列表',
+        description: '查看 Telegram Bot 用户',
         searchConfig: {
-          keywords: 'player players 玩家 列表',
-          searchShortcut: ['p'],
-          searchSection: '玩家管理',
+          keywords: 'user users telegram 用户 列表',
+          searchShortcut: ['u'],
+          searchSection: '用户管理',
           searchPriority: 3
         }
       },
       {
-        title: '订单管理',
-        url: '#',
-        icon: Receipt,
-        isActive: false,
-        description: '订单管理',
-        items: [
-          {
-            title: '储值订单',
-            url: '/dashboard/orders/deposits',
-            icon: Wallet,
-            description: '储值订单',
-            searchConfig: {
-              keywords: 'deposit 储值 充值 订单 管理',
-              searchShortcut: ['d'],
-              searchSection: '订单管理',
-              searchPriority: 11
-            }
-          },
-          {
-            title: '提现管理',
-            url: '/dashboard/orders/withdrawals',
-            icon: ArrowDownCircle,
-            description: '提现管理',
-            searchConfig: {
-              keywords: 'withdrawal 提现 取现 管理',
-              searchShortcut: ['w'],
-              searchSection: '订单管理',
-              searchPriority: 12
-            }
-          }
-        ],
+        title: '消息管理',
+        url: '/dashboard/messages',
+        icon: MessageSquare,
+        description: '管理 Telegram Bot 消息',
         searchConfig: {
-          keywords: 'order 订单 管理',
-          searchShortcut: ['o'],
-          searchSection: '订单管理',
-          searchPriority: 10
-        }
-      },
-      {
-        title: '游戏列表',
-        url: '#',
-        icon: Gamepad2,
-        description: '游戏列表',
-        items: [
-          {
-            title: 'hgapi365',
-            url: '/dashboard/games/hgapi365',
-            description: 'hgapi365',
-            searchConfig: {
-              keywords: 'game games hgapi365 游戏 列表',
-              searchShortcut: ['g'],
-              searchSection: '游戏管理',
-              searchPriority: 2
-            }
-          }
-        ],
-        searchConfig: {
-          keywords: 'game games 游戏 列表',
-          searchShortcut: ['g'],
-          searchSection: '游戏管理',
-          searchPriority: 2
-        }
-      },
-      {
-        title: '活动列表',
-        url: '/dashboard/campaigns',
-        icon: Megaphone,
-        description: '活动列表',
-        searchConfig: {
-          keywords: 'campaign 活动 列表',
-          searchShortcut: ['c'],
-          searchSection: '活动管理',
-          searchPriority: 6
-        }
-      },
-      {
-        title: '礼包列表',
-        url: '/dashboard/gift-packs',
-        icon: Gift,
-        description: '礼包列表',
-        searchConfig: {
-          keywords: 'gift pack 礼包 列表',
-          searchShortcut: ['l'],
-          searchSection: '礼包管理',
-          searchPriority: 7
-        }
-      },
-      {
-        title: '通知管理',
-        url: '#',
-        icon: Megaphone,
-        isActive: false,
-        description: '通知管理',
-        items: [
-          {
-            title: '通告列表',
-            url: '/dashboard/announcements',
-            icon: List,
-            description: '通告列表',
-            searchConfig: {
-              keywords: 'announcement 通告 公告 列表',
-              searchShortcut: ['n'],
-              searchSection: '通知管理',
-              searchPriority: 8
-            }
-          },
-          {
-            title: '通告模板',
-            url: '/dashboard/announcements/templates',
-            icon: ScrollText,
-            description: '通告模板',
-            searchConfig: {
-              keywords: 'announcement template 通告 模板',
-              searchShortcut: ['t'],
-              searchSection: '通知管理',
-              searchPriority: 9
-            }
-          }
-        ],
-        searchConfig: {
-          keywords: 'announcement 通知 通告',
-          searchShortcut: ['n'],
-          searchSection: '通知管理',
-          searchPriority: 8
-        }
-      },
-      {
-        title: 'Banner 列表',
-        url: '/dashboard/home-banners',
-        icon: Image,
-        description: 'Banner 列表',
-        searchConfig: {
-          keywords: 'home banner 首 页 轮播 列表',
-          searchShortcut: ['h'],
-          searchSection: '首页 Banner 管理',
-          searchPriority: 9
-        }
-      }
-    ]
-  },
-  {
-    title: '数据分析',
-    url: '#',
-    icon: BarChart3,
-    isActive: false,
-    items: [
-      {
-        title: '游戏流水',
-        url: '/dashboard/analytics/flows',
-        icon: LineChart,
-        description: '游戏流水',
-        searchConfig: {
-          keywords: 'analytics flows 流水 数据 分析',
-          searchShortcut: ['f'],
-          searchSection: '数据分析',
+          keywords: 'message messages 消息 管理 telegram',
+          searchShortcut: ['m'],
+          searchSection: '消息管理',
           searchPriority: 4
         }
       },
       {
-        title: '运营报表',
-        url: '/dashboard/analytics/reports',
-        icon: BarChart3,
-        description: '运营报表',
+        title: '发送日志',
+        url: '/dashboard/send-logs',
+        icon: Send,
+        description: '查看消息发送日志',
         searchConfig: {
-          keywords: 'analytics reports 报表 数据 分析',
-          searchShortcut: ['r'],
-          searchSection: '数据分析',
-          searchPriority: 5
-        }
-      },
-      {
-        title: '用户留存',
-        url: '/dashboard/analytics/user-retention',
-        icon: Users,
-        description: '用户留存',
-        searchConfig: {
-          keywords: 'analytics user retention 用户留存 数据 分析',
-          searchShortcut: ['u'],
-          searchSection: '数据分析',
-          searchPriority: 6
-        }
-      },
-      {
-        title: '储值分布',
-        url: '/dashboard/analytics/deposit-distribution',
-        icon: Wallet,
-        description: '储值分布',
-        searchConfig: {
-          keywords: 'analytics deposit distribution 储值分布 数据 分析',
-          searchShortcut: ['d'],
-          searchSection: '数据分析',
-          searchPriority: 7
-        }
-      },
-      {
-        title: '运营活动分析',
-        url: '/dashboard/analytics/activity-participation',
-        icon: Activity,
-        description: '运营活动分析',
-        searchConfig: {
-          keywords: 'analytics activity participation 运营活动 分析',
-          searchShortcut: ['a'],
-          searchSection: '数据分析',
-          searchPriority: 8
+          keywords: 'send logs 发送 日志 消息',
+          searchShortcut: ['s'],
+          searchSection: '日志管理',
+          searchPriority: 10
         }
       }
     ]
@@ -345,62 +149,6 @@ export const systemNavList: NavItem[] = [
           searchSection: '系统管理',
           searchPriority: 6
         }
-      },
-      {
-        title: '支付渠道管理',
-        url: '/dashboard/system/payment-channels',
-        icon: CreditCard,
-        description: '支付渠道管理',
-        searchConfig: {
-          keywords: 'payment channel 支付 渠道 管理',
-          searchShortcut: ['y'],
-          searchSection: '系统管理',
-          searchPriority: 7
-        }
-      },
-      {
-        title: '平台管理',
-        url: '/dashboard/system/platform',
-        icon: Server,
-        description: '平台管理',
-        searchConfig: {
-          keywords: 'platform 平台 管理',
-          searchShortcut: ['m'],
-          searchSection: '系统管理',
-          searchPriority: 8
-        }
-      },
-      {
-        title: 'VIP 等级管理',
-        url: '/dashboard/vip-levels',
-        icon: Crown,
-        description: 'VIP 等级管理',
-        searchConfig: {
-          keywords: 'vip level 等级 管理 会员',
-          searchShortcut: ['v'],
-          searchSection: 'VIP 等级管理',
-          searchPriority: 10
-        }
-      },
-      {
-        title: '工单管理',
-        url: '#',
-        icon: ClipboardList,
-        isActive: false,
-        items: [
-          {
-            title: '工单列表',
-            url: '/dashboard/tickets',
-            icon: ClipboardList,
-            description: '工单列表',
-            searchConfig: {
-              keywords: 'ticket support 工单 列表',
-              searchShortcut: ['t'],
-              searchSection: '工单管理',
-              searchPriority: 10
-            }
-          }
-        ]
       }
     ]
   }
