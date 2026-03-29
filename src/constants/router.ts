@@ -10,7 +10,8 @@ import {
   Key,
   List,
   Megaphone,
-  Image
+  Image,
+  Send
 } from 'lucide-react';
 
 // 业务导航列表
@@ -96,6 +97,18 @@ export const businessNavList: NavItem[] = [
           searchShortcut: ['h'],
           searchSection: '首页 Banner 管理',
           searchPriority: 9
+        }
+      },
+      {
+        title: '发送日志',
+        url: '/dashboard/send-logs',
+        icon: Send,
+        description: '查看消息发送日志',
+        searchConfig: {
+          keywords: 'send logs 发送 日志 消息',
+          searchShortcut: ['s'],
+          searchSection: '日志管理',
+          searchPriority: 10
         }
       }
     ]
