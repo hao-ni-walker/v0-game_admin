@@ -30,7 +30,7 @@ export const businessNavList: NavItem[] = [
     }
   },
   {
-    title: '游戏运营',
+    title: 'PopGameHubbot 频道运营',
     url: '#',
     icon: Users,
     isActive: false,
