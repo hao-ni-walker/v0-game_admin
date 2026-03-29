@@ -54,24 +54,15 @@ export function LoginForm({
         resetGlobalInitFlag();
 
         // 等待一小段时间，确保 cookie 已设置完成
-        await new Promise((resolve) => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
-        // 立即强制重新初始化认证状态（获取最新的会话和权限信息）
-        // 等待初始化完成，确保 session 已更新
-        await forceReInitialize();
-
-        // 检查是否有保存的重定向路径
+        // 直接跳转，不等待 forceReInitialize
         const redirectPath = sessionStorage.getItem('redirectAfterLogin');
         if (redirectPath && redirectPath !== '/login') {
-          // 清除保存的重定向路径
           sessionStorage.removeItem('redirectAfterLogin');
-          // 跳转到原页面
-          router.push(redirectPath);
-          router.refresh();
+          window.location.href = redirectPath;
         } else {
-          // 没有保存的路径，默认跳转到 dashboard
-          router.push('/dashboard');
-          router.refresh();
+          window.location.href = '/dashboard';
         }
       } else {
         toast.error(res.message || '登录失败');
