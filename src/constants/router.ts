@@ -36,14 +36,14 @@ export const businessNavList: NavItem[] = [
     isActive: false,
     items: [
       {
-        title: '玩家列表',
+        title: '用户列表',
         url: '/dashboard/players',
         icon: Users,
-        description: '玩家列表',
+        description: '查看 Telegram Bot 用户',
         searchConfig: {
-          keywords: 'player players 玩家 列表',
-          searchShortcut: ['p'],
-          searchSection: '玩家管理',
+          keywords: 'user users telegram 用户 列表',
+          searchShortcut: ['u'],
+          searchSection: '用户管理',
           searchPriority: 3
         }
       },

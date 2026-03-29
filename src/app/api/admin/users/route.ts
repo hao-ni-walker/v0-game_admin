@@ -1,86 +1,128 @@
-import { cookies } from 'next/headers';
+import { neon } from '@neondatabase/serverless';
 import {
   successResponse,
-  errorResponse,
-  unauthorizedResponse
+  errorResponse
 } from '@/service/response';
-import { logger } from '@/lib/logger';
-
-const REMOTE_API_URL = 'https://api.xreddeercasino.com/api/admin/users';
 
 /**
- * 获取玩家列表 - 代理到远程 API
+ * 获取玩家列表 - 直接从数据库读取
  * GET /api/admin/users
+ * 
+ * 数据库表结构 (bot_1.users):
+ * - id: serial4 主键
+ * - telegram_id: int8 唯一
+ * - username: varchar(255)
+ * - first_name: varchar(255)
+ * - last_name: varchar(255)
+ * - created_at: timestamp
  */
 export async function GET(request: Request) {
   try {
-    // 从 cookie 中获取 token
-    const cookieStore = await cookies();
-    const token = cookieStore.get('token');
-
-    if (!token || !token.value) {
-      await logger.warn('用户管理', '获取玩家列表', '未授权访问：缺少 token', {
-        timestamp: new Date().toISOString()
-      });
-      return unauthorizedResponse('未授权访问');
+    if (!process.env.DATABASE_URL) {
+      return errorResponse('数据库未配置');
     }
 
+    const sql = neon(process.env.DATABASE_URL);
+    
     // 获取查询参数
     const { searchParams } = new URL(request.url);
-    const queryString = searchParams.toString();
+    const page = parseInt(searchParams.get('page') || '1');
+    const pageSize = parseInt(searchParams.get('page_size') || '20');
+    const username = searchParams.get('username') || '';
+    const telegramId = searchParams.get('telegram_id') || '';
+    const keyword = searchParams.get('keyword') || '';
+    const sortBy = searchParams.get('sort_by') || 'created_at';
+    const sortOrder = searchParams.get('sort_order') || 'desc';
 
-    // 构建远程 API URL
-    const remoteUrl = queryString
-      ? `${REMOTE_API_URL}?${queryString}`
-      : REMOTE_API_URL;
+    // 计算偏移量
+    const offset = (page - 1) * pageSize;
 
-    // 转发请求到远程 API
-    const remoteResponse = await fetch(remoteUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `bearer ${token.value}`
-      }
-    });
+    // 构建搜索条件
+    let whereConditions: string[] = [];
+    let params: any[] = [];
+    let paramIndex = 1;
 
-    // 检查 HTTP 状态码
-    if (!remoteResponse.ok) {
-      const errorText = await remoteResponse.text();
-      await logger.error('用户管理', '获取玩家列表', '远程API请求失败', {
-        status: remoteResponse.status,
-        statusText: remoteResponse.statusText,
-        errorText,
-        timestamp: new Date().toISOString()
-      });
-
-      if (remoteResponse.status === 401) {
-        return unauthorizedResponse('认证失败，请重新登录');
-      }
-
-      return errorResponse(
-        `远程API错误: ${remoteResponse.status} ${remoteResponse.statusText}`
-      );
+    // 关键词搜索（搜索 username、first_name、last_name）
+    if (keyword) {
+      whereConditions.push(`(
+        username ILIKE $${paramIndex} OR 
+        first_name ILIKE $${paramIndex} OR 
+        last_name ILIKE $${paramIndex} OR
+        CAST(telegram_id AS TEXT) LIKE $${paramIndex}
+      )`);
+      params.push(`%${keyword}%`);
+      paramIndex++;
     }
 
-    // 解析远程 API 响应
-    const result = await remoteResponse.json();
+    // 用户名搜索
+    if (username && !keyword) {
+      whereConditions.push(`username ILIKE $${paramIndex}`);
+      params.push(`%${username}%`);
+      paramIndex++;
+    }
 
-    // 记录成功日志
-    await logger.info('用户管理', '获取玩家列表', '获取玩家列表成功', {
-      queryParams: queryString,
-      timestamp: new Date().toISOString()
+    // Telegram ID 搜索
+    if (telegramId && !keyword) {
+      whereConditions.push(`CAST(telegram_id AS TEXT) LIKE $${paramIndex}`);
+      params.push(`%${telegramId}%`);
+      paramIndex++;
+    }
+
+    const whereClause = whereConditions.length > 0 
+      ? `WHERE ${whereConditions.join(' AND ')}` 
+      : '';
+
+    // 验证排序字段（防止 SQL 注入）
+    const allowedSortFields = ['id', 'telegram_id', 'username', 'first_name', 'last_name', 'created_at'];
+    const safeSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'created_at';
+    const safeSortOrder = sortOrder === 'asc' ? 'ASC' : 'DESC';
+
+    // 获取总数
+    const countQuery = `SELECT COUNT(*) as total FROM users ${whereClause}`;
+    const countResult = await sql(countQuery, params);
+    const total = parseInt(countResult[0]?.total || '0');
+
+    // 获取数据
+    const dataQuery = `
+      SELECT 
+        id,
+        telegram_id,
+        username,
+        first_name,
+        last_name,
+        created_at
+      FROM users 
+      ${whereClause}
+      ORDER BY ${safeSortBy} ${safeSortOrder}
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    `;
+    
+    const dataResult = await sql(dataQuery, [...params, pageSize, offset]);
+
+    // 转换数据格式以适配前端
+    const users = dataResult.map((row: any) => ({
+      id: row.id,
+      telegram_id: row.telegram_id,
+      username: row.username || '',
+      first_name: row.first_name || '',
+      last_name: row.last_name || '',
+      // 组合显示名称
+      display_name: [row.first_name, row.last_name].filter(Boolean).join(' ') || row.username || `User ${row.telegram_id}`,
+      created_at: row.created_at,
+      // 兼容旧字段
+      status: 'active',
+      vip_level: 0
+    }));
+
+    // 返回分页数据
+    return successResponse(users, {
+      page,
+      page_size: pageSize,
+      total,
+      total_pages: Math.ceil(total / pageSize)
     });
-
-    // 返回远程 API 的响应
-    return successResponse(result.data || result, result.pager);
   } catch (error) {
-    // 记录错误日志
-    await logger.error('用户管理', '获取玩家列表', '获取玩家列表失败', {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-      timestamp: new Date().toISOString()
-    });
-
+    console.error('获取玩家列表失败:', error);
     return errorResponse('获取玩家列表失败');
   }
 }
