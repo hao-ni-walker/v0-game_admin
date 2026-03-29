@@ -65,6 +65,7 @@ interface Pager {
 
 const STATUS_MAP: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   draft: { label: '草稿', variant: 'secondary' },
+  pending: { label: '待发送', variant: 'outline' },
   scheduled: { label: '已排期', variant: 'outline' },
   sending: { label: '发送中', variant: 'default' },
   sent: { label: '已发送', variant: 'default' },
@@ -259,6 +260,7 @@ export default function MessagesPage() {
               <SelectContent>
                 <SelectItem value="all">全部状态</SelectItem>
                 <SelectItem value="draft">草稿</SelectItem>
+                <SelectItem value="pending">待发送</SelectItem>
                 <SelectItem value="scheduled">已排期</SelectItem>
                 <SelectItem value="sending">发送中</SelectItem>
                 <SelectItem value="sent">已发送</SelectItem>
@@ -459,6 +461,7 @@ export default function MessagesPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="draft">草稿</SelectItem>
+                    <SelectItem value="pending">立即发送</SelectItem>
                     <SelectItem value="scheduled">已排期</SelectItem>
                   </SelectContent>
                 </Select>
