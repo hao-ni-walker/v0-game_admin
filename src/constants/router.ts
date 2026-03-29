@@ -8,9 +8,7 @@ import {
   Users,
   Shield,
   Key,
-  List,
-  Megaphone,
-  Image,
+  MessageSquare,
   Send
 } from 'lucide-react';
 
@@ -49,54 +47,15 @@ export const businessNavList: NavItem[] = [
         }
       },
       {
-        title: '通知管理',
-        url: '#',
-        icon: Megaphone,
-        isActive: false,
-        description: '通知管理',
-        items: [
-          {
-            title: '通告列表',
-            url: '/dashboard/announcements',
-            icon: List,
-            description: '通告列表',
-            searchConfig: {
-              keywords: 'announcement 通告 公告 列表',
-              searchShortcut: ['n'],
-              searchSection: '通知管理',
-              searchPriority: 8
-            }
-          },
-          {
-            title: '通告模板',
-            url: '/dashboard/announcements/templates',
-            icon: ScrollText,
-            description: '通告模板',
-            searchConfig: {
-              keywords: 'announcement template 通告 模板',
-              searchShortcut: ['t'],
-              searchSection: '通知管理',
-              searchPriority: 9
-            }
-          }
-        ],
+        title: '消息管理',
+        url: '/dashboard/messages',
+        icon: MessageSquare,
+        description: '管理 Telegram Bot 消息',
         searchConfig: {
-          keywords: 'announcement 通知 通告',
-          searchShortcut: ['n'],
-          searchSection: '通知管理',
-          searchPriority: 8
-        }
-      },
-      {
-        title: 'Banner 列表',
-        url: '/dashboard/home-banners',
-        icon: Image,
-        description: 'Banner 列表',
-        searchConfig: {
-          keywords: 'home banner 首 页 轮播 列表',
-          searchShortcut: ['h'],
-          searchSection: '首页 Banner 管理',
-          searchPriority: 9
+          keywords: 'message messages 消息 管理 telegram',
+          searchShortcut: ['m'],
+          searchSection: '消息管理',
+          searchPriority: 4
         }
       },
       {
