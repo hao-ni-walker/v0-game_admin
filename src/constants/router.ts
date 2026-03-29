@@ -5,16 +5,12 @@ import {
   Settings,
   ScrollText,
   Cog,
-  CreditCard,
   Users,
   Shield,
   Key,
   List,
   Megaphone,
-  ClipboardList,
-  Image,
-  Crown,
-  Server
+  Image
 } from 'lucide-react';
 
 // 业务导航列表
@@ -181,62 +177,6 @@ export const systemNavList: NavItem[] = [
           searchSection: '系统管理',
           searchPriority: 6
         }
-      },
-      {
-        title: '支付渠道管理',
-        url: '/dashboard/system/payment-channels',
-        icon: CreditCard,
-        description: '支付渠道管理',
-        searchConfig: {
-          keywords: 'payment channel 支付 渠道 管理',
-          searchShortcut: ['y'],
-          searchSection: '系统管理',
-          searchPriority: 7
-        }
-      },
-      {
-        title: '平台管理',
-        url: '/dashboard/system/platform',
-        icon: Server,
-        description: '平台管理',
-        searchConfig: {
-          keywords: 'platform 平台 管理',
-          searchShortcut: ['m'],
-          searchSection: '系统管理',
-          searchPriority: 8
-        }
-      },
-      {
-        title: 'VIP 等级管理',
-        url: '/dashboard/vip-levels',
-        icon: Crown,
-        description: 'VIP 等级管理',
-        searchConfig: {
-          keywords: 'vip level 等级 管理 会员',
-          searchShortcut: ['v'],
-          searchSection: 'VIP 等级管理',
-          searchPriority: 10
-        }
-      },
-      {
-        title: '工单管理',
-        url: '#',
-        icon: ClipboardList,
-        isActive: false,
-        items: [
-          {
-            title: '工单列表',
-            url: '/dashboard/tickets',
-            icon: ClipboardList,
-            description: '工单列表',
-            searchConfig: {
-              keywords: 'ticket support 工单 列表',
-              searchShortcut: ['t'],
-              searchSection: '工单管理',
-              searchPriority: 10
-            }
-          }
-        ]
       }
     ]
   }
