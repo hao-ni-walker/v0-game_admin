@@ -10,15 +10,11 @@ import {
   Shield,
   Key,
   List,
-  BarChart3,
-  LineChart,
   Megaphone,
   ClipboardList,
   Image,
   Crown,
-  Wallet,
-  Server,
-  Activity
+  Server
 } from 'lucide-react';
 
 // 业务导航列表
@@ -104,74 +100,6 @@ export const businessNavList: NavItem[] = [
           searchShortcut: ['h'],
           searchSection: '首页 Banner 管理',
           searchPriority: 9
-        }
-      }
-    ]
-  },
-  {
-    title: '数据分析',
-    url: '#',
-    icon: BarChart3,
-    isActive: false,
-    items: [
-      {
-        title: '游戏流水',
-        url: '/dashboard/analytics/flows',
-        icon: LineChart,
-        description: '游戏流水',
-        searchConfig: {
-          keywords: 'analytics flows 流水 数据 分析',
-          searchShortcut: ['f'],
-          searchSection: '数据分析',
-          searchPriority: 4
-        }
-      },
-      {
-        title: '运营报表',
-        url: '/dashboard/analytics/reports',
-        icon: BarChart3,
-        description: '运营报表',
-        searchConfig: {
-          keywords: 'analytics reports 报表 数据 分析',
-          searchShortcut: ['r'],
-          searchSection: '数据分析',
-          searchPriority: 5
-        }
-      },
-      {
-        title: '用户留存',
-        url: '/dashboard/analytics/user-retention',
-        icon: Users,
-        description: '用户留存',
-        searchConfig: {
-          keywords: 'analytics user retention 用户留存 数据 分析',
-          searchShortcut: ['u'],
-          searchSection: '数据分析',
-          searchPriority: 6
-        }
-      },
-      {
-        title: '储值分布',
-        url: '/dashboard/analytics/deposit-distribution',
-        icon: Wallet,
-        description: '储值分布',
-        searchConfig: {
-          keywords: 'analytics deposit distribution 储值分布 数据 分析',
-          searchShortcut: ['d'],
-          searchSection: '数据分析',
-          searchPriority: 7
-        }
-      },
-      {
-        title: '运营活动分析',
-        url: '/dashboard/analytics/activity-participation',
-        icon: Activity,
-        description: '运营活动分析',
-        searchConfig: {
-          keywords: 'analytics activity participation 运营活动 分析',
-          searchShortcut: ['a'],
-          searchSection: '数据分析',
-          searchPriority: 8
         }
       }
     ]
