@@ -24,13 +24,24 @@ export async function auth(): Promise<Session | null> {
   }
 
   try {
-    // 直接解析 JWT token 的 payload（不验证签名，因为远程 API 的 secret 可能不同）
-    // JWT 格式：header.payload.signature
+    // 检查是否是 JWT 格式（包含 3 个用 . 分隔的部分）
     const parts = token.value.split('.');
+    
+    // Mock 模式：如果不是 JWT 格式，认为是 mock token（UUID），返回 mock 用户
     if (parts.length !== 3) {
-      return null;
+      // Mock 用户信息
+      return {
+        user: {
+          id: 1,
+          email: 'admin@example.com',
+          username: 'admin',
+          avatar: '/avatars/default.jpg',
+          roleId: 'admin'
+        }
+      };
     }
 
+    // JWT 格式：直接解析 JWT token 的 payload（不验证签名，因为远程 API 的 secret 可能不同）
     // 解析 payload（base64 解码）
     const payload = JSON.parse(
       Buffer.from(parts[1], 'base64').toString()
@@ -73,13 +84,21 @@ export async function auth(): Promise<Session | null> {
  */
 export function verifyToken(token: string): User | null {
   try {
-    // 直接解析 JWT token 的 payload（不验证签名，因为远程 API 的 secret 可能不同）
-    // JWT 格式：header.payload.signature
+    // 检查是否是 JWT 格式（包含 3 个用 . 分隔的部分）
     const parts = token.split('.');
+    
+    // Mock 模式：如果不是 JWT 格式，认为是 mock token（UUID），返回 mock 用户
     if (parts.length !== 3) {
-      return null;
+      return {
+        id: 1,
+        email: 'admin@example.com',
+        username: 'admin',
+        avatar: '/avatars/default.jpg',
+        roleId: 'admin'
+      };
     }
 
+    // JWT 格式：直接解析 JWT token 的 payload（不验证签名，因为远程 API 的 secret 可能不同）
     // 解析 payload（base64 解码）
     const payload = JSON.parse(
       Buffer.from(parts[1], 'base64').toString()
