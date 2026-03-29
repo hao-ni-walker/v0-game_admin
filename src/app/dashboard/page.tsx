@@ -1,12 +1,6 @@
-import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 
 export default async function Dashboard() {
-  const session = await auth();
-
-  if (!session?.user) {
-    return redirect('/login');
-  } else {
-    redirect('/dashboard/overview');
-  }
+  // Mock 模式：直接跳转到 overview，不检查登录状态
+  redirect('/dashboard/overview');
 }
