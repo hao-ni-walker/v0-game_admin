@@ -98,20 +98,9 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           const response = await AuthAPI.getSession();
-          console.log('[v0] fetchSession response:', response);
 
           if (response.code === 0) {
-            // Mock 模式：如果 session 为 null，创建一个 mock session
-            const sessionData = response.data || {
-              user: {
-                id: 1,
-                email: 'admin@example.com',
-                username: 'admin',
-                name: 'Admin'
-              }
-            };
-            console.log('[v0] Setting session:', sessionData);
-            set({ session: sessionData, error: null });
+            set({ session: response.data, error: null });
           } else {
             set({ session: null, error: response.message });
           }
