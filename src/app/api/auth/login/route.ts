@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 import {
   successResponse,
   errorResponse
@@ -12,26 +11,12 @@ export async function POST(request: Request) {
 
     // 验证必填字段
     if (!username || !password) {
-      await logger.warn('用户认证', '用户登录', '登录失败：缺少必填字段', {
-        missingFields: {
-          username: !username,
-          password: !password
-        },
-        timestamp: new Date().toISOString()
-      });
-
       return errorResponse('请填写用户名和密码');
     }
 
     // Mock 模式：直接允许登录，使用输入的用户名生成 mock 用户
     const token = randomUUID();
     const tokenType = 'bearer';
-
-    // 记录登录成功日志
-    await logger.info('用户认证', '用户登录', '[MOCK] 用户登录成功', {
-      username,
-      loginTime: new Date().toISOString()
-    });
 
     const response = successResponse({
       message: '登录成功',
@@ -55,13 +40,7 @@ export async function POST(request: Request) {
 
     return response;
   } catch (error) {
-    // 记录服务器错误日志
-    await logger.error('用户认证', '用户登录', '登录过程发生服务器错误', {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-      timestamp: new Date().toISOString()
-    });
-
+    console.error('登录错误:', error);
     return errorResponse('服务器错误');
   }
 }
