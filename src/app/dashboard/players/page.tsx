@@ -63,8 +63,8 @@ export default function PlayersPage() {
       });
 
       if (response.code === 0) {
-        // 修复: response.data 是对象,包含 list 属性
-        const users = response.data?.list || [];
+        // API 直接返回数组作为 data
+        const users = Array.isArray(response.data) ? response.data : (response.data?.list || []);
         setUsers(users);
 
         if (response.pager) {

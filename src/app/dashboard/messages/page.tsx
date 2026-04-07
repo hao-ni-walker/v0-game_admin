@@ -69,7 +69,10 @@ const STATUS_MAP: Record<string, { label: string; variant: 'default' | 'secondar
   scheduled: { label: '已排期', variant: 'outline' },
   sending: { label: '发送中', variant: 'default' },
   sent: { label: '已发送', variant: 'default' },
-  failed: { label: '发送失败', variant: 'destructive' }
+  COMPLETED: { label: '已完成', variant: 'default' },
+  SUCCESS: { label: '已完成', variant: 'default' },
+  failed: { label: '发送失败', variant: 'destructive' },
+  FAILED: { label: '发送失败', variant: 'destructive' }
 };
 
 export default function MessagesPage() {
@@ -104,7 +107,7 @@ export default function MessagesPage() {
         page_size: '20'
       });
       if (keyword) params.append('keyword', keyword);
-      if (statusFilter) params.append('status', statusFilter);
+      if (statusFilter && statusFilter !== 'all') params.append('status', statusFilter);
 
       const res = await fetch(`/api/admin/messages?${params}`);
       const data = await res.json();

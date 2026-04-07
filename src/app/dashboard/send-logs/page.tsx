@@ -46,7 +46,10 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
   'sent': { label: '已发送', variant: 'default' },
   'delivered': { label: '已送达', variant: 'default' },
   'failed': { label: '失败', variant: 'destructive' },
+  'FAILED': { label: '失败', variant: 'destructive' },
   'retry': { label: '重试中', variant: 'outline' },
+  'SUCCESS': { label: '成功', variant: 'default' },
+  'COMPLETED': { label: '已完成', variant: 'default' },
 };
 
 export default function SendLogsPage() {
@@ -70,9 +73,9 @@ export default function SendLogsPage() {
       });
 
       if (keyword) params.append('keyword', keyword);
-      if (status) params.append('status', status);
+      if (status && status !== 'all') params.append('status', status);
 
-      const response = await apiRequest<SendLog[]>(`/api/admin/send-logs?${params.toString()}`);
+      const response = await apiRequest<SendLog[]>(`/admin/send-logs?${params.toString()}`);
 
       if (response.code === 0) {
         setLogs(response.data || []);
