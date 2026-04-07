@@ -106,11 +106,13 @@ export async function POST(request: Request) {
       return errorResponse('消息内容不能为空');
     }
 
+    // 数据库 enum: PENDING, SENDING, COMPLETED, FAILED
+    const dbStatus = (status || 'PENDING').toUpperCase();
     const result = await query(
       `INSERT INTO messages (title, content, image_url, button_text, button_url, scheduled_at, status, created_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
        RETURNING *`,
-      [title || null, content, image_url || null, button_text || null, button_url || null, scheduled_at || null, status || 'draft']
+      [title || null, content, image_url || null, button_text || null, button_url || null, scheduled_at || null, dbStatus]
     );
 
     return successResponse(result.rows[0]);
@@ -138,6 +140,8 @@ export async function PUT(request: Request) {
       return errorResponse('消息内容不能为空');
     }
 
+    // 数据库 enum: PENDING, SENDING, COMPLETED, FAILED
+    const dbStatus = (status || 'PENDING').toUpperCase();
     const result = await query(
       `UPDATE messages
        SET title = $1,
@@ -149,7 +153,7 @@ export async function PUT(request: Request) {
            status = $7
        WHERE id = $8
        RETURNING *`,
-      [title || null, content, image_url || null, button_text || null, button_url || null, scheduled_at || null, status || 'draft', id]
+      [title || null, content, image_url || null, button_text || null, button_url || null, scheduled_at || null, dbStatus, id]
     );
 
     if (result.rowCount === 0) {

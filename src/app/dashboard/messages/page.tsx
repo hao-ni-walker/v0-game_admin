@@ -95,7 +95,7 @@ export default function MessagesPage() {
     button_text: '',
     button_url: '',
     scheduled_at: '',
-    status: 'draft'
+    status: 'PENDING'
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -148,7 +148,7 @@ export default function MessagesPage() {
       button_text: '',
       button_url: '',
       scheduled_at: '',
-      status: 'draft'
+      status: 'PENDING'
     });
     setDialogOpen(true);
   };
@@ -262,12 +262,12 @@ export default function MessagesPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">全部状态</SelectItem>
-                <SelectItem value="draft">草稿</SelectItem>
-                <SelectItem value="pending">待发送</SelectItem>
-                <SelectItem value="scheduled">已排期</SelectItem>
-                <SelectItem value="sending">发送中</SelectItem>
-                <SelectItem value="sent">已发送</SelectItem>
-                <SelectItem value="failed">发送失败</SelectItem>
+                <SelectItem value="PENDING">待发送</SelectItem>
+                <SelectItem value="PENDING">待发送</SelectItem>
+                <SelectItem value="SENDING">发送中</SelectItem>
+                <SelectItem value="SENDING">发送中</SelectItem>
+                <SelectItem value="COMPLETED">已完成</SelectItem>
+                <SelectItem value="FAILED">发送失败</SelectItem>
               </SelectContent>
             </Select>
             <Button onClick={handleSearch}>
@@ -463,9 +463,9 @@ export default function MessagesPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="draft">草稿</SelectItem>
-                    <SelectItem value="pending">立即发送</SelectItem>
-                    <SelectItem value="scheduled">已排期</SelectItem>
+                    <SelectItem value="PENDING">待发送</SelectItem>
+                    <SelectItem value="PENDING">立即发送</SelectItem>
+                    <SelectItem value="SENDING">发送中</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
