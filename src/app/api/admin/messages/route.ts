@@ -1,4 +1,4 @@
-import { neon } from '@neondatabase/serverless';
+import { query } from '@/lib/db';
 import {
   successResponse,
   errorResponse
@@ -10,12 +10,6 @@ import {
  */
 export async function GET(request: Request) {
   try {
-    if (!process.env.DATABASE_URL) {
-      return errorResponse('数据库未配置');
-    }
-
-    const sql = neon(process.env.DATABASE_URL);
-    
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const pageSize = parseInt(searchParams.get('page_size') || '20');
@@ -24,61 +18,69 @@ export async function GET(request: Request) {
 
     const offset = (page - 1) * pageSize;
 
-    let countResult;
-    let dataResult;
+    let countQuery;
+    let dataQuery;
+    let queryParams: any[] = [];
 
     if (keyword && status) {
       const searchPattern = `%${keyword}%`;
-      countResult = await sql`
-        SELECT COUNT(*) as total FROM bot_1.messages 
-        WHERE (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
-          AND status = ${status}
+      countQuery = `
+        SELECT COUNT(*) as total FROM messages
+        WHERE (title ILIKE $1 OR content ILIKE $1)
+          AND status = $2
       `;
-      dataResult = await sql`
+      dataQuery = `
         SELECT id, title, content, image_url, button_text, button_url, scheduled_at, status, created_at, sent_at
-        FROM bot_1.messages 
-        WHERE (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
-          AND status = ${status}
+        FROM messages
+        WHERE (title ILIKE $1 OR content ILIKE $1)
+          AND status = $2
         ORDER BY created_at DESC
-        LIMIT ${pageSize} OFFSET ${offset}
+        LIMIT $3 OFFSET $4
       `;
+      queryParams = [searchPattern, status, pageSize, offset];
     } else if (keyword) {
       const searchPattern = `%${keyword}%`;
-      countResult = await sql`
-        SELECT COUNT(*) as total FROM bot_1.messages 
-        WHERE title ILIKE ${searchPattern} OR content ILIKE ${searchPattern}
+      countQuery = `
+        SELECT COUNT(*) as total FROM messages
+        WHERE title ILIKE $1 OR content ILIKE $1
       `;
-      dataResult = await sql`
+      dataQuery = `
         SELECT id, title, content, image_url, button_text, button_url, scheduled_at, status, created_at, sent_at
-        FROM bot_1.messages 
-        WHERE title ILIKE ${searchPattern} OR content ILIKE ${searchPattern}
+        FROM messages
+        WHERE title ILIKE $1 OR content ILIKE $1
         ORDER BY created_at DESC
-        LIMIT ${pageSize} OFFSET ${offset}
+        LIMIT $2 OFFSET $3
       `;
+      queryParams = [searchPattern, pageSize, offset];
     } else if (status) {
-      countResult = await sql`
-        SELECT COUNT(*) as total FROM bot_1.messages WHERE status = ${status}
+      countQuery = `
+        SELECT COUNT(*) as total FROM messages WHERE status = $1
       `;
-      dataResult = await sql`
+      dataQuery = `
         SELECT id, title, content, image_url, button_text, button_url, scheduled_at, status, created_at, sent_at
-        FROM bot_1.messages 
-        WHERE status = ${status}
+        FROM messages
+        WHERE status = $1
         ORDER BY created_at DESC
-        LIMIT ${pageSize} OFFSET ${offset}
+        LIMIT $2 OFFSET $3
       `;
+      queryParams = [status, pageSize, offset];
     } else {
-      countResult = await sql`SELECT COUNT(*) as total FROM bot_1.messages`;
-      dataResult = await sql`
+      countQuery = `SELECT COUNT(*) as total FROM messages`;
+      dataQuery = `
         SELECT id, title, content, image_url, button_text, button_url, scheduled_at, status, created_at, sent_at
-        FROM bot_1.messages 
+        FROM messages
         ORDER BY created_at DESC
-        LIMIT ${pageSize} OFFSET ${offset}
+        LIMIT $1 OFFSET $2
       `;
+      queryParams = [pageSize, offset];
     }
 
-    const total = parseInt(countResult[0]?.total || '0');
+    const countResult = await query(countQuery, keyword ? [queryParams[0]] : status ? [status] : []);
+    const dataResult = await query(dataQuery, queryParams);
 
-    return successResponse(dataResult, {
+    const total = parseInt(countResult.rows[0]?.total || '0');
+
+    return successResponse(dataResult.rows, {
       page,
       page_size: pageSize,
       total,
@@ -86,7 +88,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error('获取消息列表失败:', error);
-    return errorResponse('获取消息列表失败');
+    return errorResponse(`获取消息列表失败: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -96,26 +98,22 @@ export async function GET(request: Request) {
  */
 export async function POST(request: Request) {
   try {
-    if (!process.env.DATABASE_URL) {
-      return errorResponse('数据库未配置');
-    }
-
-    const sql = neon(process.env.DATABASE_URL);
     const body = await request.json();
-    
+
     const { title, content, image_url, button_text, button_url, scheduled_at, status } = body;
 
     if (!content) {
       return errorResponse('消息内容不能为空');
     }
 
-    const result = await sql`
-      INSERT INTO bot_1.messages (title, content, image_url, button_text, button_url, scheduled_at, status, created_at)
-      VALUES (${title || null}, ${content}, ${image_url || null}, ${button_text || null}, ${button_url || null}, ${scheduled_at || null}, ${status || 'draft'}, NOW())
-      RETURNING *
-    `;
+    const result = await query(
+      `INSERT INTO messages (title, content, image_url, button_text, button_url, scheduled_at, status, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+       RETURNING *`,
+      [title || null, content, image_url || null, button_text || null, button_url || null, scheduled_at || null, status || 'draft']
+    );
 
-    return successResponse(result[0]);
+    return successResponse(result.rows[0]);
   } catch (error) {
     console.error('创建消息失败:', error);
     return errorResponse('创建消息失败');
@@ -128,13 +126,8 @@ export async function POST(request: Request) {
  */
 export async function PUT(request: Request) {
   try {
-    if (!process.env.DATABASE_URL) {
-      return errorResponse('数据库未配置');
-    }
-
-    const sql = neon(process.env.DATABASE_URL);
     const body = await request.json();
-    
+
     const { id, title, content, image_url, button_text, button_url, scheduled_at, status } = body;
 
     if (!id) {
@@ -145,24 +138,25 @@ export async function PUT(request: Request) {
       return errorResponse('消息内容不能为空');
     }
 
-    const result = await sql`
-      UPDATE bot_1.messages 
-      SET title = ${title || null},
-          content = ${content},
-          image_url = ${image_url || null},
-          button_text = ${button_text || null},
-          button_url = ${button_url || null},
-          scheduled_at = ${scheduled_at || null},
-          status = ${status || 'draft'}
-      WHERE id = ${id}
-      RETURNING *
-    `;
+    const result = await query(
+      `UPDATE messages
+       SET title = $1,
+           content = $2,
+           image_url = $3,
+           button_text = $4,
+           button_url = $5,
+           scheduled_at = $6,
+           status = $7
+       WHERE id = $8
+       RETURNING *`,
+      [title || null, content, image_url || null, button_text || null, button_url || null, scheduled_at || null, status || 'draft', id]
+    );
 
-    if (result.length === 0) {
+    if (result.rowCount === 0) {
       return errorResponse('消息不存在');
     }
 
-    return successResponse(result[0]);
+    return successResponse(result.rows[0]);
   } catch (error) {
     console.error('更新消息失败:', error);
     return errorResponse('更新消息失败');
@@ -175,11 +169,6 @@ export async function PUT(request: Request) {
  */
 export async function DELETE(request: Request) {
   try {
-    if (!process.env.DATABASE_URL) {
-      return errorResponse('数据库未配置');
-    }
-
-    const sql = neon(process.env.DATABASE_URL);
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
@@ -187,12 +176,12 @@ export async function DELETE(request: Request) {
       return errorResponse('消息 ID 不能为空');
     }
 
-    const result = await sql`
-      DELETE FROM bot_1.messages WHERE id = ${parseInt(id)}
-      RETURNING id
-    `;
+    const result = await query(
+      `DELETE FROM messages WHERE id = $1 RETURNING id`,
+      [parseInt(id)]
+    );
 
-    if (result.length === 0) {
+    if (result.rowCount === 0) {
       return errorResponse('消息不存在');
     }
 

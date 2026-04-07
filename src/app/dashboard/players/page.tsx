@@ -63,13 +63,24 @@ export default function PlayersPage() {
       });
 
       if (response.code === 0) {
-        setUsers(response.data || []);
+        // 修复: response.data 是对象,包含 list 属性
+        const users = response.data?.list || [];
+        setUsers(users);
+
         if (response.pager) {
           setPagination({
             page: response.pager.page,
             page_size: response.pager.page_size,
             total: response.pager.total,
             total_pages: response.pager.total_pages
+          });
+        } else if (response.data?.total !== undefined) {
+          // 备用: 如果 pager 不存在,从 data 中获取分页信息
+          setPagination({
+            page: response.data.page || 1,
+            page_size: response.data.page_size || 20,
+            total: response.data.total || 0,
+            total_pages: Math.ceil((response.data.total || 0) / (response.data.page_size || 20))
           });
         }
       }

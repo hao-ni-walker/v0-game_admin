@@ -1,4 +1,4 @@
-import { neon } from '@neondatabase/serverless';
+import { query } from '@/lib/db';
 import {
   successResponse,
   errorResponse
@@ -7,24 +7,18 @@ import {
 /**
  * 获取发送日志列表 - 直接从数据库读取
  * GET /api/admin/send-logs
- * 
- * 数据库表结构 (bot_1.send_logs):
+ *
+ * 数据库表结构 (send_logs):
  * - id: serial4 主键
  * - message_id: int4 外键关联 messages
  * - telegram_id: int8
- * - status: sendstatus 枚举
+ * - status: varchar
  * - error_message: text
  * - retry_count: int4
  * - sent_at: timestamp
  */
 export async function GET(request: Request) {
   try {
-    if (!process.env.DATABASE_URL) {
-      return errorResponse('数据库未配置');
-    }
-
-    const sql = neon(process.env.DATABASE_URL);
-    
     // 获取查询参数
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -35,81 +29,78 @@ export async function GET(request: Request) {
     // 计算偏移量
     const offset = (page - 1) * pageSize;
 
-    let countResult;
-    let dataResult;
+    let countQuery;
+    let dataQuery;
+    let queryParams: any[] = [];
 
     if (keyword && status) {
       const searchPattern = `%${keyword}%`;
-      countResult = await sql`
-        SELECT COUNT(*) as total FROM bot_1.send_logs 
-        WHERE (CAST(telegram_id AS TEXT) LIKE ${searchPattern} 
-           OR CAST(message_id AS TEXT) LIKE ${searchPattern}
-           OR error_message ILIKE ${searchPattern})
-          AND status = ${status}
+      countQuery = `
+        SELECT COUNT(*) as total FROM send_logs
+        WHERE (CAST(telegram_id AS TEXT) LIKE $1
+           OR CAST(message_id AS TEXT) LIKE $1
+           OR error_message ILIKE $1)
+          AND status = $2
       `;
-      dataResult = await sql`
+      dataQuery = `
         SELECT id, message_id, telegram_id, status, error_message, retry_count, sent_at
-        FROM bot_1.send_logs 
-        WHERE (CAST(telegram_id AS TEXT) LIKE ${searchPattern} 
-           OR CAST(message_id AS TEXT) LIKE ${searchPattern}
-           OR error_message ILIKE ${searchPattern})
-          AND status = ${status}
+        FROM send_logs
+        WHERE (CAST(telegram_id AS TEXT) LIKE $1
+           OR CAST(message_id AS TEXT) LIKE $1
+           OR error_message ILIKE $1)
+          AND status = $2
         ORDER BY sent_at DESC
-        LIMIT ${pageSize} OFFSET ${offset}
+        LIMIT $3 OFFSET $4
       `;
+      queryParams = [searchPattern, status, pageSize, offset];
     } else if (keyword) {
       const searchPattern = `%${keyword}%`;
-      countResult = await sql`
-        SELECT COUNT(*) as total FROM bot_1.send_logs 
-        WHERE CAST(telegram_id AS TEXT) LIKE ${searchPattern} 
-           OR CAST(message_id AS TEXT) LIKE ${searchPattern}
-           OR error_message ILIKE ${searchPattern}
+      countQuery = `
+        SELECT COUNT(*) as total FROM send_logs
+        WHERE CAST(telegram_id AS TEXT) LIKE $1
+           OR CAST(message_id AS TEXT) LIKE $1
+           OR error_message ILIKE $1
       `;
-      dataResult = await sql`
+      dataQuery = `
         SELECT id, message_id, telegram_id, status, error_message, retry_count, sent_at
-        FROM bot_1.send_logs 
-        WHERE CAST(telegram_id AS TEXT) LIKE ${searchPattern} 
-           OR CAST(message_id AS TEXT) LIKE ${searchPattern}
-           OR error_message ILIKE ${searchPattern}
+        FROM send_logs
+        WHERE CAST(telegram_id AS TEXT) LIKE $1
+           OR CAST(message_id AS TEXT) LIKE $1
+           OR error_message ILIKE $1
         ORDER BY sent_at DESC
-        LIMIT ${pageSize} OFFSET ${offset}
+        LIMIT $2 OFFSET $3
       `;
+      queryParams = [searchPattern, pageSize, offset];
     } else if (status) {
-      countResult = await sql`
-        SELECT COUNT(*) as total FROM bot_1.send_logs WHERE status = ${status}
+      countQuery = `
+        SELECT COUNT(*) as total FROM send_logs WHERE status = $1
       `;
-      dataResult = await sql`
+      dataQuery = `
         SELECT id, message_id, telegram_id, status, error_message, retry_count, sent_at
-        FROM bot_1.send_logs 
-        WHERE status = ${status}
+        FROM send_logs
+        WHERE status = $1
         ORDER BY sent_at DESC
-        LIMIT ${pageSize} OFFSET ${offset}
+        LIMIT $2 OFFSET $3
       `;
+      queryParams = [status, pageSize, offset];
     } else {
-      countResult = await sql`SELECT COUNT(*) as total FROM bot_1.send_logs`;
-      dataResult = await sql`
+      countQuery = `SELECT COUNT(*) as total FROM send_logs`;
+      dataQuery = `
         SELECT id, message_id, telegram_id, status, error_message, retry_count, sent_at
-        FROM bot_1.send_logs 
+        FROM send_logs
         ORDER BY sent_at DESC
-        LIMIT ${pageSize} OFFSET ${offset}
+        LIMIT $1 OFFSET $2
       `;
+      queryParams = [pageSize, offset];
     }
 
-    const total = parseInt(countResult[0]?.total || '0');
+    const countResult = await query(countQuery, keyword && status ? [queryParams[0], status] : keyword ? [queryParams[0]] : status ? [status] : []);
+    const dataResult = await query(dataQuery, queryParams);
 
-    // 转换数据格式
-    const logs = dataResult.map((row: any) => ({
-      id: row.id,
-      message_id: row.message_id,
-      telegram_id: row.telegram_id,
-      status: row.status,
-      error_message: row.error_message || '',
-      retry_count: row.retry_count,
-      sent_at: row.sent_at
-    }));
+    const total = parseInt(countResult.rows[0]?.total || '0');
 
     // 返回分页数据
-    return successResponse(logs, {
+    return successResponse(dataResult.rows, {
       page,
       page_size: pageSize,
       total,
@@ -117,6 +108,6 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error('获取发送日志失败:', error);
-    return errorResponse('获取发送日志失败');
+    return errorResponse(`获取发送日志失败: ${error instanceof Error ? error.message : String(error)}`);
   }
 }

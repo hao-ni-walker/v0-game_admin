@@ -1,4 +1,4 @@
-import { neon } from '@neondatabase/serverless';
+import { query } from '@/lib/db';
 import {
   successResponse,
   errorResponse
@@ -7,7 +7,7 @@ import {
 /**
  * 获取玩家列表 - 直接从数据库读取
  * GET /api/admin/users
- * 
+ *
  * 数据库表结构 (bot_1.users):
  * - id: serial4 主键
  * - telegram_id: int8 唯一
@@ -18,12 +18,6 @@ import {
  */
 export async function GET(request: Request) {
   try {
-    if (!process.env.DATABASE_URL) {
-      return errorResponse('数据库未配置');
-    }
-
-    const sql = neon(process.env.DATABASE_URL);
-    
     // 获取查询参数
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -33,49 +27,57 @@ export async function GET(request: Request) {
     // 计算偏移量
     const offset = (page - 1) * pageSize;
 
-    let countResult;
-    let dataResult;
+    let countQuery;
+    let dataQuery;
+    let queryParams: any[] = [];
 
-    // 使用 tagged template 语法查询，使用 bot_1 schema
     if (keyword) {
       const searchPattern = `%${keyword}%`;
-      
+
       // 获取总数
-      countResult = await sql`
-        SELECT COUNT(*) as total FROM bot_1.users 
-        WHERE username ILIKE ${searchPattern} 
-           OR first_name ILIKE ${searchPattern} 
-           OR last_name ILIKE ${searchPattern}
-           OR CAST(telegram_id AS TEXT) LIKE ${searchPattern}
+      countQuery = `
+        SELECT COUNT(*) as total
+        FROM users
+        WHERE username ILIKE $1
+           OR first_name ILIKE $1
+           OR last_name ILIKE $1
+           OR CAST(telegram_id AS TEXT) LIKE $1
       `;
-      
+
       // 获取数据
-      dataResult = await sql`
+      dataQuery = `
         SELECT id, telegram_id, username, first_name, last_name, created_at
-        FROM bot_1.users 
-        WHERE username ILIKE ${searchPattern} 
-           OR first_name ILIKE ${searchPattern} 
-           OR last_name ILIKE ${searchPattern}
-           OR CAST(telegram_id AS TEXT) LIKE ${searchPattern}
+        FROM users
+        WHERE username ILIKE $1
+           OR first_name ILIKE $1
+           OR last_name ILIKE $1
+           OR CAST(telegram_id AS TEXT) LIKE $1
         ORDER BY created_at DESC
-        LIMIT ${pageSize} OFFSET ${offset}
+        LIMIT $2 OFFSET $3
       `;
+
+      queryParams = [searchPattern, pageSize, offset];
     } else {
       // 无搜索条件
-      countResult = await sql`SELECT COUNT(*) as total FROM bot_1.users`;
-      
-      dataResult = await sql`
+      countQuery = `SELECT COUNT(*) as total FROM users`;
+
+      dataQuery = `
         SELECT id, telegram_id, username, first_name, last_name, created_at
-        FROM bot_1.users 
+        FROM users
         ORDER BY created_at DESC
-        LIMIT ${pageSize} OFFSET ${offset}
+        LIMIT $1 OFFSET $2
       `;
+
+      queryParams = [pageSize, offset];
     }
 
-    const total = parseInt(countResult[0]?.total || '0');
+    const countResult = await query(countQuery, keyword ? [queryParams[0]] : []);
+    const dataResult = await query(dataQuery, queryParams);
+
+    const total = parseInt(countResult.rows[0]?.total || '0');
 
     // 转换数据格式以适配前端
-    const users = dataResult.map((row: any) => ({
+    const users = dataResult.rows.map((row: any) => ({
       id: row.id,
       telegram_id: row.telegram_id,
       username: row.username || '',
@@ -98,7 +100,11 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error('获取玩家列表失败:', error);
-    return errorResponse('获取玩家列表失败');
+    console.error('错误详情:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    });
+    return errorResponse(`获取玩家列表失败: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
-
