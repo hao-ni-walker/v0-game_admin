@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
-import { PlayerAPI } from '@/service/api/player';
+import { AdminUserAPI } from '@/service/api/admin-user';
 import {
   Player,
   PlayerDetail,
@@ -121,7 +121,7 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
           requestParams.sort_order = sort.sort_order;
         }
 
-        const response = await PlayerAPI.getPlayers(requestParams);
+        const response = await AdminUserAPI.getUsers(requestParams);
 
         if (response.success && response.data) {
           setPlayers(response.data.list || response.data.items || []);
@@ -153,7 +153,7 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
     async (playerId: number): Promise<PlayerDetail | null> => {
       try {
         setLoading(true);
-        const response = await PlayerAPI.getPlayer(playerId);
+        const response = await AdminUserAPI.getUser(playerId);
         if (response.success && response.data) {
           return response.data;
         } else {
@@ -190,7 +190,7 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
               )
             )
           : undefined;
-        const response = await PlayerAPI.getStatistics(cleanedFilters as any);
+        const response = await AdminUserAPI.getStatistics(cleanedFilters as any);
         if (response.success && response.data) {
           // 适配统计数据结构
           const stats = response.data;
@@ -233,7 +233,16 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
       }
     ): Promise<boolean> => {
       try {
-        const response = await PlayerAPI.updatePlayer(playerId, data);
+        const normalizedData = {
+          ...data,
+          status:
+            typeof data.status === 'boolean'
+              ? data.status
+                ? 'active'
+                : 'disabled'
+              : data.status
+        };
+        const response = await AdminUserAPI.updateUser(playerId, normalizedData);
         if (response.success) {
           toast.success('玩家更新成功');
           return true;
@@ -262,7 +271,7 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
       }
     ): Promise<boolean> => {
       try {
-        const response = await PlayerAPI.adjustWallet(playerId, data);
+        const response = await AdminUserAPI.adjustWallet(playerId, data);
         if (response.success) {
           toast.success('钱包调整成功');
           return true;
@@ -301,7 +310,7 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
       operation: 'enable' | 'disable' | 'export'
     ): Promise<boolean> => {
       try {
-        const response = await PlayerAPI.batchOperation(playerIds, operation);
+        const response = await AdminUserAPI.batchOperation(playerIds, operation);
         if (response.success) {
           toast.success('批量操作成功');
           return true;
@@ -321,7 +330,7 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
   const resetPassword = useCallback(
     async (playerId: number): Promise<boolean> => {
       try {
-        const response = await PlayerAPI.resetPassword(playerId);
+        const response = await AdminUserAPI.resetPassword(playerId);
         if (response.success) {
           toast.success('重置链接已发送');
           return true;
@@ -344,7 +353,7 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
       data: { channel: string; title: string; content: string }
     ): Promise<boolean> => {
       try {
-        const response = await PlayerAPI.sendNotification(playerId, data);
+        const response = await AdminUserAPI.sendNotification(playerId, data);
         if (response.success) {
           toast.success('通知发送成功');
           return true;
@@ -389,7 +398,7 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
             ...(sort.sort_order && { sort_order: sort.sort_order })
           };
 
-          const response = await PlayerAPI.getPlayers(apiParams);
+          const response = await AdminUserAPI.getUsers(apiParams);
 
           if (response.success && response.data) {
             const players = response.data.list || response.data.items || [];

@@ -32,9 +32,9 @@ interface TelegramUser {
 
 interface PaginationInfo {
   page: number;
-  page_size: number;
+  limit: number;
   total: number;
-  total_pages: number;
+  totalPages: number;
 }
 
 /**
@@ -45,9 +45,9 @@ export default function PlayersPage() {
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
-    page_size: 20,
+    limit: 20,
     total: 0,
-    total_pages: 0
+    totalPages: 0
   });
   const [keyword, setKeyword] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -58,7 +58,7 @@ export default function PlayersPage() {
     try {
       const response = await PlayerAPI.getPlayers({
         page: pagination.page,
-        page_size: pagination.page_size,
+        page_size: pagination.limit,
         keyword: keyword || undefined
       });
 
@@ -70,17 +70,20 @@ export default function PlayersPage() {
         if (response.pager) {
           setPagination({
             page: response.pager.page,
-            page_size: response.pager.page_size,
+            limit: response.pager.limit,
             total: response.pager.total,
-            total_pages: response.pager.total_pages
+            totalPages: response.pager.totalPages
           });
         } else if (response.data?.total !== undefined) {
           // 备用: 如果 pager 不存在,从 data 中获取分页信息
           setPagination({
             page: response.data.page || 1,
-            page_size: response.data.page_size || 20,
+            limit: response.data.limit || response.data.page_size || 20,
             total: response.data.total || 0,
-            total_pages: Math.ceil((response.data.total || 0) / (response.data.page_size || 20))
+            totalPages: Math.ceil(
+              (response.data.total || 0) /
+                (response.data.limit || response.data.page_size || 20)
+            )
           });
         }
       }
@@ -89,7 +92,7 @@ export default function PlayersPage() {
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.page_size, keyword]);
+  }, [pagination.page, pagination.limit, keyword]);
 
   useEffect(() => {
     fetchUsers();
@@ -112,7 +115,7 @@ export default function PlayersPage() {
   };
 
   const handlePageSizeChange = (pageSize: number) => {
-    setPagination(prev => ({ ...prev, page_size: pageSize, page: 1 }));
+    setPagination(prev => ({ ...prev, limit: pageSize, page: 1 }));
   };
 
   // 格式化时间
@@ -232,9 +235,9 @@ export default function PlayersPage() {
           <Pagination
             pagination={{
               page: pagination.page,
-              limit: pagination.page_size,
+              limit: pagination.limit,
               total: pagination.total,
-              totalPages: pagination.total_pages
+              totalPages: pagination.totalPages
             }}
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}

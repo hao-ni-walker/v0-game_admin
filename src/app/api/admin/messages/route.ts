@@ -82,9 +82,9 @@ export async function GET(request: Request) {
 
     return successResponse(dataResult.rows, {
       page,
-      page_size: pageSize,
+      limit: pageSize,
       total,
-      total_pages: Math.ceil(total / pageSize)
+      totalPages: Math.ceil(total / pageSize)
     });
   } catch (error) {
     console.error('获取消息列表失败:', error);

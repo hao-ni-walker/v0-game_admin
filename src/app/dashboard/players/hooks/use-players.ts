@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { PlayerAPI } from '@/service/api/player';
+import { AdminUserAPI } from '@/service/api/admin-user';
 import { toast } from 'sonner';
 
 interface Player {
@@ -49,7 +50,7 @@ export function usePlayers(): UsePlayersResult {
 
       const response = await PlayerAPI.getPlayers({
         page: params.page || 1,
-        pageSize: params.pageSize || 20,
+        page_size: params.pageSize || 20,
         ...params
       });
 
@@ -57,7 +58,7 @@ export function usePlayers(): UsePlayersResult {
         setPlayers(response.data.list || []);
         setTotal(response.data.total || 0);
         setPage(response.data.page || 1);
-        setPageSize(response.data.page_size || 20);
+        setPageSize(response.pager?.limit || response.data.page_size || 20);
       } else {
         throw new Error(response.message || '获取玩家列表失败');
       }
@@ -72,7 +73,9 @@ export function usePlayers(): UsePlayersResult {
 
   const updatePlayerStatus = async (id: number, status: boolean) => {
     try {
-      const response = await PlayerAPI.updatePlayerStatus(id, status);
+      const response = await AdminUserAPI.updateUser(id, {
+        status: status ? 'active' : 'disabled'
+      });
       if (response.success) {
         toast.success('状态更新成功');
         fetchPlayers({ page, pageSize });

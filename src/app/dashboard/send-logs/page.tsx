@@ -35,9 +35,9 @@ interface SendLog {
 
 interface Pager {
   page: number;
-  page_size: number;
+  limit: number;
   total: number;
-  total_pages: number;
+  totalPages: number;
 }
 
 // 状态颜色映射
@@ -59,9 +59,9 @@ export default function SendLogsPage() {
   const [status, setStatus] = useState('');
   const [pager, setPager] = useState<Pager>({
     page: 1,
-    page_size: 20,
+    limit: 20,
     total: 0,
-    total_pages: 0,
+    totalPages: 0,
   });
 
   const fetchLogs = useCallback(async (page = 1) => {
@@ -69,7 +69,7 @@ export default function SendLogsPage() {
     try {
       const params = new URLSearchParams({
         page: String(page),
-        page_size: String(pager.page_size),
+        page_size: String(pager.limit),
       });
 
       if (keyword) params.append('keyword', keyword);
@@ -88,7 +88,7 @@ export default function SendLogsPage() {
     } finally {
       setLoading(false);
     }
-  }, [keyword, status, pager.page_size]);
+  }, [keyword, status, pager.limit]);
 
   useEffect(() => {
     fetchLogs(1);
@@ -224,7 +224,7 @@ export default function SendLogsPage() {
           {pager.total > 0 && (
             <div className="flex items-center justify-between mt-4">
               <div className="text-sm text-muted-foreground">
-                共 {pager.total} 条记录，第 {pager.page} / {pager.total_pages} 页
+                共 {pager.total} 条记录，第 {pager.page} / {pager.totalPages} 页
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -240,7 +240,7 @@ export default function SendLogsPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => fetchLogs(pager.page + 1)}
-                  disabled={pager.page >= pager.total_pages || loading}
+                  disabled={pager.page >= pager.totalPages || loading}
                 >
                   下一页
                   <ChevronRight className="h-4 w-4" />

@@ -102,9 +102,9 @@ export async function GET(request: Request) {
     // 返回分页数据
     return successResponse(dataResult.rows, {
       page,
-      page_size: pageSize,
+      limit: pageSize,
       total,
-      total_pages: Math.ceil(total / pageSize)
+      totalPages: Math.ceil(total / pageSize)
     });
   } catch (error) {
     console.error('获取发送日志失败:', error);
