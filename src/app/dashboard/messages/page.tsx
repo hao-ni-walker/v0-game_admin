@@ -263,8 +263,6 @@ export default function MessagesPage() {
               <SelectContent>
                 <SelectItem value="all">全部状态</SelectItem>
                 <SelectItem value="PENDING">待发送</SelectItem>
-                <SelectItem value="PENDING">待发送</SelectItem>
-                <SelectItem value="SENDING">发送中</SelectItem>
                 <SelectItem value="SENDING">发送中</SelectItem>
                 <SelectItem value="COMPLETED">已完成</SelectItem>
                 <SelectItem value="FAILED">发送失败</SelectItem>
@@ -451,21 +449,25 @@ export default function MessagesPage() {
                   type="datetime-local"
                   value={formData.scheduled_at}
                   onChange={(e) => setFormData({ ...formData, scheduled_at: e.target.value })}
+                  disabled={formData.status === 'SENDING'}
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="status">状态</Label>
+                <Label htmlFor="status">发送方式</Label>
                 <Select
                   value={formData.status}
-                  onValueChange={(value) => setFormData({ ...formData, status: value })}
+                  onValueChange={(value) => setFormData({
+                    ...formData,
+                    status: value,
+                    scheduled_at: value === 'SENDING' ? '' : formData.scheduled_at
+                  })}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="PENDING">待发送</SelectItem>
-                    <SelectItem value="PENDING">立即发送</SelectItem>
-                    <SelectItem value="SENDING">发送中</SelectItem>
+                    <SelectItem value="SENDING">立即发送</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

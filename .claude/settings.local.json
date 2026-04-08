@@ -15,7 +15,17 @@
       "Bash(npm:*)",
       "Bash(ls:*)",
       "Bash(done)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(psql:*)",
+      "Bash(lsof -ti:3001)",
+      "Bash(brew services:*)",
+      "Bash(lsof -i:5432)",
+      "Bash(xargs kill:*)",
+      "Bash(python3 -m json.tool)",
+      "Bash(xxd /Users/hao/Repos/telegtam-bot-admin/src/app/dashboard/messages/page.tsx)",
+      "Bash(xxd)",
+      "Bash(npx vercel:*)",
+      "Bash(git status:*)"
     ],
     "deny": [],
     "ask": []
