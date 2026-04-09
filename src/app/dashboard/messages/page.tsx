@@ -76,6 +76,13 @@ const STATUS_MAP: Record<string, { label: string; variant: 'default' | 'secondar
 };
 
 export default function MessagesPage() {
+  const getCurrentLocalDateTime = () => {
+    const now = new Date();
+    now.setSeconds(0, 0);
+    const localTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+    return localTime.toISOString().slice(0, 16);
+  };
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [pager, setPager] = useState<Pager>({ page: 1, page_size: 20, total: 0, total_pages: 0 });
@@ -94,8 +101,8 @@ export default function MessagesPage() {
     image_url: '',
     button_text: '',
     button_url: '',
-    scheduled_at: '',
-    status: 'PENDING'
+    scheduled_at: getCurrentLocalDateTime(),
+    status: 'SENDING'
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -147,8 +154,8 @@ export default function MessagesPage() {
       image_url: '',
       button_text: '',
       button_url: '',
-      scheduled_at: '',
-      status: 'PENDING'
+      scheduled_at: getCurrentLocalDateTime(),
+      status: 'SENDING'
     });
     setDialogOpen(true);
   };
@@ -459,7 +466,7 @@ export default function MessagesPage() {
                   onValueChange={(value) => setFormData({
                     ...formData,
                     status: value,
-                    scheduled_at: value === 'SENDING' ? '' : formData.scheduled_at
+                    scheduled_at: value === 'SENDING' ? getCurrentLocalDateTime() : formData.scheduled_at
                   })}
                 >
                   <SelectTrigger>

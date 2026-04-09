@@ -107,7 +107,8 @@ export async function POST(request: Request) {
     }
 
     // 数据库 enum: PENDING, SENDING, COMPLETED, FAILED
-    const dbStatus = (status || 'PENDING').toUpperCase();
+    const normalizedStatus = (status || 'PENDING').toUpperCase();
+    const dbStatus = normalizedStatus === 'IMMEDIATE' ? 'SENDING' : normalizedStatus;
     // 立即发送时，scheduled_at 设为当前时间
     const dbScheduledAt = dbStatus === 'SENDING' ? new Date().toISOString() : (scheduled_at || null);
     const result = await query(
@@ -143,7 +144,8 @@ export async function PUT(request: Request) {
     }
 
     // 数据库 enum: PENDING, SENDING, COMPLETED, FAILED
-    const dbStatus = (status || 'PENDING').toUpperCase();
+    const normalizedStatus = (status || 'PENDING').toUpperCase();
+    const dbStatus = normalizedStatus === 'IMMEDIATE' ? 'SENDING' : normalizedStatus;
     // 立即发送时，scheduled_at 设为当前时间
     const dbScheduledAt = dbStatus === 'SENDING' ? new Date().toISOString() : (scheduled_at || null);
     const result = await query(
