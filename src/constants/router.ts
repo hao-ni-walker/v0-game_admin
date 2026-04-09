@@ -9,8 +9,10 @@ import {
   Shield,
   Key,
   MessageSquare,
-  Send
+  Send,
+  Database
 } from 'lucide-react';
+import { STORAGE_BUCKETS } from '@/constants/storage-buckets';
 
 // 业务导航列表
 export const businessNavList: NavItem[] = [
@@ -20,7 +22,31 @@ export const businessNavList: NavItem[] = [
     icon: SquareTerminal,
     isActive: false,
     description: '工作台',
-    items: [],
+    items: [
+      {
+        title: '存储管理',
+        url: '/dashboard/workbench/storage',
+        icon: Database,
+        description: 'Cloudflare R2 存储管理',
+        searchConfig: {
+          keywords: 'storage r2 bucket 存储 文件 对象 上传 下载 删除',
+          searchShortcut: ['t'],
+          searchSection: '工作台',
+          searchPriority: 2
+        }
+      },
+      ...STORAGE_BUCKETS.map((bucket) => ({
+        title: bucket.title,
+        url: `/dashboard/workbench/storage/${encodeURIComponent(bucket.name)}`,
+        icon: Database,
+        description: bucket.description || `Bucket: ${bucket.name}`,
+        searchConfig: {
+          keywords: `storage r2 bucket ${bucket.name} 存储 文件 对象`,
+          searchSection: '工作台/存储',
+          searchPriority: 9
+        }
+      }))
+    ],
     searchConfig: {
       keywords: 'dashboard overview home 仪表板 首页 工作台',
       searchShortcut: ['d'],
