@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { getR2Client } from '@/server/r2';
+import { getR2ClientForBucket } from '@/server/r2';
 import { errorResponse, successResponse } from '@/service/response';
 import { STORAGE_BUCKETS } from '@/constants/storage-buckets';
 
@@ -19,7 +19,7 @@ export async function DELETE(request: NextRequest) {
     const key = (searchParams.get('key') || '').trim();
     if (!key) return errorResponse('key 不能为空');
 
-    const s3 = getR2Client();
+    const s3 = getR2ClientForBucket(bucket);
     await s3.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
 
     return successResponse(true);

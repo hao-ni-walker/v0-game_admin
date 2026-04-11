@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { getR2Client } from '@/server/r2';
+import { getR2ClientForBucket, getR2PresignExpiresSeconds } from '@/server/r2';
 import { errorResponse, successResponse } from '@/service/response';
 import { STORAGE_BUCKETS } from '@/constants/storage-buckets';
 
@@ -20,14 +20,14 @@ export async function POST(request: NextRequest) {
     const key = String(body.key || '').trim();
     if (!key) return errorResponse('key 不能为空');
 
-    const s3 = getR2Client();
+    const s3 = getR2ClientForBucket(bucket);
     const cmd = new GetObjectCommand({
       Bucket: bucket,
       Key: key
     });
 
     const downloadUrl = await getSignedUrl(s3, cmd, {
-      expiresIn: Number(process.env.CLOUDFLARE_R2_PRESIGN_EXPIRES || 900)
+      expiresIn: getR2PresignExpiresSeconds(bucket)
     });
 
     return successResponse({ download_url: downloadUrl });

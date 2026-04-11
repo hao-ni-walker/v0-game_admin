@@ -21,39 +21,47 @@ function generateSearchActions(): Action[] {
   type ActionWithPriority = Action & { priority?: number };
   const actionsWithPriority: ActionWithPriority[] = [];
 
-  // 遍历导航列表
-  const processNavItem = (item: NavItem, parentSection?: string) => {
-    // 如果有子项，处理子项
-    if (item.items && item.items.length > 0) {
-      item.items.forEach((subItem) => {
-        processNavItem(subItem, item.title);
-      });
-    } else if (item.url && item.url !== '#') {
-      // 只处理有实际URL的项
-      const actionId = item.url.replace(/\//g, '-').replace(/^-/, '');
-      const searchConfig = item.searchConfig;
+  const pushNavAction = (item: NavItem, parentSection?: string) => {
+    if (!item.url || item.url === '#') return;
 
-      actionsWithPriority.push({
-        id: actionId,
-        name: item.title,
-        shortcut: searchConfig?.searchShortcut || [],
-        keywords: searchConfig?.keywords || item.title,
-        section: searchConfig?.searchSection || parentSection || '导航',
-        priority: searchConfig?.searchPriority || 100,
-        perform: () => {
-          if (item.url.startsWith('http')) {
-            window.open(item.url, '_blank');
-          } else {
-            window.location.pathname = item.url;
-          }
-        },
-        icon: item.icon ? (
-          <item.icon className='h-4 w-4' />
-        ) : (
-          <HomeIcon className='h-4 w-4' />
-        ),
-        subtitle: item.description
+    const actionId = item.url.replace(/\//g, '-').replace(/^-/, '');
+    const searchConfig = item.searchConfig;
+
+    actionsWithPriority.push({
+      id: actionId,
+      name: item.title,
+      shortcut: searchConfig?.searchShortcut || [],
+      keywords: searchConfig?.keywords || item.title,
+      section: searchConfig?.searchSection || parentSection || '导航',
+      priority: searchConfig?.searchPriority || 100,
+      perform: () => {
+        if (item.url.startsWith('http')) {
+          window.open(item.url, '_blank');
+        } else {
+          window.location.pathname = item.url;
+        }
+      },
+      icon: item.icon ? (
+        <item.icon className='h-4 w-4' />
+      ) : (
+        <HomeIcon className='h-4 w-4' />
+      ),
+      subtitle: item.description
+    });
+  };
+
+  // 遍历导航列表（支持多级；带子菜单且自身可跳转的项如「存储管理」也加入搜索）
+  const processNavItem = (item: NavItem, parentSection?: string) => {
+    if (item.items && item.items.length > 0) {
+      pushNavAction(item, parentSection);
+      item.items.forEach((subItem) => {
+        processNavItem(
+          subItem,
+          item.searchConfig?.searchSection || item.title
+        );
       });
+    } else {
+      pushNavAction(item, parentSection);
     }
   };
 

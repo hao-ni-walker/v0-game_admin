@@ -31,13 +31,6 @@ export const getBreadcrumbs = (pathname: string): BreadcrumbItem[] => {
   const breadcrumbs: BreadcrumbItem[] = [];
   const addedTitles = new Set<string>();
 
-  // 始终添加工作台作为第一个面包屑项
-  breadcrumbs.push({
-    title: '工作台',
-    link: '/dashboard/overview'
-  });
-  addedTitles.add('工作台');
-
   let currentPath = '';
   paths.forEach((path) => {
     currentPath += `/${path}`;

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { getR2Client } from '@/server/r2';
+import { getR2ClientForBucket, getR2PresignExpiresSeconds } from '@/server/r2';
 import { errorResponse, successResponse } from '@/service/response';
 import { STORAGE_BUCKETS } from '@/constants/storage-buckets';
 
@@ -18,18 +18,22 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const bucket = ensureAllowedBucket(String(body.bucket || ''));
     const key = String(body.key || '').trim();
-    const contentType = body.content_type ? String(body.content_type) : undefined;
+    // 与浏览器 PUT 的 Content-Type 必须一致；未签名的 Content-Type 会导致 SignatureDoesNotMatch
+    const contentType =
+      typeof body.content_type === 'string' && body.content_type.trim()
+        ? body.content_type.trim()
+        : 'application/octet-stream';
 
     if (!key) return errorResponse('key 不能为空');
 
-    const s3 = getR2Client();
+    const s3 = getR2ClientForBucket(bucket);
     const cmd = new PutObjectCommand({
       Bucket: bucket,
       Key: key,
       ContentType: contentType
     });
     const uploadUrl = await getSignedUrl(s3, cmd, {
-      expiresIn: Number(process.env.CLOUDFLARE_R2_PRESIGN_EXPIRES || 900)
+      expiresIn: getR2PresignExpiresSeconds(bucket)
     });
 
     return successResponse({ upload_url: uploadUrl });

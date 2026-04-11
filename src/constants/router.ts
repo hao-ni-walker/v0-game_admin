@@ -9,6 +9,7 @@ import {
   Shield,
   Key,
   MessageSquare,
+  MessageSquareReply,
   Send,
   Database
 } from 'lucide-react';
@@ -22,36 +23,35 @@ export const businessNavList: NavItem[] = [
     icon: SquareTerminal,
     isActive: false,
     description: '工作台',
-    items: [
-      {
-        title: '存储管理',
-        url: '/dashboard/workbench/storage',
-        icon: Database,
-        description: 'Cloudflare R2 存储管理',
-        searchConfig: {
-          keywords: 'storage r2 bucket 存储 文件 对象 上传 下载 删除',
-          searchShortcut: ['t'],
-          searchSection: '工作台',
-          searchPriority: 2
-        }
-      },
-      ...STORAGE_BUCKETS.map((bucket) => ({
-        title: bucket.title,
-        url: `/dashboard/workbench/storage/${encodeURIComponent(bucket.name)}`,
-        icon: Database,
-        description: bucket.description || `Bucket: ${bucket.name}`,
-        searchConfig: {
-          keywords: `storage r2 bucket ${bucket.name} 存储 文件 对象`,
-          searchSection: '工作台/存储',
-          searchPriority: 9
-        }
-      }))
-    ],
     searchConfig: {
       keywords: 'dashboard overview home 仪表板 首页 工作台',
       searchShortcut: ['d'],
       searchSection: '导航',
       searchPriority: 1
+    }
+  },
+  {
+    title: '存储管理',
+    url: '/dashboard/workbench/storage',
+    icon: Database,
+    isActive: false,
+    description: 'Cloudflare R2 存储管理',
+    items: STORAGE_BUCKETS.map((bucket) => ({
+      title: bucket.title,
+      url: `/dashboard/workbench/storage/${encodeURIComponent(bucket.name)}`,
+      icon: Database,
+      description: bucket.description || `Bucket: ${bucket.name}`,
+      searchConfig: {
+        keywords: `storage r2 bucket ${bucket.name} 存储 文件 对象`,
+        searchSection: '存储管理',
+        searchPriority: 9
+      }
+    })),
+    searchConfig: {
+      keywords: 'storage r2 bucket 存储 文件 对象 上传 下载 删除',
+      searchShortcut: ['t'],
+      searchSection: '导航',
+      searchPriority: 2
     }
   },
   {
@@ -82,6 +82,17 @@ export const businessNavList: NavItem[] = [
           searchShortcut: ['m'],
           searchSection: '消息管理',
           searchPriority: 4
+        }
+      },
+      {
+        title: '规则配置（待开发）',
+        url: '/dashboard/channel-reply-rules',
+        icon: MessageSquareReply,
+        description: '关键词自动回复规则（对话匹配）',
+        searchConfig: {
+          keywords: 'keyword reply rule 关键词 规则 自动回复 telegram bot',
+          searchSection: '频道运营',
+          searchPriority: 5
         }
       },
       {
