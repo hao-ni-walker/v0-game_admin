@@ -65,9 +65,9 @@ interface Pager {
 
 const STATUS_MAP: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   draft: { label: '草稿', variant: 'secondary' },
+  PENDING: { label: '待发送', variant: 'outline' },
   pending: { label: '待发送', variant: 'outline' },
   scheduled: { label: '已排期', variant: 'outline' },
-  sending: { label: '发送中', variant: 'default' },
   sent: { label: '已发送', variant: 'default' },
   COMPLETED: { label: '已完成', variant: 'default' },
   SUCCESS: { label: '已完成', variant: 'default' },
@@ -102,7 +102,7 @@ export default function MessagesPage() {
     button_text: '',
     button_url: '',
     scheduled_at: getCurrentLocalDateTime(),
-    status: 'SENDING'
+    status: 'IMMEDIATE'
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -155,13 +155,15 @@ export default function MessagesPage() {
       button_text: '',
       button_url: '',
       scheduled_at: getCurrentLocalDateTime(),
-      status: 'SENDING'
+      status: 'IMMEDIATE'
     });
     setDialogOpen(true);
   };
 
   const openEditDialog = (message: Message) => {
     setEditingMessage(message);
+    const dbStatus =
+      message.status === 'SENDING' ? 'PENDING' : message.status;
     setFormData({
       title: message.title || '',
       content: message.content,
@@ -169,7 +171,7 @@ export default function MessagesPage() {
       button_text: message.button_text || '',
       button_url: message.button_url || '',
       scheduled_at: message.scheduled_at ? message.scheduled_at.slice(0, 16) : '',
-      status: message.status
+      status: dbStatus
     });
     setDialogOpen(true);
   };
@@ -188,9 +190,23 @@ export default function MessagesPage() {
     setSubmitting(true);
     try {
       const method = editingMessage ? 'PUT' : 'POST';
-      const body = editingMessage 
-        ? { ...formData, id: editingMessage.id }
-        : formData;
+      const scheduled_at =
+        formData.status === 'IMMEDIATE'
+          ? new Date().toISOString()
+          : formData.scheduled_at
+            ? new Date(formData.scheduled_at).toISOString()
+            : null;
+      const status =
+        formData.status === 'IMMEDIATE' ? 'PENDING' : formData.status;
+
+      const body = editingMessage
+        ? {
+            ...formData,
+            id: editingMessage.id,
+            status,
+            scheduled_at
+          }
+        : { ...formData, status, scheduled_at };
 
       const res = await fetch('/api/admin/messages', {
         method,
@@ -270,7 +286,6 @@ export default function MessagesPage() {
               <SelectContent>
                 <SelectItem value="all">全部状态</SelectItem>
                 <SelectItem value="PENDING">待发送</SelectItem>
-                <SelectItem value="SENDING">发送中</SelectItem>
                 <SelectItem value="COMPLETED">已完成</SelectItem>
                 <SelectItem value="FAILED">发送失败</SelectItem>
               </SelectContent>
@@ -456,25 +471,31 @@ export default function MessagesPage() {
                   type="datetime-local"
                   value={formData.scheduled_at}
                   onChange={(e) => setFormData({ ...formData, scheduled_at: e.target.value })}
-                  disabled={formData.status === 'SENDING'}
+                  disabled={formData.status === 'IMMEDIATE'}
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="status">发送方式</Label>
+                <Label htmlFor="status">状态</Label>
                 <Select
                   value={formData.status}
                   onValueChange={(value) => setFormData({
                     ...formData,
                     status: value,
-                    scheduled_at: value === 'SENDING' ? getCurrentLocalDateTime() : formData.scheduled_at
+                    scheduled_at: value === 'IMMEDIATE' ? getCurrentLocalDateTime() : formData.scheduled_at
                   })}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="PENDING">待发送</SelectItem>
-                    <SelectItem value="SENDING">立即发送</SelectItem>
+                    <SelectItem value="IMMEDIATE">立即发送</SelectItem>
+                    <SelectItem value="PENDING">定时发送</SelectItem>
+                    {editingMessage ? (
+                      <>
+                        <SelectItem value="COMPLETED">已完成</SelectItem>
+                        <SelectItem value="FAILED">发送失败</SelectItem>
+                      </>
+                    ) : null}
                   </SelectContent>
                 </Select>
               </div>
