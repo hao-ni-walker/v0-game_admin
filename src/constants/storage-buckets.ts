@@ -3,6 +3,12 @@ export type StorageBucketDef = {
   name: string;
   /** Sidebar/menu display title */
   title: string;
+  /**
+   * 可选：已绑定到该 bucket 的公共访问基址（自定义域）。
+   * 若填写，存储管理「复制地址」与预览将优先使用 `{publicBaseUrl}/{key 路径编码}`，
+   * 而不再使用带过期时间的 R2 预签名 URL。
+   */
+  publicBaseUrl?: string;
   /** Optional description */
   description?: string;
   /**
@@ -22,9 +28,26 @@ export type StorageBucketDef = {
  */
 export const STORAGE_BUCKETS: StorageBucketDef[] = [
   { name: 'onlineplayslots', title: 'onlineplayslots' },
-  { name: 'pigbagames', title: 'pigbagames' },
+  {
+    name: 'pigbagames',
+    title: 'pigbagames',
+    publicBaseUrl:
+      process.env.NEXT_PUBLIC_STORAGE_PUBLIC_BASE_PIGBAGAMES?.replace(/\/+$/, '') ||
+      'https://storage.pigbagames.com'
+  },
   { name: 'xreddeer', title: 'xreddeer' }
 ];
+
+/**
+ * 若该 bucket 配置了公共基址，返回可直接访问的对象 URL（路径分段 encodeURIComponent，与常见 CDN 行为一致）。
+ */
+export function buildPublicObjectUrlForBucket(bucketName: string, key: string): string | undefined {
+  const def = STORAGE_BUCKETS.find((b) => b.name === bucketName);
+  const base = def?.publicBaseUrl?.trim().replace(/\/+$/, '');
+  if (!base) return undefined;
+  const path = key.split('/').map(encodeURIComponent).join('/');
+  return `${base}/${path}`;
+}
 
 /** 根据 bucket 名解析 R2 环境变量后缀（未配置则走全局 CLOUDFLARE_R2_*） */
 export function getR2ProfileForBucket(bucketName: string): string | undefined {

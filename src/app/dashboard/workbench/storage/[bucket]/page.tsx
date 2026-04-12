@@ -36,6 +36,7 @@ import {
   Upload,
   Video
 } from 'lucide-react';
+import { buildPublicObjectUrlForBucket } from '@/constants/storage-buckets';
 
 const OBJECT_LIST_PAGE_SIZE = 50;
 
@@ -123,6 +124,14 @@ function ObjectListPreviewCell({
   useEffect(() => {
     const el = wrapRef.current;
     if (!el || !isMultimediaFile(obj.key, obj.content_type)) return;
+
+    const publicUrl = buildPublicObjectUrlForBucket(bucket, obj.key);
+    if (publicUrl) {
+      loadedRef.current = true;
+      setUrl(publicUrl);
+      setPhase('ready');
+      return;
+    }
 
     const io = new IntersectionObserver(
       (entries) => {
@@ -376,6 +385,14 @@ export default function WorkbenchBucketPage({
   );
 
   const handleOpenPreview = async (obj: StorageObjectItem) => {
+    const publicUrl = buildPublicObjectUrlForBucket(bucket, obj.key);
+    if (publicUrl) {
+      setPreviewTitle(obj.key);
+      setPreviewUrl(publicUrl);
+      setPreviewContentType(obj.content_type);
+      setPreviewDialogOpen(true);
+      return;
+    }
     try {
       const url = await getDownloadUrl(obj.key);
       setPreviewTitle(obj.key);
@@ -396,8 +413,16 @@ export default function WorkbenchBucketPage({
     }
   };
 
-  /** 复制预签名图片地址（带过期时间，适合临时引用） */
+  /**
+   * 复制图片地址：若该 bucket 在配置里填了 publicBaseUrl（自定义域），复制稳定公共 URL；
+   * 否则复制 R2 预签名链接（约 15 分钟有效，直连 cloudflarestorage.com）。
+   */
   const handleCopyImageUrl = async (obj: StorageObjectItem) => {
+    const publicUrl = buildPublicObjectUrlForBucket(bucket, obj.key);
+    if (publicUrl) {
+      await copyTextToClipboard(publicUrl);
+      return;
+    }
     try {
       const url = await getDownloadUrl(obj.key);
       await copyTextToClipboard(url);
@@ -514,6 +539,11 @@ export default function WorkbenchBucketPage({
         <Card>
           <CardHeader>
             <CardTitle>对象列表</CardTitle>
+            <p className='text-muted-foreground text-sm font-normal'>
+              已为配置公共自定义域的 bucket（如 pigbagames）优先复制{' '}
+              <code className='bg-muted rounded px-1 text-xs'>https://storage…/对象 key</code>{' '}
+              形式的稳定链接；未配置的 bucket 仍复制带过期的 R2 预签名 URL。
+            </p>
             {keyword.trim() && scanTruncated ? (
               <p className='text-amber-600 dark:text-amber-500 text-sm font-normal'>
                 当前关键词仅在单次扫描的前 1000 个对象中匹配；若未找到目标文件，请缩小 key 范围或清空关键词翻页浏览。
