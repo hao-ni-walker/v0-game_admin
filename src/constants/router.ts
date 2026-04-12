@@ -11,7 +11,8 @@ import {
   MessageSquare,
   MessageSquareReply,
   Send,
-  Database
+  Database,
+  Smartphone
 } from 'lucide-react';
 import { STORAGE_BUCKETS } from '@/constants/storage-buckets';
 
@@ -85,6 +86,17 @@ export const businessNavList: NavItem[] = [
         }
       },
       {
+        title: '推广 App',
+        url: '/dashboard/promoted-apps',
+        icon: Smartphone,
+        description: '推广应用图标、链接与页面排序',
+        searchConfig: {
+          keywords: 'promoted app 推广 应用 图标 链接 排序 ranking telegram',
+          searchSection: '频道运营',
+          searchPriority: 5
+        }
+      },
+      {
         title: '规则配置（待开发）',
         url: '/dashboard/channel-reply-rules',
         icon: MessageSquareReply,
@@ -92,7 +104,7 @@ export const businessNavList: NavItem[] = [
         searchConfig: {
           keywords: 'keyword reply rule 关键词 规则 自动回复 telegram bot',
           searchSection: '频道运营',
-          searchPriority: 5
+          searchPriority: 6
         }
       },
       {
