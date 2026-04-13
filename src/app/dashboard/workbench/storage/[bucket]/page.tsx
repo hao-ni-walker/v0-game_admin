@@ -540,9 +540,9 @@ export default function WorkbenchBucketPage({
           <CardHeader>
             <CardTitle>对象列表</CardTitle>
             <p className='text-muted-foreground text-sm font-normal'>
-              已为配置公共自定义域的 bucket（如 pigbagames）优先复制{' '}
-              <code className='bg-muted rounded px-1 text-xs'>https://storage…/对象 key</code>{' '}
-              形式的稳定链接；未配置的 bucket 仍复制带过期的 R2 预签名 URL。
+              已在 <code className='bg-muted rounded px-1 text-xs'>storage-buckets.ts</code>{' '}
+              配置 <code className='bg-muted rounded px-1 text-xs'>publicBaseUrl</code> 的 bucket
+              会优先使用「公共基址 + 对象 key」的稳定链接；未配置的 bucket 仍使用短时有效的 R2 预签名 URL。
             </p>
             {keyword.trim() && scanTruncated ? (
               <p className='text-amber-600 dark:text-amber-500 text-sm font-normal'>

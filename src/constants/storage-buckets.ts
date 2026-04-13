@@ -27,7 +27,6 @@ export type StorageBucketDef = {
  * 后续你把 bucket 名称/显示名补齐即可，无需在页面新增配置表单。
  */
 export const STORAGE_BUCKETS: StorageBucketDef[] = [
-  { name: 'onlineplayslots', title: 'onlineplayslots' },
   {
     name: 'pigbagames',
     title: 'pigbagames',
@@ -35,7 +34,13 @@ export const STORAGE_BUCKETS: StorageBucketDef[] = [
       process.env.NEXT_PUBLIC_STORAGE_PUBLIC_BASE_PIGBAGAMES?.replace(/\/+$/, '') ||
       'https://storage.pigbagames.com'
   },
-  { name: 'xreddeer', title: 'xreddeer' }
+  {
+    name: 'xreddeer',
+    title: 'xreddeer',
+    publicBaseUrl:
+      process.env.NEXT_PUBLIC_STORAGE_PUBLIC_BASE_XREDDEER?.replace(/\/+$/, '') ||
+      'https://xreddeercasino.com'
+  }
 ];
 
 /**
