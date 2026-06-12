@@ -1,16 +1,86 @@
 import { apiRequest, buildSearchParams } from './base';
-import {
-  Admin,
-  AdminDetail,
-  AdminRole,
-  AdminListResponse,
-  AdminStatistics,
-  AdminFilters,
-  CreateAdminFormData,
-  EditAdminFormData,
-  StatusChangeData,
-  PasswordResetFormData
-} from '@/app/dashboard/admin/system/admins/types';
+
+// 管理员相关类型定义
+interface Admin {
+  id: number;
+  username: string;
+  email: string;
+  avatar?: string | null;
+  roleId: number | string;
+  roleName?: string;
+  status: 'active' | 'disabled';
+  isSuperAdmin?: boolean;
+  createdAt: string;
+  lastLoginAt?: string;
+  updatedAt?: string;
+}
+
+interface AdminDetail extends Admin {
+  role?: {
+    id: number;
+    name: string;
+  };
+  loginErrorCount?: number;
+  lockTime?: string | null;
+}
+
+interface AdminRole {
+  id: number;
+  name: string;
+  description?: string;
+  permissions?: number[];
+}
+
+interface AdminListResponse {
+  items: Admin[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+interface AdminStatistics {
+  totalAdmins: number;
+  activeAdmins: number;
+  disabledAdmins: number;
+  superAdmins: number;
+}
+
+interface AdminFilters {
+  username?: string;
+  email?: string;
+  status?: string;
+  role_id?: number;
+  page?: number;
+  page_size?: number;
+  sort_by?: string;
+  sort_order?: 'asc' | 'desc';
+}
+
+interface CreateAdminFormData {
+  username: string;
+  email: string;
+  password: string;
+  roleId: string;
+  status?: 'active' | 'disabled';
+}
+
+interface EditAdminFormData {
+  username?: string;
+  email?: string;
+  roleId?: string;
+  status?: 'active' | 'disabled';
+}
+
+interface StatusChangeData {
+  status: 'active' | 'disabled';
+  reason?: string;
+}
+
+interface PasswordResetFormData {
+  newPassword: string;
+  confirmPassword: string;
+  reason?: string;
+}
 
 // 管理员管理相关 API
 export class AdminAPI {

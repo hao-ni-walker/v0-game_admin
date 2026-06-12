@@ -1,269 +1,305 @@
 import { NavItem } from '@/types/nav';
 import {
-  CircleUserRound,
-  SquareTerminal,
-  Settings,
-  ScrollText,
-  Cog,
-  CreditCard,
+  LayoutDashboard,
+  ShieldAlert,
+  Scale,
   Users,
-  Shield,
-  Key,
-  Gamepad2,
-  List,
-  BarChart3,
-  LineChart,
-  Megaphone,
-  Gift,
-  ClipboardList,
-  Image,
-  Receipt,
-  Crown,
   Wallet,
+  BarChart3,
+  Settings,
+  Activity,
+  SlidersHorizontal,
+  AlertTriangle,
+  ScanSearch,
+  ScrollText,
+  FileCheck,
+  AlertCircle,
+  UserCog,
+  Ban,
   ArrowDownCircle,
-  Server,
-  Activity
+  Landmark,
+  TrendingUp,
+  Receipt,
+  ClipboardList,
+  Cog,
+  CircleUserRound,
+  Shield,
+  Key
 } from 'lucide-react';
 
 // 业务导航列表
 export const businessNavList: NavItem[] = [
   {
-    title: '工作台',
+    title: '仪表盘',
     url: '/dashboard/overview',
-    icon: SquareTerminal,
+    icon: LayoutDashboard,
     isActive: false,
-    description: '工作台',
+    description: '实时经营概览',
     items: [],
     searchConfig: {
-      keywords: 'dashboard overview home 仪表板 首页 工作台',
+      keywords: 'dashboard overview 仪表盘 首页 概览',
       searchShortcut: ['d'],
       searchSection: '导航',
       searchPriority: 1
     }
   },
   {
-    title: '游戏运营',
+    title: '风控中心',
     url: '#',
-    icon: Users,
+    icon: ShieldAlert,
     isActive: false,
     items: [
       {
-        title: '玩家列表',
-        url: '/dashboard/players',
-        icon: Users,
-        description: '玩家列表',
+        title: '实时风险监控',
+        url: '/dashboard/risk/monitoring',
+        icon: Activity,
+        description: '净风险敞口监控',
+        items: [],
         searchConfig: {
-          keywords: 'player players 玩家 列表',
-          searchShortcut: ['p'],
-          searchSection: '玩家管理',
-          searchPriority: 3
-        }
-      },
-      {
-        title: '订单管理',
-        url: '#',
-        icon: Receipt,
-        isActive: false,
-        description: '订单管理',
-        items: [
-          {
-            title: '储值订单',
-            url: '/dashboard/orders/deposits',
-            icon: Wallet,
-            description: '储值订单',
-            searchConfig: {
-              keywords: 'deposit 储值 充值 订单 管理',
-              searchShortcut: ['d'],
-              searchSection: '订单管理',
-              searchPriority: 11
-            }
-          },
-          {
-            title: '提现管理',
-            url: '/dashboard/orders/withdrawals',
-            icon: ArrowDownCircle,
-            description: '提现管理',
-            searchConfig: {
-              keywords: 'withdrawal 提现 取现 管理',
-              searchShortcut: ['w'],
-              searchSection: '订单管理',
-              searchPriority: 12
-            }
-          }
-        ],
-        searchConfig: {
-          keywords: 'order 订单 管理',
-          searchShortcut: ['o'],
-          searchSection: '订单管理',
-          searchPriority: 10
-        }
-      },
-      {
-        title: '游戏列表',
-        url: '#',
-        icon: Gamepad2,
-        description: '游戏列表',
-        items: [
-          {
-            title: 'hgapi365',
-            url: '/dashboard/games/hgapi365',
-            description: 'hgapi365',
-            searchConfig: {
-              keywords: 'game games hgapi365 游戏 列表',
-              searchShortcut: ['g'],
-              searchSection: '游戏管理',
-              searchPriority: 2
-            }
-          }
-        ],
-        searchConfig: {
-          keywords: 'game games 游戏 列表',
-          searchShortcut: ['g'],
-          searchSection: '游戏管理',
+          keywords: 'risk monitoring 风控 风险 监控 敞口',
+          searchShortcut: ['rm'],
+          searchSection: '风控中心',
           searchPriority: 2
         }
       },
       {
-        title: '活动列表',
-        url: '/dashboard/campaigns',
-        icon: Megaphone,
-        description: '活动列表',
+        title: '赔率管理',
+        url: '/dashboard/risk/odds',
+        icon: SlidersHorizontal,
+        description: '基础赔率与动态调节',
+        items: [],
         searchConfig: {
-          keywords: 'campaign 活动 列表',
-          searchShortcut: ['c'],
-          searchSection: '活动管理',
-          searchPriority: 6
+          keywords: 'odds 赔率 管理 调节',
+          searchShortcut: ['ro'],
+          searchSection: '风控中心',
+          searchPriority: 3
         }
       },
       {
-        title: '礼包列表',
-        url: '/dashboard/gift-packs',
-        icon: Gift,
-        description: '礼包列表',
+        title: '限额配置',
+        url: '/dashboard/risk/limits',
+        icon: Wallet,
+        description: '下单限额与截止时间',
+        items: [],
         searchConfig: {
-          keywords: 'gift pack 礼包 列表',
-          searchShortcut: ['l'],
-          searchSection: '礼包管理',
+          keywords: 'limits 限额 配置 截止 时间',
+          searchShortcut: ['rl'],
+          searchSection: '风控中心',
+          searchPriority: 4
+        }
+      },
+      {
+        title: '单边行情控制',
+        url: '/dashboard/risk/market-control',
+        icon: AlertTriangle,
+        description: '单边行情识别与处理',
+        items: [],
+        searchConfig: {
+          keywords: 'market control 单边 行情 控制',
+          searchShortcut: ['rc'],
+          searchSection: '风控中心',
+          searchPriority: 5
+        }
+      },
+      {
+        title: '异常行为检测',
+        url: '/dashboard/risk/anomaly-detection',
+        icon: ScanSearch,
+        description: '异常账户检测规则',
+        items: [],
+        searchConfig: {
+          keywords: 'anomaly detection 异常 检测 行为',
+          searchShortcut: ['ra'],
+          searchSection: '风控中心',
+          searchPriority: 6
+        }
+      }
+    ]
+  },
+  {
+    title: '结算中心',
+    url: '#',
+    icon: Scale,
+    isActive: false,
+    items: [
+      {
+        title: '开奖记录',
+        url: '/dashboard/settlement/records',
+        icon: ScrollText,
+        description: '按期查询开奖记录',
+        items: [],
+        searchConfig: {
+          keywords: 'settlement records 开奖 记录 结算',
+          searchShortcut: ['sr'],
+          searchSection: '结算中心',
           searchPriority: 7
         }
       },
       {
-        title: '通知管理',
-        url: '#',
-        icon: Megaphone,
-        isActive: false,
-        description: '通知管理',
-        items: [
-          {
-            title: '通告列表',
-            url: '/dashboard/announcements',
-            icon: List,
-            description: '通告列表',
-            searchConfig: {
-              keywords: 'announcement 通告 公告 列表',
-              searchShortcut: ['n'],
-              searchSection: '通知管理',
-              searchPriority: 8
-            }
-          },
-          {
-            title: '通告模板',
-            url: '/dashboard/announcements/templates',
-            icon: ScrollText,
-            description: '通告模板',
-            searchConfig: {
-              keywords: 'announcement template 通告 模板',
-              searchShortcut: ['t'],
-              searchSection: '通知管理',
-              searchPriority: 9
-            }
-          }
-        ],
+        title: '结算审计',
+        url: '/dashboard/settlement/audit',
+        icon: FileCheck,
+        description: '结算明细审计',
+        items: [],
         searchConfig: {
-          keywords: 'announcement 通知 通告',
-          searchShortcut: ['n'],
-          searchSection: '通知管理',
+          keywords: 'settlement audit 结算 审计 明细',
+          searchShortcut: ['sa'],
+          searchSection: '结算中心',
           searchPriority: 8
         }
       },
       {
-        title: 'Banner 列表',
-        url: '/dashboard/home-banners',
-        icon: Image,
-        description: 'Banner 列表',
+        title: '异常结算处理',
+        url: '/dashboard/settlement/exceptions',
+        icon: AlertCircle,
+        description: '异常结算人工介入',
+        items: [],
         searchConfig: {
-          keywords: 'home banner 首 页 轮播 列表',
-          searchShortcut: ['h'],
-          searchSection: '首页 Banner 管理',
+          keywords: 'settlement exceptions 异常 结算 处理',
+          searchShortcut: ['se'],
+          searchSection: '结算中心',
           searchPriority: 9
         }
       }
     ]
   },
   {
-    title: '数据分析',
+    title: '用户管理',
+    url: '#',
+    icon: Users,
+    isActive: false,
+    items: [
+      {
+        title: '用户列表',
+        url: '/dashboard/users/list',
+        icon: Users,
+        description: '用户查询与管理',
+        items: [],
+        searchConfig: {
+          keywords: 'users list 用户 列表 管理',
+          searchShortcut: ['ul'],
+          searchSection: '用户管理',
+          searchPriority: 10
+        }
+      },
+      {
+        title: '账户操作',
+        url: '/dashboard/users/operations',
+        icon: UserCog,
+        description: '余额调整与冻结',
+        items: [],
+        searchConfig: {
+          keywords: 'user operations 账户 操作 余额 冻结',
+          searchShortcut: ['uo'],
+          searchSection: '用户管理',
+          searchPriority: 11
+        }
+      },
+      {
+        title: '黑名单管理',
+        url: '/dashboard/users/blacklist',
+        icon: Ban,
+        description: '黑名单加入与移出',
+        items: [],
+        searchConfig: {
+          keywords: 'blacklist 黑名单 管理',
+          searchShortcut: ['ub'],
+          searchSection: '用户管理',
+          searchPriority: 12
+        }
+      }
+    ]
+  },
+  {
+    title: '资金管理',
+    url: '#',
+    icon: Wallet,
+    isActive: false,
+    items: [
+      {
+        title: '充值审核',
+        url: '/dashboard/funds/deposits',
+        icon: Wallet,
+        description: '充值记录与大额复核',
+        items: [],
+        searchConfig: {
+          keywords: 'deposit 充值 审核 复核',
+          searchShortcut: ['fd'],
+          searchSection: '资金管理',
+          searchPriority: 13
+        }
+      },
+      {
+        title: '提现审核',
+        url: '/dashboard/funds/withdrawals',
+        icon: ArrowDownCircle,
+        description: '提现风控与人工审核',
+        items: [],
+        searchConfig: {
+          keywords: 'withdrawal 提现 审核',
+          searchShortcut: ['fw'],
+          searchSection: '资金管理',
+          searchPriority: 14
+        }
+      },
+      {
+        title: '资金池监控',
+        url: '/dashboard/funds/pool',
+        icon: Landmark,
+        description: '资金池余额与安全线',
+        items: [],
+        searchConfig: {
+          keywords: 'fund pool 资金池 监控 安全',
+          searchShortcut: ['fp'],
+          searchSection: '资金管理',
+          searchPriority: 15
+        }
+      }
+    ]
+  },
+  {
+    title: '报表中心',
     url: '#',
     icon: BarChart3,
     isActive: false,
     items: [
       {
-        title: '游戏流水',
-        url: '/dashboard/analytics/flows',
-        icon: LineChart,
-        description: '游戏流水',
+        title: '盈亏报表',
+        url: '/dashboard/reports/profit-loss',
+        icon: TrendingUp,
+        description: '经营日报',
+        items: [],
         searchConfig: {
-          keywords: 'analytics flows 流水 数据 分析',
-          searchShortcut: ['f'],
-          searchSection: '数据分析',
-          searchPriority: 4
+          keywords: 'profit loss 盈亏 报表 日报',
+          searchShortcut: ['rp'],
+          searchSection: '报表中心',
+          searchPriority: 16
         }
       },
       {
-        title: '运营报表',
-        url: '/dashboard/analytics/reports',
-        icon: BarChart3,
-        description: '运营报表',
+        title: '交易报表',
+        url: '/dashboard/reports/transactions',
+        icon: Receipt,
+        description: '交易统计',
+        items: [],
         searchConfig: {
-          keywords: 'analytics reports 报表 数据 分析',
-          searchShortcut: ['r'],
-          searchSection: '数据分析',
-          searchPriority: 5
+          keywords: 'transaction 交易 报表 统计',
+          searchShortcut: ['rt'],
+          searchSection: '报表中心',
+          searchPriority: 17
         }
       },
       {
-        title: '用户留存',
-        url: '/dashboard/analytics/user-retention',
-        icon: Users,
-        description: '用户留存',
+        title: '审计日志',
+        url: '/dashboard/reports/audit-logs',
+        icon: ClipboardList,
+        description: '结算审计与操作审计',
+        items: [],
         searchConfig: {
-          keywords: 'analytics user retention 用户留存 数据 分析',
-          searchShortcut: ['u'],
-          searchSection: '数据分析',
-          searchPriority: 6
-        }
-      },
-      {
-        title: '储值分布',
-        url: '/dashboard/analytics/deposit-distribution',
-        icon: Wallet,
-        description: '储值分布',
-        searchConfig: {
-          keywords: 'analytics deposit distribution 储值分布 数据 分析',
-          searchShortcut: ['d'],
-          searchSection: '数据分析',
-          searchPriority: 7
-        }
-      },
-      {
-        title: '运营活动分析',
-        url: '/dashboard/analytics/activity-participation',
-        icon: Activity,
-        description: '运营活动分析',
-        searchConfig: {
-          keywords: 'analytics activity participation 运营活动 分析',
-          searchShortcut: ['a'],
-          searchSection: '数据分析',
-          searchPriority: 8
+          keywords: 'audit log 审计 日志',
+          searchShortcut: ['ra'],
+          searchSection: '报表中心',
+          searchPriority: 18
         }
       }
     ]
@@ -273,134 +309,84 @@ export const businessNavList: NavItem[] = [
 // 系统导航列表
 export const systemNavList: NavItem[] = [
   {
-    title: '账号管理',
-    url: '#',
-    icon: CircleUserRound,
-    isActive: false,
-    items: [
-      {
-        title: '用户管理',
-        url: '/dashboard/account/user',
-        description: '用户管理',
-        icon: Users,
-        searchConfig: {
-          keywords: 'users management 用户 管理 user',
-          searchShortcut: ['u'],
-          searchSection: '账户管理',
-          searchPriority: 2
-        }
-      },
-      {
-        title: '角色管理',
-        url: '/dashboard/account/role',
-        description: '角色管理',
-        icon: Shield,
-        searchConfig: {
-          keywords: 'roles permissions 角色 权限 role',
-          searchShortcut: ['r'],
-          searchSection: '账户管理',
-          searchPriority: 3
-        }
-      },
-      {
-        title: '权限管理',
-        url: '/dashboard/account/permission',
-        description: '权限管理',
-        icon: Key,
-        searchConfig: {
-          keywords: 'permissions settings 权限 设置 permission',
-          searchShortcut: ['p'],
-          searchSection: '账户管理',
-          searchPriority: 4
-        }
-      }
-    ]
-  },
-  {
-    title: '系统管理',
+    title: '系统配置',
     url: '#',
     icon: Settings,
     isActive: false,
     items: [
       {
-        title: '日志管理',
-        url: '/dashboard/system/logs',
-        icon: ScrollText,
-        description: '系统日志审计',
-        searchConfig: {
-          keywords: 'system logs audit 系统日志 审计 log',
-          searchShortcut: ['l'],
-          searchSection: '系统管理',
-          searchPriority: 5
-        }
-      },
-      {
-        title: '系统参数配置',
+        title: '参数配置',
         url: '/dashboard/system/config',
         icon: Cog,
-        description: '系统参数配置',
+        description: '全局参数配置',
+        items: [],
         searchConfig: {
-          keywords: 'system config 参数 配置 设置',
-          searchShortcut: ['s'],
-          searchSection: '系统管理',
-          searchPriority: 6
+          keywords: 'system config 参数 配置',
+          searchShortcut: ['sc'],
+          searchSection: '系统配置',
+          searchPriority: 19
         }
       },
       {
-        title: '支付渠道管理',
-        url: '/dashboard/system/payment-channels',
-        icon: CreditCard,
-        description: '支付渠道管理',
-        searchConfig: {
-          keywords: 'payment channel 支付 渠道 管理',
-          searchShortcut: ['y'],
-          searchSection: '系统管理',
-          searchPriority: 7
-        }
-      },
-      {
-        title: '平台管理',
-        url: '/dashboard/system/platform',
-        icon: Server,
-        description: '平台管理',
-        searchConfig: {
-          keywords: 'platform 平台 管理',
-          searchShortcut: ['m'],
-          searchSection: '系统管理',
-          searchPriority: 8
-        }
-      },
-      {
-        title: 'VIP 等级管理',
-        url: '/dashboard/vip-levels',
-        icon: Crown,
-        description: 'VIP 等级管理',
-        searchConfig: {
-          keywords: 'vip level 等级 管理 会员',
-          searchShortcut: ['v'],
-          searchSection: 'VIP 等级管理',
-          searchPriority: 10
-        }
-      },
-      {
-        title: '工单管理',
+        title: '角色权限',
         url: '#',
-        icon: ClipboardList,
+        icon: CircleUserRound,
         isActive: false,
+        description: '角色与权限管理',
         items: [
           {
-            title: '工单列表',
-            url: '/dashboard/tickets',
-            icon: ClipboardList,
-            description: '工单列表',
+            title: '管理员',
+            url: '/dashboard/system/roles/admins',
+            icon: Users,
+            description: '管理员账户管理',
+            items: [],
             searchConfig: {
-              keywords: 'ticket support 工单 列表',
-              searchShortcut: ['t'],
-              searchSection: '工单管理',
-              searchPriority: 10
+              keywords: 'admin users 管理员 账户',
+              searchShortcut: ['sa'],
+              searchSection: '角色权限',
+              searchPriority: 20
+            }
+          },
+          {
+            title: '角色管理',
+            url: '/dashboard/system/roles/roles',
+            icon: Shield,
+            description: '角色管理',
+            items: [],
+            searchConfig: {
+              keywords: 'roles 角色 管理',
+              searchShortcut: ['sr'],
+              searchSection: '角色权限',
+              searchPriority: 21
+            }
+          },
+          {
+            title: '权限管理',
+            url: '/dashboard/system/roles/permissions',
+            icon: Key,
+            description: '权限节点管理',
+            items: [],
+            searchConfig: {
+              keywords: 'permissions 权限 管理',
+              searchShortcut: ['sp'],
+              searchSection: '角色权限',
+              searchPriority: 22
             }
           }
         ]
+      },
+      {
+        title: '操作日志',
+        url: '/dashboard/system/operation-logs',
+        icon: ScrollText,
+        description: '管理员操作记录',
+        items: [],
+        searchConfig: {
+          keywords: 'operation logs 操作 日志',
+          searchShortcut: ['so'],
+          searchSection: '系统配置',
+          searchPriority: 23
+        }
       }
     ]
   }

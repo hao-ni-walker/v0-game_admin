@@ -6,7 +6,7 @@ import type {
   UserWallet,
   WalletTransaction,
   PaymentChannel
-} from '@/app/dashboard/orders/deposits/types';
+} from '@/app/dashboard/funds/deposits/types';
 
 export interface DepositOrderListResponse {
   data: DepositOrder[];

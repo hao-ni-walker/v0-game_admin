@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: siteConfig.description,
 };
 
-export default async function DashboardLayout({
+export default async function RootLayout({
   children
 }: {
   children: React.ReactNode;

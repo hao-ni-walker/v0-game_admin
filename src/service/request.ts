@@ -9,4 +9,3 @@ export { PermissionAPI } from './api/permission';
 export { DashboardAPI } from './api/dashboard';
 export { LogAPI, OperationLogAPI } from './api/log';
 export { SystemConfigAPI } from './api/system-config';
-export { PlatformAPI } from './api/platform';

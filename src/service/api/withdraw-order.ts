@@ -9,7 +9,7 @@ import type {
   RiskInfo,
   AuditOrderParams,
   MarkPayoutParams
-} from '@/app/dashboard/orders/withdrawals/types';
+} from '@/app/dashboard/funds/withdrawals/types';
 
 export interface WithdrawOrderListResponse {
   data: WithdrawOrder[];

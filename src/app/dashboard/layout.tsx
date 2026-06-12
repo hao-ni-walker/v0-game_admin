@@ -4,8 +4,8 @@ import { AppSidebar } from '@/components/layout/app-sidebar';
 import Header from '@/components/layout/header';
 
 export const metadata: Metadata = {
-  title: 'N Admin',
-  description: 'Basic dashboard with Next.js and Shadcn'
+  title: 'BTC 秒合约管理后台',
+  description: 'BTC 秒合约后台管理系统 — 风控、结算、资金管理'
 };
 
 export default async function DashboardLayout({

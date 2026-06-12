@@ -31,12 +31,12 @@ export const getBreadcrumbs = (pathname: string): BreadcrumbItem[] => {
   const breadcrumbs: BreadcrumbItem[] = [];
   const addedTitles = new Set<string>();
 
-  // 始终添加工作台作为第一个面包屑项
+  // 始终添加仪表盘作为第一个面包屑项
   breadcrumbs.push({
-    title: '工作台',
+    title: '仪表盘',
     link: '/dashboard/overview'
   });
-  addedTitles.add('工作台');
+  addedTitles.add('仪表盘');
 
   let currentPath = '';
   paths.forEach((path) => {
