@@ -1,56 +1,75 @@
 import { cookies } from 'next/headers';
+import { requestRemoteAdminApi } from '@/lib/admin-remote';
 import {
-  successResponse,
   errorResponse,
-  unauthorizedResponse
+  successResponse,
+  unauthorizedResponse,
 } from '@/service/response';
 import { logger } from '@/lib/logger';
 
-const REMOTE_API_URL = (process.env.NEXT_PUBLIC_ADMIN_API_URL || 'https://api.xreddeercasino.com') + '/api/admin/users';
+function mapUserListQuery(searchParams: URLSearchParams) {
+  const remote = new URLSearchParams();
 
-/**
- * 获取玩家列表 - 代理到远程 API
- * GET /api/admin/users
- */
+  for (const [key, value] of searchParams.entries()) {
+    if (!value) {
+      continue;
+    }
+
+    if (key === 'page_size') {
+      remote.set('size', value);
+      continue;
+    }
+
+    if (key === 'sort_by' && value === 'register_at') {
+      remote.set('sort_by', 'created_at');
+      continue;
+    }
+
+    remote.set(key, value);
+  }
+
+  return remote;
+}
+
 export async function GET(request: Request) {
   try {
-    // 从 cookie 中获取 token
     const cookieStore = await cookies();
     const token = cookieStore.get('token');
 
-    if (!token || !token.value) {
+    if (!token?.value) {
       await logger.warn('用户管理', '获取玩家列表', '未授权访问：缺少 token', {
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
       return unauthorizedResponse('未授权访问');
     }
 
-    // 获取查询参数
     const { searchParams } = new URL(request.url);
-    const queryString = searchParams.toString();
-
-    // 构建远程 API URL
-    const remoteUrl = queryString
-      ? `${REMOTE_API_URL}?${queryString}`
-      : REMOTE_API_URL;
-
-    // 转发请求到远程 API
-    const remoteResponse = await fetch(remoteUrl, {
+    const remoteResponse = await requestRemoteAdminApi<{
+      code?: number;
+      message?: string;
+      data?: {
+        items?: Array<Record<string, unknown>>;
+        pagination?: {
+          page?: number;
+          size?: number;
+          total?: number;
+        };
+      } | null;
+    }>({
+      path: '/api/v1/admin/users',
       method: 'GET',
+      query: mapUserListQuery(searchParams),
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `bearer ${token.value}`
-      }
+        Authorization: `Bearer ${token.value}`,
+      },
     });
 
-    // 检查 HTTP 状态码
     if (!remoteResponse.ok) {
-      const errorText = await remoteResponse.text();
       await logger.error('用户管理', '获取玩家列表', '远程API请求失败', {
         status: remoteResponse.status,
-        statusText: remoteResponse.statusText,
-        errorText,
-        timestamp: new Date().toISOString()
+        errorText: remoteResponse.text,
+        timestamp: new Date().toISOString(),
       });
 
       if (remoteResponse.status === 401) {
@@ -58,30 +77,74 @@ export async function GET(request: Request) {
       }
 
       return errorResponse(
-        `远程API错误: ${remoteResponse.status} ${remoteResponse.statusText}`
+        `远程API错误: ${remoteResponse.status}`
       );
     }
 
-    // 解析远程 API 响应
-    const result = await remoteResponse.json();
+    const result = remoteResponse.data;
+    if (!result || (result.code !== 0 && result.code !== 200) || !result.data) {
+      return errorResponse(result?.message || '获取玩家列表失败');
+    }
 
-    // 记录成功日志
+    const items = (result.data.items || []).map((item) => ({
+      id: Number(item.user_id || 0),
+      idname: item.display_name || '',
+      username: item.tg_username || item.display_name || `user_${item.user_id}`,
+      email: '',
+      status: item.status === 'normal' ? 'active' : item.status,
+      vip_level: Number(item.vip_level || 0),
+      registration_method: 'other',
+      registration_source: '',
+      identity_category: 'user',
+      agent: '',
+      direct_superior_id: undefined,
+      created_at: item.registered_at
+        ? new Date(Number(item.registered_at) * 1000).toISOString()
+        : new Date(0).toISOString(),
+      updated_at: item.last_active_at
+        ? new Date(Number(item.last_active_at) * 1000).toISOString()
+        : new Date(0).toISOString(),
+      last_login: item.last_active_at
+        ? new Date(Number(item.last_active_at) * 1000).toISOString()
+        : undefined,
+      login_failure_count: 0,
+      locked_at: undefined,
+      wallet: {
+        balance: Number(item.balance || 0),
+        frozen_balance: 0,
+        bonus: 0,
+        credit: 0,
+        withdrawable: Number(item.balance || 0),
+        total_deposit: Number(item.total_deposit || 0),
+        total_withdraw: Number(item.total_withdraw || 0),
+        total_bet: Number(item.total_bet || 0),
+        total_win: Number(item.total_bet || 0) + Number(item.net_pnl || 0),
+        currency: 'USD',
+        status: 'active',
+        version: 1,
+      },
+    }));
+    const pagination = result.data.pagination || {};
+
     await logger.info('用户管理', '获取玩家列表', '获取玩家列表成功', {
-      queryParams: queryString,
-      timestamp: new Date().toISOString()
+      total: pagination.total || 0,
+      page: pagination.page || 1,
+      timestamp: new Date().toISOString(),
     });
 
-    // 返回远程 API 的响应
-    return successResponse(result.data || result, result.pager);
+    return successResponse({
+      items,
+      page: pagination.page || 1,
+      page_size: pagination.size || 20,
+      total: pagination.total || 0,
+    });
   } catch (error) {
-    // 记录错误日志
     await logger.error('用户管理', '获取玩家列表', '获取玩家列表失败', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     return errorResponse('获取玩家列表失败');
   }
 }
-

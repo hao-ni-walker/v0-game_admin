@@ -26,8 +26,10 @@ export function LoginForm({
   const { forceReInitialize, setToken } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    username: process.env.NODE_ENV === 'development' ? 'admin' : '',
-    password: process.env.NODE_ENV === 'development' ? 'Admin@123456' : ''
+    username: process.env.NODE_ENV === 'development' ? 'super_admin' : '',
+    password:
+      process.env.NODE_ENV === 'development' ? 'Admin@2026!Secure' : '',
+    totpCode: ''
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,6 +119,18 @@ export function LoginForm({
                   value={formData.password}
                   onChange={handleChange}
                   required
+                  disabled={loading}
+                />
+              </div>
+              <div className='grid gap-2'>
+                <Label htmlFor='totpCode'>验证码</Label>
+                <Input
+                  id='totpCode'
+                  name='totpCode'
+                  type='text'
+                  value={formData.totpCode}
+                  onChange={handleChange}
+                  placeholder='未启用可留空'
                   disabled={loading}
                 />
               </div>

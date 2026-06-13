@@ -12,6 +12,36 @@ export interface Session {
   user: User;
 }
 
+function parseTokenPayload(token: string): Record<string, any> | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      return null;
+    }
+
+    return JSON.parse(Buffer.from(parts[1], 'base64').toString()) as Record<
+      string,
+      any
+    >;
+  } catch {
+    return null;
+  }
+}
+
+function parseUserId(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value !== 'string' || !value) {
+    return null;
+  }
+
+  const normalized = value.startsWith('admin:') ? value.slice(6) : value;
+  const parsed = Number.parseInt(normalized, 10);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
 /**
  * 服务端认证函数 - 只能在服务端组件中使用
  */
@@ -24,29 +54,23 @@ export async function auth(): Promise<Session | null> {
   }
 
   try {
-    // 直接解析 JWT token 的 payload（不验证签名，因为远程 API 的 secret 可能不同）
-    // JWT 格式：header.payload.signature
-    const parts = token.value.split('.');
-    if (parts.length !== 3) {
+    const payload = parseTokenPayload(token.value);
+    if (!payload) {
       return null;
     }
-
-    // 解析 payload（base64 解码）
-    const payload = JSON.parse(
-      Buffer.from(parts[1], 'base64').toString()
-    ) as any;
 
     // 检查 token 是否过期
     if (payload.exp && payload.exp * 1000 < Date.now()) {
       return null;
     }
 
-    // 支持远程 API 的 token 结构（sub, username, type）和本地结构（id, email, username）
-    const userId = payload.id || payload.sub || payload.userId;
+    // 支持远程 API 的 token 结构（sub=admin:1, role, permissions）和本地结构
+    const userId = parseUserId(payload.id || payload.sub || payload.userId);
     const username = payload.username || payload.name || '';
     const email = payload.email || '';
     const avatar = payload.avatar || '';
-    const roleId = payload.roleId || payload.role_id || payload.type || '';
+    const roleId =
+      payload.role || payload.roleId || payload.role_id || payload.type || '';
 
     if (!userId) {
       return null;
@@ -54,7 +78,7 @@ export async function auth(): Promise<Session | null> {
 
     return {
       user: {
-        id: typeof userId === 'string' ? parseInt(userId) || 0 : userId,
+        id: userId,
         email: email || username || '',
         username: username || email || '用户',
         avatar: avatar || '/avatars/default.jpg',
@@ -73,36 +97,29 @@ export async function auth(): Promise<Session | null> {
  */
 export function verifyToken(token: string): User | null {
   try {
-    // 直接解析 JWT token 的 payload（不验证签名，因为远程 API 的 secret 可能不同）
-    // JWT 格式：header.payload.signature
-    const parts = token.split('.');
-    if (parts.length !== 3) {
+    const payload = parseTokenPayload(token);
+    if (!payload) {
       return null;
     }
-
-    // 解析 payload（base64 解码）
-    const payload = JSON.parse(
-      Buffer.from(parts[1], 'base64').toString()
-    ) as any;
 
     // 检查 token 是否过期
     if (payload.exp && payload.exp * 1000 < Date.now()) {
       return null;
     }
 
-    // 支持远程 API 的 token 结构（sub, username, type）和本地结构（id, email, username）
-    const userId = payload.id || payload.sub || payload.userId;
+    const userId = parseUserId(payload.id || payload.sub || payload.userId);
     const username = payload.username || payload.name || '';
     const email = payload.email || '';
     const avatar = payload.avatar || '';
-    const roleId = payload.roleId || payload.role_id || payload.type || '';
+    const roleId =
+      payload.role || payload.roleId || payload.role_id || payload.type || '';
 
     if (!userId) {
       return null;
     }
 
     return {
-      id: typeof userId === 'string' ? parseInt(userId) || 0 : userId,
+      id: userId,
       email: email || username || '',
       username: username || email || '用户',
       avatar: avatar || '/avatars/default.jpg',

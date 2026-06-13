@@ -211,16 +211,22 @@ export const useAuthStore = create<AuthState>()(
       // 权限检查方法
       hasPermission: (permission: string) => {
         const { permissions } = get();
-        return permissions.includes(permission);
+        return permissions.includes('*') || permissions.includes(permission);
       },
 
       hasAnyPermission: (permissions: string[]) => {
         const { permissions: userPermissions } = get();
+        if (userPermissions.includes('*')) {
+          return true;
+        }
         return permissions.some((perm) => userPermissions.includes(perm));
       },
 
       hasAllPermissions: (permissions: string[]) => {
         const { permissions: userPermissions } = get();
+        if (userPermissions.includes('*')) {
+          return true;
+        }
         return permissions.every((perm) => userPermissions.includes(perm));
       }
     }),

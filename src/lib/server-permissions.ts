@@ -3,6 +3,29 @@ import { verifyToken } from './auth';
 // 使用仓储获取数据
 import { getRepositories } from '@/repository';
 
+function getTokenPermissions(token: string): string[] {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      return [];
+    }
+
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString()) as {
+      permissions?: unknown;
+    };
+
+    if (!Array.isArray(payload.permissions)) {
+      return [];
+    }
+
+    return payload.permissions.filter(
+      (permission): permission is string => typeof permission === 'string'
+    );
+  } catch {
+    return [];
+  }
+}
+
 /**
  * 从请求中获取用户ID (服务端专用)
  */
@@ -28,6 +51,13 @@ export async function getUserFromRequest(): Promise<number | null> {
  */
 export async function getUserPermissions(userId?: number): Promise<string[]> {
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token');
+    const tokenPermissions = token?.value ? getTokenPermissions(token.value) : [];
+    if (tokenPermissions.length > 0) {
+      return tokenPermissions;
+    }
+
     // 如果没有传入userId，尝试从请求中获取
     if (!userId) {
       const requestUserId = await getUserFromRequest();
@@ -76,7 +106,9 @@ export async function hasPermission(
 ): Promise<boolean> {
   try {
     const userPermissions = await getUserPermissions(userId);
-    return userPermissions.includes(permissionCode);
+    return (
+      userPermissions.includes('*') || userPermissions.includes(permissionCode)
+    );
   } catch (error) {
     console.error('权限检查失败:', error);
     return false;
@@ -92,6 +124,9 @@ export async function hasAnyPermission(
 ): Promise<boolean> {
   try {
     const userPermissions = await getUserPermissions(userId);
+    if (userPermissions.includes('*')) {
+      return true;
+    }
     return permissionCodes.some((code) => userPermissions.includes(code));
   } catch (error) {
     console.error('权限检查失败:', error);
@@ -108,6 +143,9 @@ export async function hasAllPermissions(
 ): Promise<boolean> {
   try {
     const userPermissions = await getUserPermissions(userId);
+    if (userPermissions.includes('*')) {
+      return true;
+    }
     return permissionCodes.every((code) => userPermissions.includes(code));
   } catch (error) {
     console.error('权限检查失败:', error);

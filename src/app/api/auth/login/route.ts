@@ -1,16 +1,14 @@
 import { logger } from '@/lib/logger';
-import { encryptPassword } from '@/lib/crypto';
+import { requestRemoteAdminApi } from '@/lib/admin-remote';
 import {
   successResponse,
   errorResponse,
   unauthorizedResponse
 } from '@/service/response';
 
-const REMOTE_API_URL = (process.env.NEXT_PUBLIC_ADMIN_API_URL || 'https://api.xreddeercasino.com') + '/api/admin/login';
-
 export async function POST(request: Request) {
   try {
-    const { username, password } = await request.json();
+    const { username, password, totpCode } = await request.json();
 
     // 验证必填字段
     if (!username || !password) {
@@ -25,16 +23,25 @@ export async function POST(request: Request) {
       return errorResponse('请填写用户名和密码');
     }
 
-    // 加密密码
-    const encryptedPassword = await encryptPassword(password);
-
-    // 转发请求到远程 API
     const remotePayload = {
       username,
-      password: encryptedPassword
+      password,
+      totp_code: totpCode || '000000'
     };
 
-    const remoteResponse = await fetch(REMOTE_API_URL, {
+    const remoteResponse = await requestRemoteAdminApi<{
+      code?: number;
+      message?: string;
+      msg?: string;
+      data?: {
+        token?: string;
+        access_token?: string;
+        tokenType?: string;
+        token_type?: string;
+        message?: string;
+      } | null;
+    }>({
+      path: '/api/v1/admin/auth/login',
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -44,19 +51,17 @@ export async function POST(request: Request) {
 
     // 检查 HTTP 状态码
     if (!remoteResponse.ok) {
-      const errorText = await remoteResponse.text();
       await logger.warn('用户认证', '用户登录', '登录失败：远程API HTTP错误', {
         username,
         status: remoteResponse.status,
-        statusText: remoteResponse.statusText,
-        errorText,
+        errorText: remoteResponse.text,
         timestamp: new Date().toISOString()
       });
 
       return unauthorizedResponse('登录失败，请检查用户名和密码');
     }
 
-    const result = await remoteResponse.json();
+    const result = remoteResponse.data || {};
 
     // 记录远程 API 响应（用于调试）
     await logger.info('用户认证', '用户登录', '远程API响应', {
