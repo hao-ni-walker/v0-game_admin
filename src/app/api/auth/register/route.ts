@@ -3,7 +3,7 @@ import { logger } from '@/lib/logger';
 import { encryptPassword } from '@/lib/crypto';
 import { successResponse, errorResponse } from '@/service/response';
 
-const REMOTE_API_URL = 'https://api.xreddeercasino.com/api/admin/register';
+const REMOTE_API_URL = (process.env.NEXT_PUBLIC_ADMIN_API_URL || 'https://api.xreddeercasino.com') + '/api/admin/register';
 
 interface RegisterRequest {
   username: string;

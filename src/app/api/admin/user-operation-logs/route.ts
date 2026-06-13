@@ -6,8 +6,7 @@ import {
   unauthorizedResponse
 } from '@/service/response';
 
-const REMOTE_API_URL =
-  'https://api.xreddeercasino.com/api/admin/user-operation-logs';
+const REMOTE_API_URL = (process.env.NEXT_PUBLIC_ADMIN_API_URL || 'https://api.xreddeercasino.com') + '/api/admin/user-operation-logs';
 
 /**
  * 获取用户操作日志列表 API - 代理到远程 API

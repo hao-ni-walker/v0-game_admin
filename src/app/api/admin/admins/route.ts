@@ -7,7 +7,7 @@ import {
 } from '@/service/response';
 import { logger } from '@/lib/logger';
 
-const REMOTE_API_URL = 'https://api.xreddeercasino.com/api/admin/admins';
+const REMOTE_API_URL = (process.env.NEXT_PUBLIC_ADMIN_API_URL || 'https://api.xreddeercasino.com') + '/api/admin/admins';
 
 /**
  * 获取管理员列表 API - 代理到远程 API

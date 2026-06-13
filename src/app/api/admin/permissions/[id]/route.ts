@@ -6,8 +6,7 @@ import {
   unauthorizedResponse
 } from '@/service/response';
 
-const REMOTE_API_BASE_URL =
-  'https://api.xreddeercasino.com/api/admin/permissions';
+const REMOTE_API_BASE_URL = (process.env.NEXT_PUBLIC_ADMIN_API_URL || 'https://api.xreddeercasino.com') + '/api/admin/permissions';
 
 /**
  * 获取权限详情 API - 代理到远程 API
