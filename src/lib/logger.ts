@@ -19,6 +19,14 @@ export interface LogData {
  */
 export async function createLog(data: LogData) {
   try {
+    if (process.env.VERCEL === '1') {
+      console[data.level === 'debug' ? 'log' : data.level](
+        `[${data.module}] ${data.action}: ${data.message}`,
+        data.details || {}
+      );
+      return;
+    }
+
     const headersList = await headers();
     const userAgent = headersList.get('user-agent') || undefined;
     const forwardedFor = headersList.get('x-forwarded-for');

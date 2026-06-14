@@ -11,7 +11,7 @@ export interface RemoteApiResponse<T = unknown> {
   data: T | null;
 }
 
-const DEFAULT_REMOTE_ORIGIN = 'https://api.xreddeercasino.com';
+const DEFAULT_REMOTE_ORIGIN = 'https://apiexchange.haohaotest.com';
 
 function getRemoteOrigin() {
   return (process.env.NEXT_PUBLIC_ADMIN_API_URL || DEFAULT_REMOTE_ORIGIN).replace(

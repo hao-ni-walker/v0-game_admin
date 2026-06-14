@@ -127,6 +127,6 @@ export async function POST(request: Request) {
       timestamp: new Date().toISOString()
     });
 
-    return errorResponse('服务器错误');
+    return errorResponse('上游后台不可达');
   }
 }
