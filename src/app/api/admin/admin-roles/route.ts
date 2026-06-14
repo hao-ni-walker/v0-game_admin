@@ -6,7 +6,9 @@ import {
   unauthorizedResponse
 } from '@/service/response';
 
-const REMOTE_API_URL = (process.env.NEXT_PUBLIC_ADMIN_API_URL || 'https://apiexchange.haohaotest.com') + '/api/admin/admin-roles';
+const REMOTE_API_URL =
+  (process.env.NEXT_PUBLIC_ADMIN_API_URL ||
+    'https://apiexchange.haohaotest.xyz') + '/api/v1/admin/admin/roles';
 
 /**
  * 获取角色列表 API - 代理到远程 API
@@ -66,8 +68,20 @@ export async function GET(request: NextRequest) {
     // 解析远程 API 响应
     const result = await remoteResponse.json();
 
-    // 控制台打印响应
     const requestDuration = Date.now() - requestStartTime;
+    const remoteRoles = Array.isArray(result.data?.roles) ? result.data.roles : [];
+    const items = remoteRoles.map((item: any, index: number) => ({
+      id: index + 1,
+      role_id: item.role_id || '',
+      name: item.display_name || item.role_id || '',
+      description: item.display_name || item.role_id || '',
+      permissions: Array.isArray(item.permissions) ? item.permissions : [],
+      admin_count: Number(item.member_count) || 0,
+      is_super: item.role_id === 'super_admin',
+      created_at: '',
+      updated_at: ''
+    }));
+
     console.log(
       '[角色管理] 远程API响应:',
       JSON.stringify(
@@ -75,12 +89,10 @@ export async function GET(request: NextRequest) {
           code: result.code,
           msg: result.msg,
           dataInfo: {
-            total: result.data?.total,
-            page: result.data?.page,
-            page_size: result.data?.page_size,
-            itemsCount: Array.isArray(result.data?.items)
-              ? result.data.items.length
-              : 0
+            total: items.length,
+            page: 1,
+            page_size: items.length,
+            itemsCount: items.length
           },
           requestDuration: `${requestDuration}ms`
         },
@@ -89,19 +101,6 @@ export async function GET(request: NextRequest) {
       )
     );
 
-    // 转换响应格式
-    if ((result.code === 200 || result.code === 0) && result.data) {
-      // 直接返回，保持与远程 API 一致的格式
-      // 注意：前端可能期望 code 为 0
-      return NextResponse.json({
-        code: 0,
-        message: result.msg || 'SUCCESS',
-        success: true,
-        data: result.data
-      });
-    }
-
-    // 如果远程 API 返回错误
     if (result.code !== 200 && result.code !== 0) {
       console.warn('[角色管理] 远程API返回错误:', {
         code: result.code,
@@ -111,10 +110,15 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      code: result.code,
+      code: 0,
       message: result.msg || 'SUCCESS',
       success: true,
-      data: result.data || result
+      data: {
+        items,
+        total: items.length,
+        page: 1,
+        page_size: items.length || 10
+      }
     });
   } catch (error) {
     const requestDuration = Date.now() - requestStartTime;

@@ -6,7 +6,7 @@ import {
   unauthorizedResponse
 } from '@/service/response';
 
-const REMOTE_API_URL = (process.env.NEXT_PUBLIC_ADMIN_API_URL || 'https://apiexchange.haohaotest.com') + '/api/admin/system-configs';
+const REMOTE_API_URL = (process.env.NEXT_PUBLIC_ADMIN_API_URL || 'https://apiexchange.haohaotest.xyz') + '/api/admin/system-configs';
 
 /**
  * 获取系统参数配置列表 API - 代理到远程 API
