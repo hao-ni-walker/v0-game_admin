@@ -29,10 +29,18 @@ export const PERMISSIONS = {
     READ: 'system.log.read',
     DELETE: 'system.log.delete',
     EXPORT: 'system.log.export'
+  },
+  // 站内信管理权限
+  MESSAGE: {
+    READ: 'message:read',
+    WRITE: 'message:write',
+    RECALL: 'message:recall'
   }
 } as const;
 
 /**
  * 路由权限映射
  */
-export const ROUTE_PERMISSIONS = {} as const;
+export const ROUTE_PERMISSIONS = {
+  '/dashboard/messages': ['message:read']
+} as const;

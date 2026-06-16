@@ -24,7 +24,8 @@ import {
   Cog,
   CircleUserRound,
   Shield,
-  Key
+  Key,
+  Mail
 } from 'lucide-react';
 
 // 业务导航列表
@@ -206,6 +207,19 @@ export const businessNavList: NavItem[] = [
           searchShortcut: ['ub'],
           searchSection: '用户管理',
           searchPriority: 12
+        }
+      },
+      {
+        title: '站内信管理',
+        url: '/dashboard/messages',
+        icon: Mail,
+        description: '系统消息推送与撤回',
+        items: [],
+        searchConfig: {
+          keywords: 'messages 站内信 消息 推送',
+          searchShortcut: ['mm'],
+          searchSection: '用户管理',
+          searchPriority: 24
         }
       }
     ]
