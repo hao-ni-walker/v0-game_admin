@@ -19,7 +19,12 @@ export async function GET(req: NextRequest) {
       return unauthorizedResponse('未授权访问');
     }
 
-    const qs = req.nextUrl.searchParams.toString();
+    const sp = new URLSearchParams(req.nextUrl.searchParams);
+    if (sp.has('page_size')) {
+      sp.set('size', sp.get('page_size') as string);
+      sp.delete('page_size');
+    }
+    const qs = sp.toString();
     const remoteResponse = await requestRemoteAdminApi<{
       code?: number;
       message?: string;
