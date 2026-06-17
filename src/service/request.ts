@@ -10,3 +10,5 @@ export { DashboardAPI } from './api/dashboard';
 export { LogAPI, OperationLogAPI } from './api/log';
 export { SystemConfigAPI } from './api/system-config';
 export { MessageAPI } from './api/message';
+export { CurrencyAPI } from './api/currency';
+export type { Currency, CurrencyListResult, CurrencyFormData, CurrencyUpdateData } from './api/currency';
