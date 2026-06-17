@@ -15,6 +15,8 @@ import {
 import type { BroadcastFilters } from '../types';
 import { DEFAULT_FILTERS, STATUS_OPTIONS } from '../constants';
 
+const ALL_STATUS_VALUE = '__all__';
+
 interface BroadcastFiltersProps {
   filters: BroadcastFilters;
   onSearch: (next: Partial<BroadcastFilters>) => void;
@@ -62,8 +64,13 @@ export function BroadcastFilters({
   return (
     <div className='flex flex-wrap items-center gap-3'>
       <Select
-        value={formData.status}
-        onValueChange={(value) => updateFormField('status', value)}
+        value={formData.status || ALL_STATUS_VALUE}
+        onValueChange={(value) =>
+          updateFormField(
+            'status',
+            value === ALL_STATUS_VALUE ? '' : value
+          )
+        }
       >
         <SelectTrigger className='w-[160px] cursor-pointer'>
           <SelectValue placeholder='群发状态' />
@@ -71,8 +78,8 @@ export function BroadcastFilters({
         <SelectContent>
           {STATUS_OPTIONS.map((opt) => (
             <SelectItem
-              key={opt.value || 'all'}
-              value={opt.value}
+              key={opt.value || ALL_STATUS_VALUE}
+              value={opt.value || ALL_STATUS_VALUE}
               className='cursor-pointer'
             >
               {opt.label}
