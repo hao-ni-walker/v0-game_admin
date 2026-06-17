@@ -12,3 +12,5 @@ export { SystemConfigAPI } from './api/system-config';
 export { MessageAPI } from './api/message';
 export { CurrencyAPI } from './api/currency';
 export type { Currency, CurrencyListResult, CurrencyFormData, CurrencyUpdateData } from './api/currency';
+export { OddsAPI } from './api/odds';
+export type { OddsConfig, OddsConfigListResult, ResolvedPeriod, ResolvedOddsResult, OddsUpsertData, OddsUpdateData } from './api/odds';
