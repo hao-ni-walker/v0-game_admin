@@ -245,6 +245,19 @@ export const businessNavList: NavItem[] = [
         }
       },
       {
+        title: '费率管理',
+        url: '/dashboard/funds/fees',
+        icon: Receipt,
+        description: '管理各类费率配置与预览',
+        items: [],
+        searchConfig: {
+          keywords: 'fee 费率 管理 配置 预览',
+          searchShortcut: ['ff'],
+          searchSection: '资金管理',
+          searchPriority: 25
+        }
+      },
+      {
         title: '充值审核',
         url: '/dashboard/funds/deposits',
         icon: Wallet,
