@@ -10,6 +10,8 @@ export { DashboardAPI } from './api/dashboard';
 export { LogAPI, OperationLogAPI } from './api/log';
 export { SystemConfigAPI } from './api/system-config';
 export { MessageAPI } from './api/message';
+export { BroadcastAPI } from './api/broadcast';
+export type { BroadcastFormData, BroadcastCreateResult, BroadcastApproveResult } from './api/broadcast';
 export { CurrencyAPI } from './api/currency';
 export type { Currency, CurrencyListResult, CurrencyFormData, CurrencyUpdateData } from './api/currency';
 export { OddsAPI } from './api/odds';
