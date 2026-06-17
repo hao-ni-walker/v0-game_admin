@@ -14,3 +14,5 @@ export { CurrencyAPI } from './api/currency';
 export type { Currency, CurrencyListResult, CurrencyFormData, CurrencyUpdateData } from './api/currency';
 export { OddsAPI } from './api/odds';
 export type { OddsConfig, OddsConfigListResult, ResolvedPeriod, ResolvedOddsResult, OddsUpsertData, OddsUpdateData } from './api/odds';
+export { FeeAPI } from './api/fee';
+export type { FeeConfig, FeeConfigListResult, FeeCreateData, FeeUpdateData, FeePreviewResult, FeeType, FeeScope } from './api/fee';
