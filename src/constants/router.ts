@@ -25,7 +25,8 @@ import {
   CircleUserRound,
   Shield,
   Key,
-  Mail
+  Mail,
+  Coins
 } from 'lucide-react';
 
 // 业务导航列表
@@ -230,6 +231,19 @@ export const businessNavList: NavItem[] = [
     icon: Wallet,
     isActive: false,
     items: [
+      {
+        title: '币种管理',
+        url: '/dashboard/funds/currencies',
+        icon: Coins,
+        description: '管理可交易的 Web3 资产',
+        items: [],
+        searchConfig: {
+          keywords: 'currency 币种 管理 web3 资产',
+          searchShortcut: ['fc'],
+          searchSection: '资金管理',
+          searchPriority: 12
+        }
+      },
       {
         title: '充值审核',
         url: '/dashboard/funds/deposits',
