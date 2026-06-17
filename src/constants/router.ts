@@ -26,7 +26,8 @@ import {
   Shield,
   Key,
   Mail,
-  Coins
+  Coins,
+  Megaphone
 } from 'lucide-react';
 
 // 业务导航列表
@@ -221,6 +222,19 @@ export const businessNavList: NavItem[] = [
           searchShortcut: ['mm'],
           searchSection: '用户管理',
           searchPriority: 24
+        }
+      },
+      {
+        title: '群发管理',
+        url: '/dashboard/messages/broadcasts',
+        icon: Megaphone,
+        description: '批量群发站内信与审批跟踪',
+        items: [],
+        searchConfig: {
+          keywords: 'broadcast 群发 消息 审批',
+          searchShortcut: ['mb'],
+          searchSection: '用户管理',
+          searchPriority: 26
         }
       }
     ]

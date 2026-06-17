@@ -35,6 +35,11 @@ export const PERMISSIONS = {
     READ: 'message:read',
     WRITE: 'message:write',
     RECALL: 'message:recall'
+  },
+  // 群发管理权限
+  BROADCAST: {
+    READ: 'message:read',
+    APPROVE: 'message:approve'
   }
 } as const;
 
@@ -42,5 +47,6 @@ export const PERMISSIONS = {
  * 路由权限映射
  */
 export const ROUTE_PERMISSIONS = {
-  '/dashboard/messages': ['message:read']
+  '/dashboard/messages': ['message:read'],
+  '/dashboard/messages/broadcasts': ['message:read']
 } as const;
