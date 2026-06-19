@@ -79,23 +79,10 @@ export function useSystemConfigManagement() {
   const createConfig = useCallback(
     async (data: SystemConfigFormData): Promise<boolean> => {
       try {
-        const response = await fetch('/api/system-configs', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(data)
-        });
+        const response = await SystemConfigAPI.create(data);
 
-        if (!response.ok) {
-          const error = await response.json();
-          if (response.status === 400) {
-            toast.error(error.error || MESSAGES.ERROR.INVALID_VALUE);
-          } else if (response.status === 409) {
-            toast.error(MESSAGES.ERROR.DUPLICATE_KEY);
-          } else {
-            throw new Error('创建配置失败');
-          }
+        if (!response.success) {
+          toast.error(response.message || MESSAGES.ERROR.CREATE);
           return false;
         }
 
@@ -119,23 +106,10 @@ export function useSystemConfigManagement() {
       data: Partial<SystemConfigFormData> & { version: number }
     ): Promise<boolean> => {
       try {
-        const response = await fetch(`/api/system-configs/${id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(data)
-        });
+        const response = await SystemConfigAPI.update(id, data);
 
-        if (!response.ok) {
-          const error = await response.json();
-          if (response.status === 409) {
-            toast.error(MESSAGES.ERROR.VERSION_CONFLICT);
-          } else if (response.status === 400) {
-            toast.error(error.error || MESSAGES.ERROR.INVALID_VALUE);
-          } else {
-            throw new Error('更新配置失败');
-          }
+        if (!response.success) {
+          toast.error(response.message || MESSAGES.ERROR.UPDATE);
           return false;
         }
 
@@ -155,12 +129,11 @@ export function useSystemConfigManagement() {
    */
   const deleteConfig = useCallback(async (id: number): Promise<boolean> => {
     try {
-      const response = await fetch(`/api/system-configs/${id}`, {
-        method: 'DELETE'
-      });
+      const response = await SystemConfigAPI.delete(id);
 
-      if (!response.ok) {
-        throw new Error('删除配置失败');
+      if (!response.success) {
+        toast.error(response.message || MESSAGES.ERROR.DELETE);
+        return false;
       }
 
       toast.success(MESSAGES.SUCCESS.DELETE);

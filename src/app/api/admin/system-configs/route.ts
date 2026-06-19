@@ -127,3 +127,55 @@ export async function GET(request: NextRequest) {
     return errorResponse('获取系统参数配置列表失败');
   }
 }
+
+export async function POST(request: NextRequest) {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token');
+
+    if (!token || !token.value) {
+      return unauthorizedResponse('未授权访问');
+    }
+
+    const remoteResponse = await fetch(REMOTE_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token.value}`
+      },
+      body: await request.text()
+    });
+
+    if (!remoteResponse.ok) {
+      const errorText = await remoteResponse.text();
+      console.error('[系统参数配置] 创建配置失败:', {
+        status: remoteResponse.status,
+        statusText: remoteResponse.statusText,
+        errorText
+      });
+
+      if (remoteResponse.status === 401) {
+        return unauthorizedResponse('认证失败，请重新登录');
+      }
+
+      return errorResponse(
+        `远程API错误: ${remoteResponse.status} ${remoteResponse.statusText}`
+      );
+    }
+
+    const result = await remoteResponse.json();
+    if (result.code !== 0 && result.code !== 200) {
+      return errorResponse(result.msg || result.message || '创建系统配置失败');
+    }
+
+    return NextResponse.json({
+      code: 0,
+      message: result.msg || result.message || 'SUCCESS',
+      success: true,
+      data: result.data ?? null
+    });
+  } catch (error) {
+    console.error('[系统参数配置] 创建配置失败:', error);
+    return errorResponse('创建系统配置失败');
+  }
+}

@@ -378,7 +378,7 @@ export class PlayerAPI {
       content: string;
     }
   ) {
-    return apiRequest(`/players/${id}/notify`, {
+    return apiRequest(`/admin/users/${id}/notify`, {
       method: 'POST',
       body: JSON.stringify(data)
     });

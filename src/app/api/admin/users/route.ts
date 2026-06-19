@@ -9,6 +9,14 @@ import { logger } from '@/lib/logger';
 
 function mapUserListQuery(searchParams: URLSearchParams) {
   const remote = new URLSearchParams();
+  const keyword = [
+    searchParams.get('username'),
+    searchParams.get('email'),
+    searchParams.get('idname'),
+    searchParams.get('keyword'),
+    searchParams.get('id'),
+    searchParams.get('user_id'),
+  ].find((value) => Boolean(value));
 
   for (const [key, value] of searchParams.entries()) {
     if (!value) {
@@ -25,7 +33,21 @@ function mapUserListQuery(searchParams: URLSearchParams) {
       continue;
     }
 
+    if (
+      key === 'username' ||
+      key === 'email' ||
+      key === 'idname' ||
+      key === 'id' ||
+      key === 'user_id'
+    ) {
+      continue;
+    }
+
     remote.set(key, value);
+  }
+
+  if (keyword) {
+    remote.set('keyword', keyword);
   }
 
   return remote;

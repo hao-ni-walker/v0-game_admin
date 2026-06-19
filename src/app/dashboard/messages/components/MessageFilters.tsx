@@ -16,6 +16,8 @@ import {
 import type { MessageFilters } from '../types';
 import { CATEGORY_OPTIONS, DEFAULT_FILTERS } from '../constants';
 
+const ALL_CATEGORY_VALUE = '__all__';
+
 interface MessageFiltersProps {
   filters: MessageFilters;
   onSearch: (next: Partial<MessageFilters>) => void;
@@ -83,9 +85,14 @@ export function MessageFilters({
       </div>
 
       <Select
-        value={formData.category}
+        value={formData.category || ALL_CATEGORY_VALUE}
         onValueChange={(value) =>
-          updateFormField('category', value as MessageFilters['category'])
+          updateFormField(
+            'category',
+            value === ALL_CATEGORY_VALUE
+              ? ''
+              : (value as MessageFilters['category'])
+          )
         }
       >
         <SelectTrigger className='w-[140px] cursor-pointer'>
@@ -93,7 +100,11 @@ export function MessageFilters({
         </SelectTrigger>
         <SelectContent>
           {CATEGORY_OPTIONS.map((opt) => (
-            <SelectItem key={opt.value} value={opt.value} className='cursor-pointer'>
+            <SelectItem
+              key={opt.value || ALL_CATEGORY_VALUE}
+              value={opt.value || ALL_CATEGORY_VALUE}
+              className='cursor-pointer'
+            >
               {opt.label}
             </SelectItem>
           ))}
