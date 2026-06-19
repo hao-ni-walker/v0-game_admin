@@ -38,7 +38,7 @@ export default function LimitsConfigPage() {
   } = useLimitsConfig();
 
   const { hasPermission } = usePermissions();
-  const canWrite = hasPermission('risk:config');
+  const canWrite = hasPermission('risk:write');
 
   const setTier = (
     tier: string,
@@ -69,7 +69,7 @@ export default function LimitsConfigPage() {
   };
 
   return (
-    <PermissionGuard permissions='risk:config'>
+    <PermissionGuard permissions='risk:read'>
       <PageContainer>
         <PageHeader
           title='限额配置'
