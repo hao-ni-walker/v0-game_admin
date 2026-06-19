@@ -18,3 +18,5 @@ export { OddsAPI } from './api/odds';
 export type { OddsConfig, OddsConfigListResult, ResolvedPeriod, ResolvedOddsResult, OddsUpsertData, OddsUpdateData } from './api/odds';
 export { FeeAPI } from './api/fee';
 export type { FeeConfig, FeeConfigListResult, FeeCreateData, FeeUpdateData, FeePreviewResult, FeeType, FeeScope } from './api/fee';
+export { RiskParamAPI } from './api/risk-params';
+export type { RiskParamItem, RiskParamListResult, RiskParamUpsertData } from './api/risk-params';
