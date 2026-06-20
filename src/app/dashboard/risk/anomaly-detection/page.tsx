@@ -1,142 +1,123 @@
 'use client';
 
-import React from 'react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table';
 import PageContainer from '@/components/layout/page-container';
 import { PageHeader } from '@/components/table/page-header';
-import { ScanSearch } from 'lucide-react';
-
-// PRD §9.1 检测规则
-const detectionRules = [
-  {
-    id: 'A',
-    name: '高频下单检测',
-    condition: '同一用户在 60 秒内下单次数 ≥ 10 笔',
-    action: '标记预警，降低该用户单笔上限至 $50',
-    params: [
-      { name: '时间窗口', defaultValue: '60 秒', range: '30 ~ 300 秒' },
-      { name: '笔数阈值', defaultValue: '10 笔', range: '5 ~ 50 笔' }
-    ]
-  },
-  {
-    id: 'B',
-    name: '套利模式检测',
-    condition: '同一用户在同一周期同时持有买涨和买跌订单',
-    action: '标记记录，累计 3 次触发账户预警',
-    params: []
-  },
-  {
-    id: 'C',
-    name: '多账户关联检测',
-    condition: '相同设备指纹 / IP / 钱包地址关联 ≥ 3 个账户',
-    action: '关联账户组标记，人工复查',
-    params: []
-  },
-  {
-    id: 'D',
-    name: '大额异常下单',
-    condition: '单笔下单金额 > 日均下单额 × 10 倍',
-    action: '自动暂扣订单 30 秒，风控审查',
-    params: [{ name: '异常倍数阈值', defaultValue: '10 倍', range: '3 ~ 20 倍' }]
-  },
-  {
-    id: 'E',
-    name: '提现异常检测',
-    condition: '充值后 1 小时内未交易直接申请全额提现',
-    action: '标记人工复核，疑似搬砖套利或洗钱',
-    params: [{ name: '提现观察期', defaultValue: '1 小时', range: '0 ~ 24 小时' }]
-  }
-];
+import { PermissionGuard } from '@/components/auth/permission-guard';
+import { usePermissions } from '@/hooks/use-permissions';
+import { ParamNumberField } from '../components/ParamNumberField';
+import { SaveBar } from '../components/SaveBar';
+import { useAnomalyConfig } from './hooks/useAnomalyConfig';
 
 export default function AnomalyDetectionPage() {
+  const { loading, saving, form, setField, reason, setReason, dirty, save } =
+    useAnomalyConfig();
+  const { hasPermission } = usePermissions();
+  const canWrite = hasPermission('risk:write');
+  const dis = !canWrite || loading;
+
   return (
-    <PageContainer>
-      <PageHeader
-        title='异常行为检测'
-        description='5 条检测规则及阈值配置'
-      />
+    <PermissionGuard permissions='risk:read'>
+      <PageContainer>
+        <PageHeader title='异常行为检测' description='编辑各规则阈值（保存后立即生效）' />
 
-      {/* PRD §9.1 检测规则 */}
-      {detectionRules.map((rule) => (
-        <Card key={rule.id} className='mb-4'>
-          <CardHeader>
-            <div className='flex items-center gap-3'>
-              <Badge variant='outline' className='text-base'>
-                规则 {rule.id}
-              </Badge>
-              <CardTitle className='text-base'>{rule.name}</CardTitle>
-            </div>
-            <CardDescription>{rule.condition}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className='space-y-2'>
-              <div>
-                <span className='text-muted-foreground text-sm'>触发后处理：</span>
-                <span className='text-sm'>{rule.action}</span>
+        <div className='space-y-4'>
+          <Card>
+            <CardHeader>
+              <div className='flex items-center gap-2'>
+                <Badge variant='outline'>规则 1</Badge>
+                <CardTitle className='text-base'>高频下单检测</CardTitle>
               </div>
-              {rule.params.length > 0 && (
-                <div className='mt-2'>
-                  <span className='text-muted-foreground text-sm font-medium'>
-                    可配置参数：
-                  </span>
-                  <Table className='mt-2'>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>参数名</TableHead>
-                        <TableHead>默认值</TableHead>
-                        <TableHead>可调范围</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {rule.params.map((param) => (
-                        <TableRow key={param.name}>
-                          <TableCell className='font-medium text-sm'>
-                            {param.name}
-                          </TableCell>
-                          <TableCell className='text-sm'>
-                            {param.defaultValue}
-                          </TableCell>
-                          <TableCell className='text-muted-foreground text-sm'>
-                            {param.range}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+              <CardDescription>同一用户 60 秒内下单次数达预警/限制阈值则触发</CardDescription>
+            </CardHeader>
+            <CardContent className='flex flex-wrap gap-6'>
+              <ParamNumberField label='预警笔数' value={form.freq_warn_count} onChange={(n) => setField('freq_warn_count', n)} disabled={dis} suffix='笔' />
+              <ParamNumberField label='限制笔数' value={form.freq_limit_count} onChange={(n) => setField('freq_limit_count', n)} disabled={dis} suffix='笔' />
+              <ParamNumberField label='限制单笔上限' value={form.freq_limit_cap} onChange={(n) => setField('freq_limit_cap', n)} disabled={dis} suffix='USDT' />
+            </CardContent>
+          </Card>
 
-      {/* 触发记录 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>触发记录</CardTitle>
-          <CardDescription>异常行为检测触发的历史记录</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className='flex h-32 items-center justify-center text-muted-foreground'>
-            暂无触发记录
+          <Card>
+            <CardHeader>
+              <div className='flex items-center gap-2'>
+                <Badge variant='outline'>规则 2</Badge>
+                <CardTitle className='text-base'>双向对冲检测</CardTitle>
+              </div>
+              <CardDescription>同周期同时持有买涨/买跌累计达阈值则暂停 Bonus 流水</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ParamNumberField label='触发次数阈值' value={form.hedge_flag_threshold} onChange={(n) => setField('hedge_flag_threshold', n)} disabled={dis} suffix='次' />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className='flex items-center gap-2'>
+                <Badge variant='outline'>规则 3</Badge>
+                <CardTitle className='text-base'>充值未交易即提现</CardTitle>
+              </div>
+              <CardDescription>充值后窗口内未交易直接提现则进入人工审核</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ParamNumberField label='观察窗口' value={form.deposit_trade_window_s} onChange={(n) => setField('deposit_trade_window_s', n)} disabled={dis} suffix='秒' />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className='flex items-center gap-2'>
+                <Badge variant='outline'>规则 4</Badge>
+                <CardTitle className='text-base'>大额异常下单</CardTitle>
+              </div>
+              <CardDescription>下单金额超过日均倍数则暂扣审查</CardDescription>
+            </CardHeader>
+            <CardContent className='flex flex-wrap gap-6'>
+              <ParamNumberField label='异常倍数' value={form.large_order_multiplier} onChange={(n) => setField('large_order_multiplier', n)} disabled={dis} suffix='倍' />
+              <ParamNumberField label='暂扣时长' value={form.large_order_hold_s} onChange={(n) => setField('large_order_hold_s', n)} disabled={dis} suffix='秒' />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className='flex items-center gap-2'>
+                <Badge variant='outline'>规则 5</Badge>
+                <CardTitle className='text-base'>闪进闪出</CardTitle>
+              </div>
+              <CardDescription>注册后窗口内充值即提现、无交易则冻结</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ParamNumberField label='观察窗口' value={form.flash_inout_window_s} onChange={(n) => setField('flash_inout_window_s', n)} disabled={dis} suffix='秒' />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className='flex items-center gap-2'>
+                <Badge variant='outline'>规则 6</Badge>
+                <CardTitle className='text-base'>连胜异常</CardTitle>
+              </div>
+              <CardDescription>连续盈利达阈值且利润超充值倍数则暂停提现</CardDescription>
+            </CardHeader>
+            <CardContent className='flex flex-wrap gap-6'>
+              <ParamNumberField label='连胜次数' value={form.win_streak_count} onChange={(n) => setField('win_streak_count', n)} disabled={dis} suffix='次' />
+              <ParamNumberField label='利润倍数' value={form.win_streak_profit_ratio} onChange={(n) => setField('win_streak_profit_ratio', n)} disabled={dis} suffix='倍' />
+            </CardContent>
+          </Card>
+        </div>
+
+        {canWrite && (
+          <div className='mt-6'>
+            <SaveBar reason={reason} onReasonChange={setReason} onSave={save} saving={saving} dirty={dirty} canWrite={canWrite} />
           </div>
-        </CardContent>
-      </Card>
-    </PageContainer>
+        )}
+      </PageContainer>
+    </PermissionGuard>
   );
 }
