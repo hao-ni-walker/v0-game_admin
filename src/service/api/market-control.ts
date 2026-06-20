@@ -31,6 +31,20 @@ export interface RiskEventsResult {
   items: RiskEventItem[];
   pagination: { page: number; size: number; total: number };
 }
+export interface ApprovalItem {
+  approval_id: string;
+  operation_type: string;
+  initiated_by_username: string | null;
+  initiated_at: number;
+  expires_at: number;
+  status: string;
+  resolved_by_username: string | null;
+  comment: string | null;
+}
+export interface ApprovalListResult {
+  items: ApprovalItem[];
+  pagination: { page: number; size: number; total: number };
+}
 
 export const MarketControlAPI = {
   getStatus: () => apiRequest<RiskStatus>('/admin/risk/status'),
@@ -52,6 +66,14 @@ export const MarketControlAPI = {
     if (params.size) sp.set('size', String(params.size));
     const qs = sp.toString();
     return apiRequest<RiskEventsResult>(`/admin/risk/events${qs ? `?${qs}` : ''}`);
+  },
+  getApprovals: (params: { status?: string; page?: number; size?: number } = {}) => {
+    const sp = new URLSearchParams();
+    if (params.status) sp.set('status', params.status);
+    if (params.page) sp.set('page', String(params.page));
+    if (params.size) sp.set('size', String(params.size));
+    const qs = sp.toString();
+    return apiRequest<ApprovalListResult>(`/admin/risk/approvals${qs ? `?${qs}` : ''}`);
   },
   approve: (id: string, comment: string) =>
     apiRequest<unknown>(`/admin/risk/approvals/${id}/approve`, { method: 'POST', body: JSON.stringify({ comment }) }),
