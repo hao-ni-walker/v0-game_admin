@@ -327,7 +327,8 @@ export default function MarketControlPage() {
                 onClick={() =>
                   runAction(
                     () => MarketControlAPI.zeroAll(actReason.trim(), true),
-                    '全部清零（双人审批）',
+                    '全部清零',
+                    '已提交双人审批，待审批通过后生效',
                   )
                 }
               >
@@ -339,7 +340,8 @@ export default function MarketControlPage() {
                 onClick={() =>
                   runAction(
                     () => MarketControlAPI.restoreAll(actReason.trim(), true),
-                    '全部恢复（双人审批）',
+                    '全部恢复',
+                    '已提交双人审批，待审批通过后生效',
                   )
                 }
               >

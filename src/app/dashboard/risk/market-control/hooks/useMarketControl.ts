@@ -132,12 +132,13 @@ export function useMarketControl() {
     async (
       fn: () => Promise<{ success: boolean; message?: string }>,
       label: string,
+      successMsg?: string,
     ) => {
       setBusy(true);
       try {
         const res = await fn();
         if (res.success) {
-          toast.success(`${label}成功`);
+          toast.success(successMsg ?? `${label}成功`);
           await Promise.all([refreshStatus(), refreshEvents()]);
         } else {
           toast.error(res.message || `${label}失败`);
