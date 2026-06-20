@@ -20,3 +20,5 @@ export { FeeAPI } from './api/fee';
 export type { FeeConfig, FeeConfigListResult, FeeCreateData, FeeUpdateData, FeePreviewResult, FeeType, FeeScope } from './api/fee';
 export { RiskParamAPI } from './api/risk-params';
 export type { RiskParamItem, RiskParamListResult, RiskParamUpsertData } from './api/risk-params';
+export { MarketControlAPI } from './api/market-control';
+export type { RiskStatus, PeriodRiskStatus, RiskEventItem, RiskEventsResult } from './api/market-control';
