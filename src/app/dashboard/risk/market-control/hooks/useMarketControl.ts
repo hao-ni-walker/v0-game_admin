@@ -7,6 +7,7 @@ import {
   RiskParamAPI,
   type RiskStatus,
   type RiskEventItem,
+  type ApprovalItem,
 } from '@/service/request';
 
 interface Layer4Form {
@@ -28,6 +29,7 @@ function parseConfig(items: { key: string; value: unknown }[]): Layer4Form {
 export function useMarketControl() {
   const [status, setStatus] = useState<RiskStatus | null>(null);
   const [events, setEvents] = useState<RiskEventItem[]>([]);
+  const [approvals, setApprovals] = useState<ApprovalItem[]>([]);
   const [loaded, setLoaded] = useState<Layer4Form | null>(null);
   const [form, setForm] = useState<Layer4Form>(EMPTY);
   const [reason, setReason] = useState('');
@@ -54,6 +56,15 @@ export function useMarketControl() {
     }
   }, []);
 
+  const refreshApprovals = useCallback(async () => {
+    try {
+      const res = await MarketControlAPI.getApprovals({ status: 'awaiting_approval', size: 20 });
+      if (res.success && res.data) setApprovals(res.data.items);
+    } catch {
+      /* silent */
+    }
+  }, []);
+
   const loadConfig = useCallback(async () => {
     setLoading(true);
     try {
@@ -71,12 +82,13 @@ export function useMarketControl() {
   useEffect(() => {
     refreshStatus();
     refreshEvents();
+    refreshApprovals();
     loadConfig();
     timer.current = setInterval(refreshStatus, 5000);
     return () => {
       if (timer.current) clearInterval(timer.current);
     };
-  }, [refreshStatus, refreshEvents, loadConfig]);
+  }, [refreshStatus, refreshEvents, refreshApprovals, loadConfig]);
 
   const dirty = !!loaded && JSON.stringify(form) !== JSON.stringify(loaded);
 
@@ -139,7 +151,7 @@ export function useMarketControl() {
         const res = await fn();
         if (res.success) {
           toast.success(successMsg ?? `${label}成功`);
-          await Promise.all([refreshStatus(), refreshEvents()]);
+          await Promise.all([refreshStatus(), refreshEvents(), refreshApprovals()]);
         } else {
           toast.error(res.message || `${label}失败`);
         }
@@ -149,12 +161,13 @@ export function useMarketControl() {
         setBusy(false);
       }
     },
-    [refreshStatus, refreshEvents],
+    [refreshStatus, refreshEvents, refreshApprovals],
   );
 
   return {
     status,
     events,
+    approvals,
     loaded,
     form,
     setSection,
