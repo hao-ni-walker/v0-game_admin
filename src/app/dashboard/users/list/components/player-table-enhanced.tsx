@@ -48,14 +48,9 @@ interface PlayerTableEnhancedProps {
   onSelectAll: (selected: boolean) => void;
   onViewDetail: (player: Player) => void;
   onEdit: (player: Player) => void;
-  onResetPassword: (player: Player) => void;
-  onSendNotification: (player: Player) => void;
+  onAdjustWallet: (player: Player) => void;
   onViewLogs: (player: Player) => void;
   onStatusChange?: (playerId: number, status: boolean) => void;
-  onViewSpinQuota?: (player: Player) => void;
-  onViewSignRecords?: (player: Player) => void;
-  onViewActivities?: (player: Player) => void;
-  onModifyRTP?: (player: Player) => void;
 }
 
 /**
@@ -74,14 +69,9 @@ export function PlayerTableEnhanced({
   onSelectAll,
   onViewDetail,
   onEdit,
-  onResetPassword,
-  onSendNotification,
+  onAdjustWallet,
   onViewLogs,
-  onStatusChange,
-  onViewSpinQuota,
-  onViewSignRecords,
-  onViewActivities,
-  onModifyRTP
+  onStatusChange
 }: PlayerTableEnhancedProps) {
   // 是否全选
   const isAllSelected = useMemo(() => {
@@ -332,51 +322,18 @@ export function PlayerTableEnhanced({
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align='end'>
+                            <DropdownMenuItem onClick={() => onViewDetail(player)}>
+                              查看详情
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => onEdit(player)}>
                               编辑
                             </DropdownMenuItem>
-                            {onViewSpinQuota && (
-                              <DropdownMenuItem
-                                onClick={() => onViewSpinQuota(player)}
-                              >
-                                查看大转盘次数
-                              </DropdownMenuItem>
-                            )}
-                            {onViewLogs && (
-                              <DropdownMenuItem
-                                onClick={() => onViewLogs(player)}
-                              >
-                                查看操作记录
-                              </DropdownMenuItem>
-                            )}
-                            {onSendNotification && (
-                              <DropdownMenuItem
-                                onClick={() => onSendNotification(player)}
-                              >
-                                发送通知
-                              </DropdownMenuItem>
-                            )}
-                            {onViewSignRecords && (
-                              <DropdownMenuItem
-                                onClick={() => onViewSignRecords(player)}
-                              >
-                                查看签到记录
-                              </DropdownMenuItem>
-                            )}
-                            {onViewActivities && (
-                              <DropdownMenuItem
-                                onClick={() => onViewActivities(player)}
-                              >
-                                查看参与的活动
-                              </DropdownMenuItem>
-                            )}
-                            {onModifyRTP && (
-                              <DropdownMenuItem
-                                onClick={() => onModifyRTP(player)}
-                              >
-                                修改RTP
-                              </DropdownMenuItem>
-                            )}
+                            <DropdownMenuItem onClick={() => onAdjustWallet(player)}>
+                              调整钱包
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onViewLogs(player)}>
+                              查看操作记录
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>

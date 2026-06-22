@@ -21,12 +21,10 @@ import { PlayerTableEnhanced } from './components/player-table-enhanced';
 import { PlayerDetailModal } from './components/player-detail-modal';
 import { PlayerEditModal } from './components/player-edit-modal';
 import { PlayerWalletAdjustModal } from './components/player-wallet-adjust-modal';
-import { PlayerNotificationModal } from './components/player-notification-modal';
 import { usePlayersEnhanced } from './hooks/use-players-enhanced';
 import { usePlayerFiltersEnhanced } from './hooks/use-player-filters-enhanced';
 import { Player, PlayerDetail } from './types';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 
 /**
  * 玩家管理页面
@@ -47,8 +45,6 @@ export default function PlayersPage() {
     updatePlayer,
     adjustWallet,
     batchOperation,
-    resetPassword,
-    sendNotification,
     exportPlayers,
     setPage,
     setPageSize,
@@ -68,10 +64,6 @@ export default function PlayersPage() {
   const [batchOperationType, setBatchOperationType] = useState<
     'enable' | 'disable' | null
   >(null);
-  const [notificationModalOpen, setNotificationModalOpen] = useState(false);
-  const [notificationPlayer, setNotificationPlayer] = useState<Player | null>(
-    null
-  );
 
   // 使用 useMemo 稳定 appliedFilters 的引用，通过 JSON.stringify 比较内容
   const appliedFiltersKey = useMemo(
@@ -142,6 +134,18 @@ export default function PlayersPage() {
     setCurrentPlayer(player);
     setWalletModalOpen(true);
   }, []);
+
+  // 从列表直接打开钱包调整（先拉取详情）
+  const handleAdjustWalletFromList = useCallback(
+    async (player: Player) => {
+      const playerDetail = await fetchPlayerDetail(player.id);
+      if (playerDetail) {
+        setCurrentPlayer(playerDetail);
+        setWalletModalOpen(true);
+      }
+    },
+    [fetchPlayerDetail]
+  );
 
   // 保存编辑
   const handleSaveEdit = useCallback(
@@ -257,39 +261,8 @@ export default function PlayersPage() {
     fetchStatistics
   ]);
 
-  // 重置密码
-  const handleResetPassword = useCallback(
-    async (player: Player) => {
-      const confirmed = window.confirm(
-        `确定要重置玩家 ${player.username} 的密码吗？`
-      );
-      if (confirmed) {
-        await resetPassword(player.id);
-      }
-    },
-    [resetPassword]
-  );
-
-  // 发送通知
-  const handleSendNotification = useCallback((player: Player) => {
-    setNotificationPlayer(player);
-    setNotificationModalOpen(true);
-  }, []);
-
-  const handleSaveNotification = useCallback(
-    async (
-      playerId: number,
-      data: { channel: string; title: string; content: string }
-    ) => {
-      const success = await sendNotification(playerId, data);
-      if (success) {
-        setNotificationModalOpen(false);
-        setNotificationPlayer(null);
-      }
-      return success;
-    },
-    [sendNotification]
-  );
+  // 重置密码 / 发送通知等操作在当前业务逻辑下未启用（无后端接口），
+  // 操作栏仅保留：查看详情 / 编辑 / 调整钱包 / 查看操作记录。
 
   // 查看操作日志
   const handleViewLogs = useCallback(
@@ -324,38 +297,6 @@ export default function PlayersPage() {
       fetchStatistics
     ]
   );
-
-  // 查看大转盘次数
-  const handleViewSpinQuota = useCallback(
-    async (player: Player) => {
-      setCurrentPlayer(null);
-      setDetailModalDefaultTab('spin');
-      setDetailModalOpen(true);
-      const playerDetail = await fetchPlayerDetail(player.id);
-      if (playerDetail) {
-        setCurrentPlayer(playerDetail);
-      }
-    },
-    [fetchPlayerDetail]
-  );
-
-  // 查看签到记录
-  const handleViewSignRecords = useCallback((player: Player) => {
-    // TODO: 实现查看签到记录功能
-    toast.info('查看签到记录功能开发中...');
-  }, []);
-
-  // 查看参与的活动
-  const handleViewActivities = useCallback((player: Player) => {
-    // TODO: 实现查看参与活动功能
-    toast.info('查看参与活动功能开发中...');
-  }, []);
-
-  // 修改RTP
-  const handleModifyRTP = useCallback((player: Player) => {
-    // TODO: 实现修改RTP功能
-    toast.info('修改RTP功能开发中...');
-  }, []);
 
   // 导出
   const handleExport = useCallback(async () => {
@@ -486,14 +427,9 @@ export default function PlayersPage() {
           onSelectAll={handleSelectAll}
           onViewDetail={handleViewDetail}
           onEdit={handleEdit}
-          onResetPassword={handleResetPassword}
-          onSendNotification={handleSendNotification}
+          onAdjustWallet={handleAdjustWalletFromList}
           onViewLogs={handleViewLogs}
           onStatusChange={handleStatusChange}
-          onViewSpinQuota={handleViewSpinQuota}
-          onViewSignRecords={handleViewSignRecords}
-          onViewActivities={handleViewActivities}
-          onModifyRTP={handleModifyRTP}
         />
 
         {/* 详情弹窗 */}
@@ -552,17 +488,6 @@ export default function PlayersPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-
-        {/* 通知弹窗 */}
-        <PlayerNotificationModal
-          open={notificationModalOpen}
-          player={notificationPlayer}
-          onClose={() => {
-            setNotificationModalOpen(false);
-            setNotificationPlayer(null);
-          }}
-          onSubmit={handleSaveNotification}
-        />
       </div>
     </PageContainer>
   );
