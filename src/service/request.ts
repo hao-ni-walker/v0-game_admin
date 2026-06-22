@@ -21,7 +21,7 @@ export type { FeeConfig, FeeConfigListResult, FeeCreateData, FeeUpdateData, FeeP
 export { RiskParamAPI } from './api/risk-params';
 export type { RiskParamItem, RiskParamListResult, RiskParamUpsertData } from './api/risk-params';
 export { SettlementAPI } from './api/settlement';
-export type { SettlementRecord, SettlementRecordsResult } from './api/settlement';
+export type { SettlementRecord, SettlementRecordsResult, SettlementAuditRecord, SettlementAuditResult } from './api/settlement';
 export { FundPoolAPI } from './api/fund-pool';
 export type { FundPoolStatus } from './api/fund-pool';
 export { MarketControlAPI } from './api/market-control';

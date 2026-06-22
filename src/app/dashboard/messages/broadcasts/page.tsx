@@ -87,8 +87,8 @@ export default function BroadcastsPage() {
   };
 
   return (
-    <PageContainer scrollable={false}>
-      <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
+    <PageContainer>
+      <div className='flex w-full flex-col space-y-4'>
         <BroadcastPageHeader
           onRefresh={handleRefresh}
           onCompose={openCompose}
@@ -102,53 +102,47 @@ export default function BroadcastsPage() {
           loading={loading}
         />
 
-        <div className='flex min-h-0 flex-1 flex-col'>
-          <div className='min-h-0 flex-1'>
-            {items.length === 0 && !loading ? (
-              <div className='flex h-full flex-col items-center justify-center space-y-3 p-8'>
-                <Megaphone className='text-muted-foreground h-12 w-12' />
-                <div className='text-center'>
-                  <p className='text-lg font-medium'>
-                    {hasActiveFilters ? '未找到匹配的群发' : '暂无群发记录'}
-                  </p>
-                  <p className='text-muted-foreground text-sm'>
-                    {hasActiveFilters
-                      ? '请尝试调整筛选条件以查看更多结果'
-                      : '点击右上角“新建群发”开始'}
-                  </p>
-                </div>
-                {hasActiveFilters && (
-                  <Button variant='outline' onClick={handleReset}>
-                    清除筛选
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <BroadcastTable
-                data={items}
-                loading={loading}
-                onApprove={handleApprove}
-                onReject={handleReject}
-              />
+        {items.length === 0 && !loading ? (
+          <div className='flex flex-col items-center justify-center space-y-3 rounded-md border p-8'>
+            <Megaphone className='text-muted-foreground h-12 w-12' />
+            <div className='text-center'>
+              <p className='text-lg font-medium'>
+                {hasActiveFilters ? '未找到匹配的群发' : '暂无群发记录'}
+              </p>
+              <p className='text-muted-foreground text-sm'>
+                {hasActiveFilters
+                  ? '请尝试调整筛选条件以查看更多结果'
+                  : '点击右上角“新建群发”开始'}
+              </p>
+            </div>
+            {hasActiveFilters && (
+              <Button variant='outline' onClick={handleReset}>
+                清除筛选
+              </Button>
             )}
           </div>
+        ) : (
+          <BroadcastTable
+            data={items}
+            loading={loading}
+            onApprove={handleApprove}
+            onReject={handleReject}
+          />
+        )}
 
-          {items.length > 0 && (
-            <div className='flex-shrink-0 pt-4'>
-              <Pagination
-                pagination={{
-                  page: pagination.page,
-                  limit: pagination.size,
-                  total: pagination.total,
-                  totalPages: Math.ceil(pagination.total / pagination.size),
-                }}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}
-                pageSizeOptions={PAGE_SIZE_OPTIONS}
-              />
-            </div>
-          )}
-        </div>
+        {items.length > 0 && (
+          <Pagination
+            pagination={{
+              page: pagination.page,
+              limit: pagination.size,
+              total: pagination.total,
+              totalPages: Math.ceil(pagination.total / pagination.size),
+            }}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            pageSizeOptions={PAGE_SIZE_OPTIONS}
+          />
+        )}
 
         <BroadcastComposeDialog
           open={composeOpen}

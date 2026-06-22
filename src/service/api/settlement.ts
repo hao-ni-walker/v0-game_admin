@@ -26,6 +26,13 @@ export interface SettlementRecordsResult {
   pagination: { page: number; size: number; total: number };
 }
 
+export interface SettlementAuditResult {
+  list: SettlementAuditRecord[];
+  total?: number;
+  page?: number;
+  limit?: number;
+}
+
 // ========== PRD §11.2 结算审计 ==========
 export interface SettlementAuditRecord {
   orderId: string;
@@ -81,7 +88,7 @@ export const SettlementAPI = {
 
   // 结算审计
   getAuditRecords: (params: { page?: number; limit?: number; periodId?: string; userId?: string; startDate?: string; endDate?: string }) =>
-    apiRequest<{ list: SettlementAuditRecord[] }>('/admin/settlement/audit?' + buildSearchParams(params)),
+    apiRequest<SettlementAuditResult>('/admin/settlement/audit?' + buildSearchParams(params)),
 
   // 异常结算
   getExceptions: (params: { page?: number; limit?: number; status?: string }) =>

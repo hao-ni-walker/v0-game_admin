@@ -22,7 +22,29 @@ import PageContainer from '@/components/layout/page-container';
 import { PageHeader } from '@/components/table/page-header';
 import { Landmark, TrendingUp, TrendingDown, AlertTriangle, RefreshCw } from 'lucide-react';
 import { FundPoolAPI, type FundPoolStatus } from '@/service/request';
+import { apiRequest } from '@/service/api/base';
 import { toast } from 'sonner';
+
+interface CashflowPoint {
+  ts: number;
+  deposits: number;
+  withdrawals: number;
+  payouts: number;
+  income: number;
+  net: number;
+}
+
+interface CashflowData {
+  range: string;
+  points: CashflowPoint[];
+  summary: {
+    total_deposits: number;
+    total_withdrawals: number;
+    total_payouts: number;
+    total_income: number;
+    net_change: number;
+  };
+}
 
 // PRD §6.2 安全线配置
 const safetyLevels = [
@@ -77,22 +99,30 @@ function fmtPct(n: number): string {
 export default function FundPoolPage() {
   const [status, setStatus] = useState<FundPoolStatus | null>(null);
   const [loading, setLoading] = useState(false);
+  const [cashflow, setCashflow] = useState<CashflowData | null>(null);
+  const [flowRange, setFlowRange] = useState<'today' | '7d' | '30d'>('7d');
 
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await FundPoolAPI.getStatus();
-      if (res.success && res.data) {
-        setStatus(res.data);
+      const [statusRes, flowRes] = await Promise.all([
+        FundPoolAPI.getStatus(),
+        apiRequest<CashflowData>(`/admin/pool/cashflow?range=${flowRange}`),
+      ]);
+      if (statusRes.success && statusRes.data) {
+        setStatus(statusRes.data);
       } else {
-        toast.error(res.message || '获取资金池数据失败');
+        toast.error(statusRes.message || '获取资金池数据失败');
+      }
+      if (flowRes.success && flowRes.data) {
+        setCashflow(flowRes.data);
       }
     } catch {
       toast.error('获取资金池数据失败');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [flowRange]);
 
   useEffect(() => {
     refresh();
@@ -262,15 +292,69 @@ export default function FundPoolPage() {
       {/* PRD §6.4 资金流水监控 */}
       <Card>
         <CardHeader>
-          <CardTitle>资金流向</CardTitle>
-          <CardDescription>
-            实时展示充值 / 提现 / 赔付 / 收入的资金流向，支持按日/周/月查看
-          </CardDescription>
+          <div className='flex flex-wrap items-center justify-between gap-3'>
+            <div>
+              <CardTitle>资金流向</CardTitle>
+              <CardDescription>
+                实时展示充值 / 提现 / 赔付 / 收入的资金流向
+                {cashflow?.summary && (
+                  <span className='ml-2 text-xs'>
+                    · 净变动 {fmtUSD(cashflow.summary.net_change)}
+                  </span>
+                )}
+              </CardDescription>
+            </div>
+            <div className='flex items-center gap-2 text-sm'>
+              {(['today', '7d', '30d'] as const).map((r) => (
+                <Button
+                  key={r}
+                  size='sm'
+                  variant={flowRange === r ? 'default' : 'outline'}
+                  onClick={() => setFlowRange(r)}
+                >
+                  {r === 'today' ? '今日' : r === '7d' ? '近 7 天' : '近 30 天'}
+                </Button>
+              ))}
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className='flex h-48 items-center justify-center text-muted-foreground'>
-            资金流向图表（待接入数据）
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>日期</TableHead>
+                <TableHead>充值</TableHead>
+                <TableHead>提现</TableHead>
+                <TableHead>赔付</TableHead>
+                <TableHead>收入</TableHead>
+                <TableHead>净变动</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(!cashflow?.points || cashflow.points.length === 0) ? (
+                <TableRow>
+                  <TableCell colSpan={6} className='text-muted-foreground h-24 text-center'>
+                    {loading ? '加载中...' : '暂无流水数据'}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                [...cashflow.points].reverse().map((p) => (
+                  <TableRow key={p.ts}>
+                    <TableCell className='text-xs'>
+                      {new Date(p.ts * 1000).toLocaleDateString('zh-CN')}
+                    </TableCell>
+                    <TableCell className='text-green-700'>{fmtUSD(p.deposits)}</TableCell>
+                    <TableCell className='text-red-700'>{fmtUSD(p.withdrawals)}</TableCell>
+                    <TableCell className='text-orange-700'>{fmtUSD(p.payouts)}</TableCell>
+                    <TableCell className='text-blue-700'>{fmtUSD(p.income)}</TableCell>
+                    <TableCell className={p.net >= 0 ? 'font-medium text-green-700' : 'font-medium text-red-700'}>
+                      {fmtUSD(p.net)}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </PageContainer>

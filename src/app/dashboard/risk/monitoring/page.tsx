@@ -12,17 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import PageContainer from '@/components/layout/page-container';
 import { PageHeader } from '@/components/table/page-header';
-import { ShieldAlert, RefreshCw, TrendingUp, TrendingDown, Activity } from 'lucide-react';
-
-// PRD §3.2 风险敞口实时计算
-interface RiskExposure {
-  period: string; // 周期：1m, 3m, 5m, 10m
-  longExposure: number; // 多头暴露（买涨总金额）
-  shortExposure: number; // 空头暴露（买跌总金额）
-  netExposure: number; // 净敞口 |多头 - 空头|
-  maxLoss: number; // 平台最大损失 = max(多头,空头) × 赔率
-  level: 'normal' | 'warning' | 'high' | 'extreme'; // PRD §3.3 分级
-}
+import { RiskControlAPI, type RiskExposure } from '@/service/api/risk-control';
+import { ShieldAlert, RefreshCw, TrendingUp, TrendingDown } from 'lucide-react';
 
 // PRD §3.3 风险敞口分级阈值
 const EXPOSURE_LEVELS = {
@@ -36,12 +27,21 @@ export default function RiskMonitoringPage() {
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [exposures, setExposures] = useState<RiskExposure[]>([]);
+  const [pendingOrders, setPendingOrders] = useState<number | null>(null);
 
   const fetchRiskData = useCallback(async () => {
     setLoading(true);
-    // TODO: 接入风控 API
-    // const res = await RiskControlAPI.getExposure();
-    setTimeout(() => setLoading(false), 500);
+    try {
+      const res = await RiskControlAPI.getExposure();
+      if (res.success && res.data) {
+        setExposures(res.data.exposures ?? []);
+        setPendingOrders(res.data.pendingOrders ?? 0);
+      }
+    } catch (error) {
+      console.error('获取风险敞口数据失败:', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -171,7 +171,9 @@ export default function RiskMonitoringPage() {
             <CardTitle className='text-sm font-medium'>待结算订单数</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>—</div>
+            <div className='text-2xl font-bold'>
+              {pendingOrders !== null ? pendingOrders.toLocaleString() : '—'}
+            </div>
             <p className='text-muted-foreground text-xs'>所有未到期订单总数</p>
           </CardContent>
         </Card>

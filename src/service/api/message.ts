@@ -3,7 +3,7 @@ import type { MessageFormData, MessageListResult } from '@/app/dashboard/message
 
 export const MessageAPI = {
   getList(params: {
-    user_id: string;
+    user_id?: string;
     category?: string;
     page: number;
     page_size: number;

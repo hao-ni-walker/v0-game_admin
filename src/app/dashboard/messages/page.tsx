@@ -105,14 +105,12 @@ export default function MessagesPage() {
                 <Mail className='text-muted-foreground h-12 w-12' />
                 <div className='text-center'>
                   <p className='text-lg font-medium'>
-                    {hasActiveFilters
-                      ? '未找到匹配的消息'
-                      : '请输入用户 ID 查询消息'}
+                    {hasActiveFilters ? '未找到匹配的消息' : '暂无消息记录'}
                   </p>
                   <p className='text-muted-foreground text-sm'>
                     {hasActiveFilters
                       ? '请尝试调整筛选条件以查看更多结果'
-                      : '站内信按用户维度查询'}
+                      : '系统会按发送时间倒序展示所有站内信'}
                   </p>
                 </div>
                 {hasActiveFilters && (

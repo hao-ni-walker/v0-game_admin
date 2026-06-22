@@ -25,15 +25,10 @@ export function useMessageManagement() {
   const [composeOpen, setComposeOpen] = useState(false);
 
   const fetchMessages = useCallback(async (filters: MessageFilters) => {
-    if (!filters.user_id) {
-      setMessages([]);
-      setPagination((p) => ({ ...p, total: 0 }));
-      return;
-    }
     setLoading(true);
     try {
       const res = await MessageAPI.getList({
-        user_id: filters.user_id,
+        user_id: filters.user_id || undefined,
         category: filters.category || undefined,
         page: filters.page,
         page_size: filters.page_size,
