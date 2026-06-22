@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import PageContainer from '@/components/layout/page-container';
 import { useAuth } from '@/hooks/use-auth';
+import { DashboardAPI } from '@/service/request';
 import {
   ShieldAlert,
   RefreshCw,
@@ -73,10 +74,21 @@ export default function DashboardOverview() {
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
-    // TODO: 接入 DashboardAPI
-    // const res = await DashboardAPI.getMetrics();
-    // if (res.code === 0) { setMetrics(res.data.metrics); setAlerts(res.data.alerts); setOrderFlow(res.data.orderFlow); }
-    setTimeout(() => setLoading(false), 500);
+    try {
+      const [metricsRes, streamRes] = await Promise.all([
+        DashboardAPI.getMetrics(),
+        DashboardAPI.getOrderStream(20),
+      ]);
+      if (metricsRes.success && metricsRes.data) {
+        setMetrics(metricsRes.data);
+      }
+      setAlerts(metricsRes.alerts || []);
+      if (streamRes.success && streamRes.data) {
+        setOrderFlow(streamRes.data);
+      }
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
