@@ -51,8 +51,8 @@ export function usePermissionManagement() {
       }
 
       const res = await PermissionAPI.getPermissions(params);
-      // code === 200 表示成功
-      if (res.code === 200) {
+      // 兼容 code === 0 / 200
+      if (res.code === 0 || res.code === 200) {
         // 处理响应格式：data 是对象 { items, page, page_size, total }
         if (res.data && typeof res.data === 'object' && 'items' in res.data) {
           const data = res.data as {
@@ -96,7 +96,7 @@ export function usePermissionManagement() {
     async (data: PermissionFormData): Promise<boolean> => {
       try {
         const res = await PermissionAPI.createPermission(data);
-        if (res.code === 200) {
+        if (res.code === 0 || res.code === 200) {
           toast.success(MESSAGES.SUCCESS.CREATE);
           return true;
         } else {
@@ -116,7 +116,7 @@ export function usePermissionManagement() {
     async (id: number, data: PermissionFormData): Promise<boolean> => {
       try {
         const res = await PermissionAPI.updatePermission(id, data);
-        if (res.code === 200) {
+        if (res.code === 0 || res.code === 200) {
           toast.success(MESSAGES.SUCCESS.UPDATE);
           return true;
         } else {
@@ -135,7 +135,7 @@ export function usePermissionManagement() {
   const deletePermission = useCallback(async (id: number): Promise<boolean> => {
     try {
       const res = await PermissionAPI.deletePermission(id);
-      if (res.code === 200) {
+      if (res.code === 0 || res.code === 200) {
         toast.success(MESSAGES.SUCCESS.DELETE);
         return true;
       } else {
@@ -158,7 +158,7 @@ export function usePermissionManagement() {
 
       try {
         const res = await PermissionAPI.batchDeletePermissions(ids);
-        if (res.code === 200) {
+        if (res.code === 0 || res.code === 200) {
           toast.success(MESSAGES.SUCCESS.BATCH_DELETE);
           return true;
         } else {

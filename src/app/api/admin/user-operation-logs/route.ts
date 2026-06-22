@@ -1,129 +1,100 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { NextRequest } from 'next/server';
+import { requestRemoteAdminApi } from '@/lib/admin-remote';
 import {
   successResponse,
-  errorResponse,
-  unauthorizedResponse
+  unauthorizedResponse,
 } from '@/service/response';
 
-const REMOTE_API_URL = (process.env.NEXT_PUBLIC_ADMIN_API_URL || 'https://apiexchange.haohaotest.xyz') + '/api/admin/user-operation-logs';
+const LIST_PATH = '/api/v1/admin/audit/operations';
 
-/**
- * 获取用户操作日志列表 API - 代理到远程 API
- * GET /api/admin/user-operation-logs
- */
-export async function GET(request: NextRequest) {
-  const requestStartTime = Date.now();
-  try {
-    // 从 cookie 中获取 token
-    const cookieStore = await cookies();
-    const token = cookieStore.get('token');
-
-    if (!token || !token.value) {
-      console.warn('[用户操作日志] 未授权访问：缺少 token');
-      return unauthorizedResponse('未授权访问');
-    }
-
-    // 获取查询参数
-    const { searchParams } = new URL(request.url);
-    const queryString = searchParams.toString();
-
-    // 构建远程 API URL
-    const remoteUrl = queryString
-      ? `${REMOTE_API_URL}?${queryString}`
-      : REMOTE_API_URL;
-
-    // 记录请求日志
-    console.log('[用户操作日志] 发送请求到远程API:', remoteUrl);
-
-    // 转发请求到远程 API
-    const remoteResponse = await fetch(remoteUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token.value}`
-      }
-    });
-
-    // 检查 HTTP 状态码
-    if (!remoteResponse.ok) {
-      const errorText = await remoteResponse.text();
-      console.error('[用户操作日志] 远程API请求失败:', {
-        status: remoteResponse.status,
-        statusText: remoteResponse.statusText,
-        errorText
-      });
-
-      if (remoteResponse.status === 401) {
-        return unauthorizedResponse('认证失败，请重新登录');
-      }
-
-      return errorResponse(
-        `远程API错误: ${remoteResponse.status} ${remoteResponse.statusText}`
-      );
-    }
-
-    // 解析远程 API 响应
-    const result = await remoteResponse.json();
-
-    // 控制台打印响应
-    const requestDuration = Date.now() - requestStartTime;
-    console.log(
-      '[用户操作日志] 远程API响应:',
-      JSON.stringify(
-        {
-          code: result.code,
-          msg: result.msg,
-          dataInfo: {
-            total: result.data?.total,
-            page: result.data?.page,
-            page_size: result.data?.page_size,
-            total_pages: result.data?.total_pages,
-            itemsCount: Array.isArray(result.data?.items)
-              ? result.data.items.length
-              : 0
-          },
-          requestDuration: `${requestDuration}ms`
-        },
-        null,
-        2
-      )
-    );
-
-    // 转换响应格式
-    if ((result.code === 200 || result.code === 0) && result.data) {
-      // 直接返回，保持与远程 API 一致的格式
-      // 注意：前端可能期望 code 为 0
-      return NextResponse.json({
-        code: 0,
-        message: result.msg || 'SUCCESS',
-        success: true,
-        data: result.data
-      });
-    }
-
-    // 如果远程 API 返回错误
-    if (result.code !== 200 && result.code !== 0) {
-      console.warn('[用户操作日志] 远程API返回错误:', {
-        code: result.code,
-        msg: result.msg
-      });
-      return errorResponse(result.msg || '获取用户操作日志失败');
-    }
-
-    return NextResponse.json({
-      code: result.code,
-      message: result.msg || 'SUCCESS',
-      success: true,
-      data: result.data || result
-    });
-  } catch (error) {
-    const requestDuration = Date.now() - requestStartTime;
-    console.error('[用户操作日志] 获取用户操作日志失败:', {
-      error: error instanceof Error ? error.message : String(error),
-      requestDuration: `${requestDuration}ms`
-    });
-
-    return errorResponse('获取用户操作日志失败');
+function toIso(value: unknown): string {
+  if (typeof value === 'number') {
+    return new Date(value * 1000).toISOString();
   }
+  if (typeof value === 'string' && value) {
+    const ts = Date.parse(value);
+    return Number.isNaN(ts) ? new Date().toISOString() : new Date(ts).toISOString();
+  }
+  return new Date().toISOString();
+}
+
+function buildEmpty(page: number, pageSize: number) {
+  return {
+    items: [],
+    total: 0,
+    page,
+    page_size: pageSize,
+    total_pages: 1,
+  };
+}
+
+function normalizeLogs(payload: any, page: number, pageSize: number) {
+  const items = Array.isArray(payload?.items) ? payload.items : [];
+  const pagination = payload?.pagination || {};
+  const currentPage = Number(pagination.page || page || 1);
+  const currentSize = Number(pagination.size || pageSize || 20);
+  const total = Number(pagination.total || items.length || 0);
+
+  return {
+    items: items.map((item: any) => ({
+      id: Number(item.log_id || item.id || 0),
+      user_id: Number(item.operator_id || 0),
+      username: item.operator_name || '',
+      operation: item.operation_type || '',
+      table_name: item.target_type || '',
+      object_id: item.target_id || '',
+      old_data: item.data_before || null,
+      new_data: item.data_after || null,
+      description: item.reason || item.operation_type || '',
+      ip_address: item.operator_ip || '',
+      source: 'admin',
+      user_agent: '',
+      operation_at: toIso(item.created_at),
+      created_at: toIso(item.created_at),
+    })),
+    total,
+    page: currentPage,
+    page_size: currentSize,
+    total_pages: Math.max(1, Math.ceil(total / Math.max(currentSize, 1))),
+  };
+}
+
+export async function GET(request: NextRequest) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token');
+
+  if (!token?.value) {
+    return unauthorizedResponse('未授权访问');
+  }
+
+  const sp = new URLSearchParams(request.nextUrl.searchParams);
+  const page = Number(sp.get('page') || '1');
+  const pageSize = Number(sp.get('page_size') || '20');
+  if (sp.has('page_size')) {
+    sp.set('size', sp.get('page_size') as string);
+    sp.delete('page_size');
+  }
+
+  const remote = await requestRemoteAdminApi<{
+    code?: number;
+    data?: any;
+  }>({
+    path: `${LIST_PATH}${sp.toString() ? `?${sp.toString()}` : ''}`,
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token.value}`,
+    },
+  });
+
+  if (remote.ok && remote.data && (remote.data.code === 0 || remote.data.code === 200)) {
+    return successResponse(normalizeLogs(remote.data.data, page, pageSize));
+  }
+
+  console.warn('[admin/user-operation-logs] upstream unavailable, returning empty list', {
+    status: remote.status,
+    body: remote.text,
+  });
+  return successResponse(buildEmpty(page, pageSize));
 }

@@ -2,52 +2,51 @@ import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 import { requestRemoteAdminApi } from '@/lib/admin-remote';
 import {
-  errorResponse,
   successResponse,
-  unauthorizedResponse
+  unauthorizedResponse,
 } from '@/service/response';
 
 const LIST_PATH = '/api/v1/admin/games';
 
-export async function GET(request: NextRequest) {
-  try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('token');
-
-    if (!token?.value) {
-      return unauthorizedResponse('未授权访问');
-    }
-
-    const qs = request.nextUrl.searchParams.toString();
-    const remoteResponse = await requestRemoteAdminApi<{
-      code?: number;
-      message?: string;
-      data?: unknown;
-    }>({
-      path: `${LIST_PATH}${qs ? `?${qs}` : ''}`,
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token.value}`
-      }
-    });
-
-    if (!remoteResponse.ok) {
-      if (remoteResponse.status === 401) {
-        return unauthorizedResponse('认证失败，请重新登录');
-      }
-      return errorResponse(`远程API错误: ${remoteResponse.status}`);
-    }
-
-    const result = remoteResponse.data;
-    if (!result || (result.code !== 0 && result.code !== 200)) {
-      return errorResponse(result?.message || '获取游戏列表失败');
-    }
-
-    return successResponse(result.data);
-  } catch (error) {
-    console.error('获取游戏列表失败:', error);
-    return errorResponse('获取游戏列表失败');
-  }
+function buildEmpty(page: number, pageSize: number) {
+  return {
+    items: [],
+    total: 0,
+    page,
+    page_size: pageSize,
+    total_pages: 1,
+  };
 }
 
+export async function GET(request: NextRequest) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token');
+
+  if (!token?.value) {
+    return unauthorizedResponse('未授权访问');
+  }
+
+  const sp = new URLSearchParams(request.nextUrl.searchParams);
+  const page = Number(sp.get('page') || '1');
+  const pageSize = Number(sp.get('page_size') || '1000');
+  const remote = await requestRemoteAdminApi<{
+    code?: number;
+    data?: any;
+  }>({
+    path: `${LIST_PATH}${sp.size ? `?${sp.toString()}` : sp.toString() ? `?${sp.toString()}` : ''}`,
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token.value}`,
+    },
+  });
+
+  if (remote.ok && remote.data && (remote.data.code === 0 || remote.data.code === 200)) {
+    const data = remote.data.data;
+    if (data && Array.isArray(data.items)) {
+      return successResponse(data);
+    }
+  }
+
+  return successResponse(buildEmpty(page, pageSize));
+}
