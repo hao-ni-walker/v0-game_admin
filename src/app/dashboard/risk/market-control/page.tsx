@@ -42,7 +42,6 @@ export default function MarketControlPage() {
   const {
     status,
     events,
-    approvals,
     loaded,
     form,
     setSection,
@@ -66,7 +65,6 @@ export default function MarketControlPage() {
   const [actPeriod, setActPeriod] = useState<string>('1m');
   const [actDirection, setActDirection] = useState<'UP' | 'DOWN'>('UP');
   const [actReason, setActReason] = useState('');
-  const [approvalComment, setApprovalComment] = useState<Record<string, string>>({});
 
   const configReady = !!loaded && Object.keys(form.thresholds).length > 0;
 
@@ -230,7 +228,7 @@ export default function MarketControlPage() {
         <Card className='mb-6'>
           <CardHeader>
             <CardTitle>手动风控动作</CardTitle>
-            <CardDescription>赔率清零/恢复、方向关闭/恢复。全周期操作走双人审批。</CardDescription>
+            <CardDescription>赔率清零/恢复、方向关闭/恢复。全部操作立即生效。</CardDescription>
           </CardHeader>
           <CardContent className='space-y-3'>
             <div className='flex flex-wrap items-end gap-3'>
@@ -330,11 +328,10 @@ export default function MarketControlPage() {
                   runAction(
                     () => MarketControlAPI.zeroAll(actReason.trim(), true),
                     '全部清零',
-                    '已提交双人审批，待审批通过后生效',
                   )
                 }
               >
-                全部清零（双人审批）
+                全部清零
               </Button>
               <Button
                 variant='outline'
@@ -343,99 +340,17 @@ export default function MarketControlPage() {
                   runAction(
                     () => MarketControlAPI.restoreAll(actReason.trim(), true),
                     '全部恢复',
-                    '已提交双人审批，待审批通过后生效',
                   )
                 }
               >
-                全部恢复（双人审批）
+                全部恢复
               </Button>
             </div>
             <p className='text-muted-foreground text-xs'>
-              全周期操作提交后生成待审批记录，5 分钟内需另一管理员审批方生效。
+              全周期操作将立即对所有周期（1m/3m/5m/10m）生效并记录事件。
             </p>
           </CardContent>
         </Card>
-
-        {/* ⑤ 待审批 */}
-        {canActAll && (
-          <Card className='mb-6'>
-            <CardHeader>
-              <CardTitle>待审批</CardTitle>
-              <CardDescription>双人审批队列（仅 risk:zero_all 可操作）</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {approvals.length === 0 ? (
-                <div className='text-muted-foreground flex h-20 items-center justify-center text-sm'>
-                  暂无待审批
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>操作类型</TableHead>
-                      <TableHead>发起人</TableHead>
-                      <TableHead>到期时间</TableHead>
-                      <TableHead>审批备注</TableHead>
-                      <TableHead>操作</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {approvals.map((a) => (
-                      <TableRow key={a.approval_id}>
-                        <TableCell className='font-medium'>
-                          <Badge variant='outline'>{a.operation_type}</Badge>
-                        </TableCell>
-                        <TableCell>{a.initiated_by_username ?? '—'}</TableCell>
-                        <TableCell className='text-sm'>
-                          {new Date(a.expires_at * 1000).toLocaleString()}
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            placeholder='审批备注'
-                            className='w-40'
-                            value={approvalComment[a.approval_id] ?? ''}
-                            onChange={(e) =>
-                              setApprovalComment((prev) => ({ ...prev, [a.approval_id]: e.target.value }))
-                            }
-                            disabled={busy}
-                          />
-                        </TableCell>
-                        <TableCell className='space-x-2'>
-                          <Button
-                            size='sm'
-                            variant='destructive'
-                            disabled={busy}
-                            onClick={() =>
-                              runAction(
-                                () => MarketControlAPI.approve(a.approval_id, approvalComment[a.approval_id]?.trim() || ''),
-                                '审批通过',
-                              )
-                            }
-                          >
-                            通过
-                          </Button>
-                          <Button
-                            size='sm'
-                            variant='outline'
-                            disabled={busy}
-                            onClick={() =>
-                              runAction(
-                                () => MarketControlAPI.reject(a.approval_id, approvalComment[a.approval_id]?.trim() || ''),
-                                '驳回',
-                              )
-                            }
-                          >
-                            驳回
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        )}
 
         {/* ④ 事件记录 */}
         <Card>
