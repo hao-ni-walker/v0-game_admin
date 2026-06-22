@@ -88,6 +88,7 @@ export function BaseOddsTable({ resolved, configs, loading, canWrite, onEditBase
       loading={loading}
       rowKey='period'
       emptyText='暂无周期'
+      stickyHeader={false}
     />
   );
 }

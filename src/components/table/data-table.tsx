@@ -33,6 +33,7 @@ interface DataTableProps<T> {
   emptyText?: string;
   emptyState?: EmptyStateProps;
   rowKey?: string | ((record: T) => string);
+  stickyHeader?: boolean;
 }
 
 export function DataTable<T extends Record<string, any>>({
@@ -41,7 +42,8 @@ export function DataTable<T extends Record<string, any>>({
   loading = false,
   emptyText = '暂无数据',
   emptyState,
-  rowKey = 'id'
+  rowKey = 'id',
+  stickyHeader = true
 }: DataTableProps<T>) {
   const getRowKey = (record: T, index: number): string => {
     if (typeof rowKey === 'function') {
@@ -70,11 +72,15 @@ export function DataTable<T extends Record<string, any>>({
                 <TableHead
                   key={column.key}
                   className={`bg-muted/50 font-semibold ${column.className || ''}`}
-                  style={{
-                    position: 'sticky',
-                    top: 0,
-                    backgroundColor: 'hsl(var(--muted) / 0.5)'
-                  }}
+                  style={
+                    stickyHeader
+                      ? {
+                          position: 'sticky',
+                          top: 0,
+                          backgroundColor: 'hsl(var(--muted) / 0.5)'
+                        }
+                      : undefined
+                  }
                 >
                   {column.title}
                 </TableHead>

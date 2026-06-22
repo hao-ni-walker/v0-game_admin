@@ -84,6 +84,7 @@ export function WindowedOddsList({ configs, loading, canWrite, onAdd, onDelete }
         loading={loading}
         rowKey='id'
         emptyText='暂无窗口赔率'
+        stickyHeader={false}
       />
     </div>
   );
