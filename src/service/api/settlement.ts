@@ -2,16 +2,28 @@ import { apiRequest, buildSearchParams } from './base';
 
 // ========== PRD §7.1 开奖记录 ==========
 export interface SettlementRecord {
-  id: string;
+  settlement_id: string;
   period: string;
-  openTime: string;
-  openPrice: number;
-  priceSource: string;
-  totalOrders: number;
-  longOrders: number;
-  shortOrders: number;
-  result: 'up' | 'down' | 'draw';
-  settled: boolean;
+  period_start: number;
+  period_end: number;
+  open_price: string;
+  close_price: string;
+  price_change_pct: string;
+  price_source: string;
+  total_orders: number;
+  won_orders: number;
+  lost_orders: number;
+  refunded_orders: number;
+  total_bet: number;
+  total_payout: number;
+  platform_profit: number;
+  settled_at: number;
+  status: string;
+}
+
+export interface SettlementRecordsResult {
+  items: SettlementRecord[];
+  pagination: { page: number; size: number; total: number };
 }
 
 // ========== PRD §11.2 结算审计 ==========
@@ -54,8 +66,15 @@ export interface ManualSettlementParams {
 // ========== 结算 API ==========
 export const SettlementAPI = {
   // 开奖记录
-  getRecords: (params: { page?: number; limit?: number; period?: string; startDate?: string; endDate?: string }) =>
-    apiRequest<{ list: SettlementRecord[] }>('/admin/settlement/records?' + buildSearchParams(params)),
+  getRecords: (params: { page?: number; size?: number; period?: string; result?: string } = {}) => {
+    const sp = new URLSearchParams();
+    if (params.page) sp.set('page', String(params.page));
+    if (params.size) sp.set('size', String(params.size));
+    if (params.period) sp.set('period', params.period);
+    if (params.result) sp.set('result', params.result);
+    const qs = sp.toString();
+    return apiRequest<SettlementRecordsResult>(`/admin/settlement/records${qs ? `?${qs}` : ''}`);
+  },
 
   getRecordById: (id: string) =>
     apiRequest<SettlementRecord>(`/admin/settlement/records/${id}`),
