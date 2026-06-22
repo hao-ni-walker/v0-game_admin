@@ -10,6 +10,25 @@ export interface FundPoolStatus {
   totalIncome: number; // 平台累计收入
   maxPayoutPressure: number; // 最大赔付压力
   safetyRatio: number; // 安全系数 = maxPayoutPressure / balance
+  frozenBalance: number; // 冻结余额
+  availableBalance: number; // 可用余额
+  updatedAt: number; // 数据更新时间（unix seconds）
+}
+
+interface PoolOverviewRaw {
+  total_balance: number;
+  frozen_balance: number;
+  available_balance: number;
+  pool_level: 'healthy' | 'warning' | 'danger' | 'stop';
+  max_payout_pressure: number;
+  safety_ratio: number;
+  composition: {
+    user_deposits_total: number;
+    user_withdrawals_total: number;
+    total_payouts: number;
+    total_income: number;
+  };
+  updated_at: number;
 }
 
 // ========== PRD §6.2 安全线配置 ==========
@@ -41,9 +60,35 @@ export interface FundFlowSummary {
 
 // ========== 资金池 API ==========
 export const FundPoolAPI = {
-  // 资金池状态
-  getStatus: () =>
-    apiRequest<FundPoolStatus>('/admin/fund-pool/status'),
+  // 资金池状态（从后端 /pool/overview 拉取并映射字段）
+  getStatus: async (): Promise<{
+    success: boolean;
+    data?: FundPoolStatus;
+    message?: string;
+    code?: number;
+  }> => {
+    const res = await apiRequest<PoolOverviewRaw>('/admin/pool/overview');
+    if (!res.success || !res.data) {
+      return { success: false, message: res.message || '获取资金池数据失败', code: res.code };
+    }
+    const r = res.data;
+    return {
+      success: true,
+      data: {
+        balance: r.total_balance,
+        frozenBalance: r.frozen_balance,
+        availableBalance: r.available_balance,
+        level: r.pool_level,
+        maxPayoutPressure: r.max_payout_pressure,
+        safetyRatio: r.safety_ratio,
+        totalDeposits: r.composition?.user_deposits_total ?? 0,
+        totalWithdrawals: r.composition?.user_withdrawals_total ?? 0,
+        totalPayouts: r.composition?.total_payouts ?? 0,
+        totalIncome: r.composition?.total_income ?? 0,
+        updatedAt: r.updated_at,
+      },
+    };
+  },
 
   // 安全线配置
   getSafetyConfig: () =>
