@@ -53,6 +53,7 @@ export default function PlayersPage() {
 
   // 弹窗状态
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<number[]>([]);
+  const [detailPlayerId, setDetailPlayerId] = useState<number | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [detailModalDefaultTab, setDetailModalDefaultTab] = useState<
     'basic' | 'wallet' | 'vip' | 'spin' | 'agency'
@@ -102,6 +103,7 @@ export default function PlayersPage() {
   // 查看详情
   const handleViewDetail = useCallback(
     async (player: Player) => {
+      setDetailPlayerId(player.id);
       setCurrentPlayer(null);
       setDetailModalDefaultTab('basic');
       setDetailModalOpen(true);
@@ -435,10 +437,11 @@ export default function PlayersPage() {
         {/* 详情弹窗 */}
         <PlayerDetailModal
           open={detailModalOpen}
-          playerId={currentPlayer?.id || null}
+          playerId={detailPlayerId}
           defaultTab={detailModalDefaultTab}
           onClose={() => {
             setDetailModalOpen(false);
+            setDetailPlayerId(null);
             setCurrentPlayer(null);
             setDetailModalDefaultTab('basic');
           }}

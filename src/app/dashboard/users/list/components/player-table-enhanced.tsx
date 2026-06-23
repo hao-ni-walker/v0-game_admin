@@ -204,6 +204,7 @@ export function PlayerTableEnhanced({
               </TableRow>
             ) : (
               players.map((player) => {
+                const canToggleStatus = player.status !== 'disabled';
                 // 获取 VIP 等级，优先从 vip_info 对象获取（支持 vip_level 和 level 两种字段名），否则从直接字段获取
                 const vipInfo = (player as any).vip_info;
                 const vipLevel =
@@ -246,7 +247,7 @@ export function PlayerTableEnhanced({
                         onCheckedChange={() =>
                           handleStatusChange(player.id, player.status)
                         }
-                        disabled={!onStatusChange}
+                        disabled={!onStatusChange || !canToggleStatus}
                       />
                     </TableCell>
                     <TableCell>
