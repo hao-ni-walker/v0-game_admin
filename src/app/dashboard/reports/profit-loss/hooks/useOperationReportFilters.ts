@@ -25,9 +25,15 @@ export function useOperationReportFilters() {
     }
 
     const urlFilters: OperationReportFilters = {
-      start_date: searchParams.get('start_date') || undefined,
-      end_date: searchParams.get('end_date') || undefined,
-      dateRange: undefined // 日期范围暂不从URL同步，避免复杂性
+      start_date: searchParams.get('start_date') || DEFAULT_FILTERS.start_date,
+      end_date: searchParams.get('end_date') || DEFAULT_FILTERS.end_date,
+      dateRange:
+        searchParams.get('start_date') && searchParams.get('end_date')
+          ? {
+              from: new Date(searchParams.get('start_date')!),
+              to: new Date(searchParams.get('end_date')!)
+            }
+          : DEFAULT_FILTERS.dateRange
     };
     setFilters(urlFilters);
   }, [searchParams]);
@@ -54,8 +60,8 @@ export function useOperationReportFilters() {
       const queryString = params.toString();
       router.push(
         queryString
-          ? `/dashboard/analytics/reports?${queryString}`
-          : '/dashboard/analytics/reports'
+          ? `/dashboard/reports/profit-loss?${queryString}`
+          : '/dashboard/reports/profit-loss'
       );
     },
     [filters, router]
@@ -67,7 +73,14 @@ export function useOperationReportFilters() {
   const clearFilters = useCallback(() => {
     setFilters(DEFAULT_FILTERS);
     isUpdatingFromSearch.current = true;
-    router.push('/dashboard/analytics/reports');
+    const params = new URLSearchParams();
+    if (DEFAULT_FILTERS.start_date) {
+      params.set('start_date', DEFAULT_FILTERS.start_date);
+    }
+    if (DEFAULT_FILTERS.end_date) {
+      params.set('end_date', DEFAULT_FILTERS.end_date);
+    }
+    router.push(`/dashboard/reports/profit-loss?${params.toString()}`);
   }, [router]);
 
   /**

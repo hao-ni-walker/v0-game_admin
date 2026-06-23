@@ -44,6 +44,8 @@ export function OperationReportFilters({
   // 同步外部 filters 到本地表单状态
   useEffect(() => {
     setFormData({
+      start_date: filters.start_date,
+      end_date: filters.end_date,
       dateRange: filters.dateRange
     });
   }, [filters]);
@@ -62,8 +64,20 @@ export function OperationReportFilters({
    * 执行查询
    */
   const handleSearch = () => {
+    const normalized =
+      formData.dateRange?.from && formData.dateRange?.to
+        ? {
+            start_date: format(formData.dateRange.from, 'yyyy-MM-dd'),
+            end_date: format(formData.dateRange.to, 'yyyy-MM-dd'),
+            dateRange: formData.dateRange
+          }
+        : {
+            start_date: undefined,
+            end_date: undefined,
+            dateRange: undefined
+          };
     onSearch({
-      ...formData
+      ...normalized
     });
   };
 
@@ -72,6 +86,8 @@ export function OperationReportFilters({
    */
   const handleReset = () => {
     const resetData = {
+      start_date: undefined,
+      end_date: undefined,
       dateRange: undefined
     };
     setFormData(resetData);
