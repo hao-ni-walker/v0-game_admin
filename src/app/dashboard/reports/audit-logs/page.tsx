@@ -51,7 +51,7 @@ export default function LogsPage() {
   };
 
   const handlePageSizeChange = (limit: number) => {
-    updatePagination({ limit, page: 1 });
+    updatePagination({ pageSize: limit, page: 1 });
   };
 
   const handleRefresh = () => {
