@@ -1,47 +1,59 @@
-import { apiRequest, buildSearchParams } from './base';
+import { apiRequest } from './base';
+
+// Backend status (normal|frozen|blacklist) ↔ frontend (active|locked|disabled)
+function toFrontendStatus(status: string): 'active' | 'locked' | 'disabled' {
+  if (status === 'frozen') return 'locked';
+  if (status === 'blacklist') return 'disabled';
+  return 'active';
+}
+
+function toBackendStatus(status: string | boolean): string | undefined {
+  if (typeof status === 'boolean') return status ? 'normal' : 'frozen';
+  if (status === 'active') return 'normal';
+  if (status === 'locked') return 'frozen';
+  if (status === 'disabled') return 'blacklist';
+  return status || undefined;
+}
+
+function tsToIso(ts: number | null | undefined): string | undefined {
+  return ts ? new Date(ts * 1000).toISOString() : undefined;
+}
+
+const EMPTY_WALLET = {
+  balance: 0,
+  frozen_balance: 0,
+  bonus: 0,
+  credit: 0,
+  withdrawable: 0,
+  total_deposit: 0,
+  total_withdraw: 0,
+  total_bet: 0,
+  total_win: 0,
+  currency: '',
+  status: 'active' as const,
+  version: 0
+};
 
 // 玩家相关 API
 export class PlayerAPI {
   // 获取玩家列表
   static async getPlayers(params?: {
-    // 用户基本信息
     id?: number;
-    id_min?: number;
-    id_max?: number;
     username?: string;
     email?: string;
     idname?: string;
     keyword?: string;
-    // 账户状态
     status?: boolean | string;
     vip_level?: number;
-    vip_level_min?: number;
-    vip_level_max?: number;
-    vipMin?: number;
-    vipMax?: number;
     is_locked?: boolean;
-    // 代理关系
-    agent?: string;
-    agents?: string[];
-    direct_superior_id?: number;
-    directSuperiorIds?: number[];
-    // 注册信息
-    registration_method?: string;
-    registrationMethods?: string[];
-    registration_source?: string;
-    registrationSources?: string[];
-    identity_category?: string;
-    identityCategories?: string[];
-    // 钱包信息范围
     balance_min?: number;
-    balanceMax?: number;
     balance_max?: number;
     balanceMin?: number;
+    balanceMax?: number;
     total_deposit_min?: number;
     total_deposit_max?: number;
     total_withdraw_min?: number;
     total_withdraw_max?: number;
-    // 时间范围
     created_at_start?: string;
     created_at_end?: string;
     createdFrom?: string;
@@ -50,7 +62,6 @@ export class PlayerAPI {
     last_login_end?: string;
     lastLoginFrom?: string;
     lastLoginTo?: string;
-    // 分页和排序
     page?: number;
     page_size?: number;
     pageSize?: number;
@@ -58,240 +69,141 @@ export class PlayerAPI {
     sortBy?: string;
     sort_order?: 'asc' | 'desc';
     sortDir?: 'asc' | 'desc';
+    [key: string]: any;
   }) {
-    // 构建查询参数，使用下划线命名格式（与 curl 命令中的格式一致）
-    const queryParams: Record<string, string> = {};
+    const q: Record<string, string> = {};
 
-    // 分页参数
-    if (params?.page !== undefined) {
-      queryParams.page = String(params.page);
-    }
-    if (params?.page_size !== undefined) {
-      queryParams.page_size = String(params.page_size);
-    } else if (params?.pageSize !== undefined) {
-      queryParams.page_size = String(params.pageSize);
-    }
+    if (params?.page !== undefined) q.page = String(params.page);
+    const size = params?.page_size ?? params?.pageSize;
+    if (size !== undefined) q.size = String(size);
 
-    // 排序参数
-    if (params?.sort_by !== undefined) {
-      queryParams.sort_by = params.sort_by;
-    } else if (params?.sortBy !== undefined) {
-      queryParams.sort_by = params.sortBy;
-    }
-    if (params?.sort_order !== undefined) {
-      queryParams.sort_order = params.sort_order;
-    } else if (params?.sortDir !== undefined) {
-      queryParams.sort_order = params.sortDir;
+    const sortBy = params?.sort_by ?? params?.sortBy;
+    if (sortBy) q.sort_by = sortBy;
+    const sortOrder = params?.sort_order ?? params?.sortDir;
+    if (sortOrder) q.sort_order = sortOrder;
+
+    const keyword = params?.keyword || params?.username || params?.email || params?.idname;
+    if (keyword) q.keyword = keyword;
+
+    if (params?.id !== undefined) q.keyword = q.keyword || String(params.id);
+
+    if (params?.status !== undefined && params.status !== '') {
+      const mapped = toBackendStatus(params.status);
+      if (mapped) q.status = mapped;
     }
 
-    // 用户基本信息
-    if (params?.id !== undefined) {
-      queryParams.id = String(params.id);
-    }
-    if (params?.id_min !== undefined) {
-      queryParams.id_min = String(params.id_min);
-    }
-    if (params?.id_max !== undefined) {
-      queryParams.id_max = String(params.id_max);
-    }
-    if (params?.username !== undefined && params.username !== '') {
-      queryParams.username = params.username;
-    }
-    if (params?.email !== undefined && params.email !== '') {
-      queryParams.email = params.email;
-    }
-    if (params?.idname !== undefined && params.idname !== '') {
-      queryParams.idname = params.idname;
-    }
-    if (params?.keyword !== undefined && params.keyword !== '') {
-      // keyword 可能匹配用户名或邮箱，这里使用 username 参数
-      queryParams.username = params.keyword;
-    }
+    const bMin = params?.balance_min ?? params?.balanceMin;
+    if (bMin !== undefined) q.balance_min = String(bMin);
+    const bMax = params?.balance_max ?? params?.balanceMax;
+    if (bMax !== undefined) q.balance_max = String(bMax);
 
-    // 账户状态
-    if (params?.status !== undefined) {
-      if (typeof params.status === 'boolean') {
-        queryParams.status = params.status ? 'true' : 'false';
-      } else if (typeof params.status === 'string' && params.status !== '') {
-        queryParams.status = params.status;
-      }
-    }
-    if (params?.vip_level !== undefined) {
-      queryParams.vip_level = String(params.vip_level);
-    }
-    if (params?.vip_level_min !== undefined) {
-      queryParams.vip_level_min = String(params.vip_level_min);
-    }
-    if (params?.vip_level_max !== undefined) {
-      queryParams.vip_level_max = String(params.vip_level_max);
-    }
-    if (params?.is_locked !== undefined) {
-      if (typeof params.is_locked === 'boolean') {
-        queryParams.is_locked = params.is_locked ? 'true' : 'false';
-      } else if (params.is_locked !== '') {
-        queryParams.is_locked = String(params.is_locked);
-      }
-    }
+    const createdFrom = params?.created_at_start ?? params?.createdFrom;
+    if (createdFrom) q.register_start = String(Math.floor(new Date(createdFrom).getTime() / 1000));
+    const createdTo = params?.created_at_end ?? params?.createdTo;
+    if (createdTo) q.register_end = String(Math.floor(new Date(createdTo).getTime() / 1000));
 
-    // 代理关系
-    if (params?.agent !== undefined && params.agent !== '') {
-      queryParams.agent = params.agent;
-    } else if (
-      params?.agents !== undefined &&
-      Array.isArray(params.agents) &&
-      params.agents.length > 0
-    ) {
-      queryParams.agent = params.agents[0];
-    }
-    if (params?.direct_superior_id !== undefined) {
-      queryParams.direct_superior_id = String(params.direct_superior_id);
-    } else if (
-      params?.directSuperiorIds !== undefined &&
-      Array.isArray(params.directSuperiorIds) &&
-      params.directSuperiorIds.length > 0
-    ) {
-      queryParams.direct_superior_id = String(params.directSuperiorIds[0]);
-    }
+    const search = new URLSearchParams(q).toString();
+    const response = await apiRequest<any>(`/admin/users${search ? `?${search}` : ''}`);
 
-    // 注册信息
-    if (
-      params?.registration_method !== undefined &&
-      params.registration_method !== ''
-    ) {
-      queryParams.registration_method = params.registration_method;
-    } else if (
-      params?.registrationMethods !== undefined &&
-      Array.isArray(params.registrationMethods) &&
-      params.registrationMethods.length > 0
-    ) {
-      queryParams.registration_method = params.registrationMethods[0];
+    if (response.success && response.data) {
+      const items = (response.data.items || []).map((it: any) => ({
+        id: parseInt(it.user_id, 10),
+        username: it.tg_username || it.display_name || '',
+        email: '',
+        status: toFrontendStatus(it.status),
+        vip_level: it.vip_level || 0,
+        created_at: tsToIso(it.registered_at) || '',
+        updated_at: '',
+        last_login: tsToIso(it.last_active_at),
+        wallet: {
+          ...EMPTY_WALLET,
+          balance: it.balance || 0,
+          withdrawable: it.balance || 0,
+          total_deposit: it.total_deposit || 0,
+          total_withdraw: it.total_withdraw || 0,
+          total_bet: it.total_bet || 0,
+          total_win: (it.total_bet || 0) + (it.net_pnl || 0)
+        }
+      }));
+      const pagination = response.data.pagination || {};
+      return {
+        ...response,
+        data: {
+          items,
+          list: items,
+          page: pagination.page || 1,
+          page_size: pagination.size || 20,
+          total: pagination.total ?? response.data.total ?? 0
+        }
+      };
     }
-    if (
-      params?.registration_source !== undefined &&
-      params.registration_source !== ''
-    ) {
-      queryParams.registration_source = params.registration_source;
-    } else if (
-      params?.registrationSources !== undefined &&
-      Array.isArray(params.registrationSources) &&
-      params.registrationSources.length > 0
-    ) {
-      queryParams.registration_source = params.registrationSources[0];
-    }
-    if (
-      params?.identity_category !== undefined &&
-      params.identity_category !== ''
-    ) {
-      queryParams.identity_category = params.identity_category;
-    } else if (
-      params?.identityCategories !== undefined &&
-      Array.isArray(params.identityCategories) &&
-      params.identityCategories.length > 0
-    ) {
-      queryParams.identity_category = params.identityCategories[0];
-    }
-
-    // 钱包信息范围
-    if (params?.balance_min !== undefined) {
-      queryParams.balance_min = String(params.balance_min);
-    } else if (params?.balanceMin !== undefined) {
-      queryParams.balance_min = String(params.balanceMin);
-    }
-    if (params?.balance_max !== undefined) {
-      queryParams.balance_max = String(params.balance_max);
-    } else if (params?.balanceMax !== undefined) {
-      queryParams.balance_max = String(params.balanceMax);
-    }
-    if (params?.total_deposit_min !== undefined) {
-      queryParams.total_deposit_min = String(params.total_deposit_min);
-    }
-    if (params?.total_deposit_max !== undefined) {
-      queryParams.total_deposit_max = String(params.total_deposit_max);
-    }
-    if (params?.total_withdraw_min !== undefined) {
-      queryParams.total_withdraw_min = String(params.total_withdraw_min);
-    }
-    if (params?.total_withdraw_max !== undefined) {
-      queryParams.total_withdraw_max = String(params.total_withdraw_max);
-    }
-
-    // 时间范围
-    if (
-      params?.created_at_start !== undefined &&
-      params.created_at_start !== ''
-    ) {
-      queryParams.created_at_start = params.created_at_start;
-    } else if (params?.createdFrom !== undefined && params.createdFrom !== '') {
-      queryParams.created_at_start = params.createdFrom;
-    }
-    if (params?.created_at_end !== undefined && params.created_at_end !== '') {
-      queryParams.created_at_end = params.created_at_end;
-    } else if (params?.createdTo !== undefined && params.createdTo !== '') {
-      queryParams.created_at_end = params.createdTo;
-    }
-    if (
-      params?.last_login_start !== undefined &&
-      params.last_login_start !== ''
-    ) {
-      queryParams.last_login_start = params.last_login_start;
-    } else if (
-      params?.lastLoginFrom !== undefined &&
-      params.lastLoginFrom !== ''
-    ) {
-      queryParams.last_login_start = params.lastLoginFrom;
-    }
-    if (params?.last_login_end !== undefined && params.last_login_end !== '') {
-      queryParams.last_login_end = params.last_login_end;
-    } else if (params?.lastLoginTo !== undefined && params.lastLoginTo !== '') {
-      queryParams.last_login_end = params.lastLoginTo;
-    }
-
-    // 构建查询字符串
-    const searchParams = buildSearchParams(queryParams);
-    const endpoint = `/admin/users${searchParams ? `?${searchParams}` : ''}`;
-
-    // 直接调用 GET /api/admin/users 接口
-    return apiRequest(endpoint, {
-      method: 'GET'
-    });
+    return response;
   }
 
   // 获取玩家统计信息
-  static async getStatistics(params?: {
-    id?: number;
-    id_min?: number;
-    id_max?: number;
-    username?: string;
-    email?: string;
-    idname?: string;
-    status?: boolean | string;
-    vip_level_min?: number;
-    vip_level_max?: number;
-    is_locked?: boolean;
-    agent?: string;
-    direct_superior_id?: number;
-    registration_method?: string;
-    registration_source?: string;
-    identity_category?: string;
-    balance_min?: number;
-    balance_max?: number;
-    created_at_start?: string;
-    created_at_end?: string;
-    last_login_start?: string;
-    last_login_end?: string;
-  }) {
-    return apiRequest('/players/statistics', {
-      method: 'POST',
-      body: JSON.stringify(params || {})
-    });
+  static async getStatistics(_params?: Record<string, any>) {
+    const response = await apiRequest<any>('/admin/users/statistics');
+    if (response.success && response.data) {
+      const s = response.data;
+      return {
+        ...response,
+        data: {
+          total_players: s.total_players || 0,
+          active_players: s.active_players || 0,
+          disabled_players: s.disabled_players || 0,
+          total_balance: s.total_balance || 0,
+          today_new_players: s.today_new_players || 0
+        }
+      };
+    }
+    return response;
   }
 
   // 获取玩家详情
   static async getPlayer(id: number) {
-    return apiRequest(`/players/${id}`);
+    const response = await apiRequest<any>(`/admin/users/${id}`);
+    if (response.success && response.data) {
+      const d = response.data;
+      const stats = d.stats || {};
+      const totalBet = stats.total_bet || 0;
+      const netPnl = stats.net_pnl || 0;
+      return {
+        ...response,
+        data: {
+          id: parseInt(d.user_id, 10),
+          username: d.tg_username || d.display_name || '',
+          email: '',
+          status: toFrontendStatus(d.status),
+          vip_level: d.vip_level || 0,
+          created_at: tsToIso(d.registered_at) || '',
+          updated_at: '',
+          last_login: tsToIso(d.last_active_at),
+          wallet: {
+            ...EMPTY_WALLET,
+            balance: d.balance || 0,
+            frozen_balance: d.frozen_balance || 0,
+            withdrawable: d.balance || 0,
+            total_deposit: stats.total_deposit || 0,
+            total_withdraw: stats.total_withdraw || 0,
+            total_bet: totalBet,
+            total_win: totalBet + netPnl
+          },
+          vip_info: {
+            level: d.vip_level || 0,
+            experience: 0,
+            status: 'active' as const,
+            created_at: '',
+            updated_at: ''
+          },
+          agency: { subordinate_count: 0 },
+          spin_quotas: []
+        }
+      };
+    }
+    return response;
   }
 
-  // 更新玩家信息
+  // 更新玩家信息（status/lock 路由到 freeze/unfreeze）
   static async updatePlayer(
     id: number,
     data: {
@@ -299,36 +211,31 @@ export class PlayerAPI {
       vip_level?: number;
       agent?: string;
       direct_superior_id?: number;
-      lock?: {
-        action: 'lock' | 'unlock';
-        lock_time?: string;
-      };
+      lock?: { action: 'lock' | 'unlock'; lock_time?: string };
+      reason?: string;
     }
   ) {
-    const requestData: any = { ...data };
-    if (typeof data.status === 'string') {
-      requestData.status = data.status === 'active' ? true : false;
+    const reason = data.reason || '管理员后台操作';
+    const wantsLock = data.lock
+      ? data.lock.action === 'lock'
+      : typeof data.status === 'boolean'
+        ? !data.status
+        : data.status === 'locked' || data.status === 'disabled';
+
+    if (data.lock || data.status !== undefined) {
+      const endpoint = wantsLock ? 'freeze' : 'unfreeze';
+      return apiRequest(`/admin/users/${id}/${endpoint}`, {
+        method: 'POST',
+        body: JSON.stringify({ reason })
+      });
     }
-    return apiRequest(`/players/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(requestData)
-    });
-  }
 
-  // 更新玩家状态
-  static async updatePlayerStatus(id: number, status: boolean) {
-    return apiRequest(`/players/${id}/status`, {
-      method: 'PUT',
-      body: JSON.stringify({ status })
-    });
-  }
-
-  // 更新玩家VIP等级
-  static async updatePlayerVipLevel(id: number, vipLevel: number) {
-    return apiRequest(`/players/${id}/vip-level`, {
-      method: 'PUT',
-      body: JSON.stringify({ vipLevel })
-    });
+    // vip_level / agent 等字段后端暂无对应接口
+    return {
+      code: 400,
+      success: false,
+      message: '该字段暂不支持修改（仅支持状态切换）'
+    };
   }
 
   // 调整钱包余额
@@ -342,9 +249,13 @@ export class PlayerAPI {
       version: number;
     }
   ) {
-    return apiRequest(`/players/${id}/wallet/adjust`, {
+    const delta = data.type === 'add' ? data.amount : -data.amount;
+    const reason = (data.reason && data.reason.length >= 10)
+      ? data.reason
+      : `${data.reason || '调整'}________`.slice(0, 10);
+    return apiRequest(`/admin/users/${id}/balance-adjust`, {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify({ delta, reason })
     });
   }
 
@@ -353,30 +264,35 @@ export class PlayerAPI {
     playerIds: number[],
     operation: 'enable' | 'disable' | 'export'
   ) {
-    return apiRequest('/players/batch', {
+    return apiRequest('/admin/users/batch', {
       method: 'POST',
       body: JSON.stringify({
-        player_ids: playerIds,
-        operation
+        user_ids: playerIds.map(String),
+        action: operation === 'enable' ? 'unfreeze' : 'freeze',
+        reason: '批量状态操作'
       })
     });
   }
 
-  // 重置密码
-  static async resetPassword(id: number) {
-    return apiRequest(`/players/${id}/reset_password`, {
-      method: 'POST'
-    });
+  // 重置密码（后端暂无接口）
+  static async resetPassword(_id: number) {
+    return { code: 404, success: false, message: '后端暂未提供重置密码接口' };
   }
 
-  // 发送通知
+  // 更新玩家状态（路由到 freeze/unfreeze）
+  static async updatePlayerStatus(id: number, status: boolean) {
+    return PlayerAPI.updatePlayer(id, { status });
+  }
+
+  // 更新玩家 VIP 等级（后端暂无接口）
+  static async updatePlayerVipLevel(_id: number, _vipLevel: number) {
+    return { code: 404, success: false, message: '后端暂未提供 VIP 等级修改接口' };
+  }
+
+  // 发送通知（后端暂无接口）
   static async sendNotification(
     id: number,
-    data: {
-      channel: string;
-      title: string;
-      content: string;
-    }
+    data: { channel: string; title: string; content: string }
   ) {
     return apiRequest(`/admin/users/${id}/notify`, {
       method: 'POST',
@@ -384,33 +300,8 @@ export class PlayerAPI {
     });
   }
 
-  // 导出玩家数据
-  static async exportPlayers(params?: {
-    id?: number;
-    id_min?: number;
-    id_max?: number;
-    username?: string;
-    email?: string;
-    idname?: string;
-    status?: boolean | string;
-    vip_level_min?: number;
-    vip_level_max?: number;
-    is_locked?: boolean;
-    agent?: string;
-    direct_superior_id?: number;
-    registration_method?: string;
-    registration_source?: string;
-    identity_category?: string;
-    balance_min?: number;
-    balance_max?: number;
-    created_at_start?: string;
-    created_at_end?: string;
-    last_login_start?: string;
-    last_login_end?: string;
-  }) {
-    return apiRequest('/players/export', {
-      method: 'POST',
-      body: JSON.stringify(params || {})
-    });
+  // 导出玩家数据（由前端通过 getPlayers 分页拉取后生成 CSV，此方法保留占位）
+  static async exportPlayers(_params?: Record<string, any>) {
+    return { code: 404, success: false, message: '请使用前端 CSV 导出' };
   }
 }

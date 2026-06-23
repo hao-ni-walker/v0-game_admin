@@ -267,7 +267,7 @@ export default function PlayersPage() {
   // 查看操作日志
   const handleViewLogs = useCallback(
     (player: Player) => {
-      router.push(`/dashboard/system/logs?user_id=${player.id}`);
+      router.push(`/dashboard/system/operation-logs?user_id=${player.id}`);
     },
     [router]
   );

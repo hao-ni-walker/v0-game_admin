@@ -31,6 +31,9 @@ export function useOperationLogFilters() {
     const sortDir = (searchParams.get('sortDir') ||
       DEFAULT_OPERATION_LOG_FILTERS.sortDir) as 'asc' | 'desc';
 
+    const userIdParam = searchParams.get('user_id');
+    const userIds = userIdParam ? [parseInt(userIdParam, 10)] : undefined;
+
     return {
       keyword,
       operations: operations || DEFAULT_OPERATION_LOG_FILTERS.operations,
@@ -42,7 +45,8 @@ export function useOperationLogFilters() {
       sortBy,
       sortDir,
       page,
-      pageSize
+      pageSize,
+      userIds: userIds ?? DEFAULT_OPERATION_LOG_FILTERS.userIds
     };
   });
 

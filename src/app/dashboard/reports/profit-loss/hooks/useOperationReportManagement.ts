@@ -58,8 +58,8 @@ export function useOperationReportManagement() {
         .join('&');
 
       const url = queryString
-        ? `/admin/operation-report?${queryString}`
-        : '/admin/operation-report';
+        ? `/admin/reports/operation-report?${queryString}`
+        : '/admin/reports/operation-report';
 
       // 调用 API
       const res = await apiRequest<OperationReportResponse>(url);

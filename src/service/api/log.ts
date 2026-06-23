@@ -15,126 +15,104 @@ export class LogAPI {
 }
 
 // 用户操作日志（审计日志）API
+// 后端真实端点：GET /admin/audit/operations（返回 OperationLogItem 列表）
 export class OperationLogAPI {
   /**
    * 获取用户操作日志列表
-   * GET /api/admin/user-operation-logs
    */
   static async getList(params: {
     page?: number;
     pageSize?: number;
-    page_size?: number; // 支持 snake_case
+    page_size?: number;
     keyword?: string;
     userIds?: string;
     usernames?: string;
     operations?: string;
     tables?: string;
     objectId?: string;
-    object_id?: string; // 支持 snake_case
+    object_id?: string;
     ipAddress?: string;
-    ip_address?: string; // 支持 snake_case
+    ip_address?: string;
     hasDiff?: boolean;
-    has_diff?: boolean; // 支持 snake_case
+    has_diff?: boolean;
     from?: string;
     to?: string;
     sortBy?: string;
-    sort_by?: string; // 支持 snake_case
+    sort_by?: string;
     sortDir?: string;
-    sort_dir?: string; // 支持 snake_case
+    sort_dir?: string;
   }) {
-    // 构建查询参数，优先使用 snake_case 格式以匹配远程 API
-    const searchParams = new URLSearchParams();
+    const q = new URLSearchParams();
 
-    if (params.page !== undefined) {
-      searchParams.append('page', String(params.page));
-    }
-    if (params.pageSize !== undefined) {
-      searchParams.append('page_size', String(params.pageSize));
-    } else if (params.page_size !== undefined) {
-      searchParams.append('page_size', String(params.page_size));
-    }
-    if (params.keyword) {
-      searchParams.append('keyword', params.keyword);
-    }
-    if (params.userIds) {
-      searchParams.append('user_ids', params.userIds);
-    }
-    if (params.usernames) {
-      searchParams.append('usernames', params.usernames);
-    }
-    if (params.operations) {
-      searchParams.append('operations', params.operations);
-    }
-    if (params.tables) {
-      searchParams.append('tables', params.tables);
-    }
-    if (params.objectId) {
-      searchParams.append('object_id', params.objectId);
-    } else if (params.object_id) {
-      searchParams.append('object_id', params.object_id);
-    }
-    if (params.ipAddress) {
-      searchParams.append('ip_address', params.ipAddress);
-    } else if (params.ip_address) {
-      searchParams.append('ip_address', params.ip_address);
-    }
-    if (params.hasDiff !== undefined) {
-      searchParams.append('has_diff', String(params.hasDiff));
-    } else if (params.has_diff !== undefined) {
-      searchParams.append('has_diff', String(params.has_diff));
-    }
-    if (params.from) {
-      searchParams.append('from', params.from);
-    }
-    if (params.to) {
-      searchParams.append('to', params.to);
-    }
-    if (params.sortBy) {
-      searchParams.append('sort_by', params.sortBy);
-    } else if (params.sort_by) {
-      searchParams.append('sort_by', params.sort_by);
-    }
-    if (params.sortDir) {
-      searchParams.append('sort_dir', params.sortDir);
-    } else if (params.sort_dir) {
-      searchParams.append('sort_dir', params.sort_dir);
+    const pageSize = params.pageSize ?? params.page_size;
+    if (params.page !== undefined) q.append('page', String(params.page));
+    if (pageSize !== undefined) q.append('size', String(pageSize));
+
+    // operations → operation_type（取单个）
+    const ops = params.operations;
+    if (ops) q.append('operation_type', ops.split(',')[0]);
+
+    // userIds → target_id（查看某个用户被操作的记录）
+    const userIds = params.userIds;
+    if (userIds) {
+      const first = userIds.split(',')[0];
+      q.append('target_id', first);
+      q.append('target_type', 'user');
     }
 
-    const queryString = searchParams.toString();
-    const endpoint = `/admin/user-operation-logs${queryString ? `?${queryString}` : ''}`;
+    // tables → target_type（取单个）
+    if (params.tables) q.append('target_type', params.tables.split(',')[0]);
 
-    return apiRequest(endpoint, {
-      method: 'GET'
-    });
+    // from/to (ISO date) → start_time/end_time (unix)
+    if (params.from) q.append('start_time', String(Math.floor(new Date(params.from).getTime() / 1000)));
+    if (params.to) q.append('end_time', String(Math.floor(new Date(params.to).getTime() / 1000)));
+
+    const queryString = q.toString();
+    const response = await apiRequest<any>(`/admin/audit/operations${queryString ? `?${queryString}` : ''}`);
+
+    if (response.success && response.data) {
+      const rawItems: any[] = response.data.items || [];
+      const items = rawItems.map((l: any) => ({
+        id: l.log_id ?? l.id,
+        user_id: l.operator_id,
+        username: l.operator_name,
+        operation: l.operation_type,
+        table_name: l.target_type,
+        object_id: l.target_id,
+        old_data: l.data_before,
+        new_data: l.data_after,
+        description: l.reason,
+        ip_address: l.operator_ip,
+        source: l.trace_id,
+        operation_at: l.created_at,
+        created_at: l.created_at
+      }));
+      const pagination = response.data.pagination || {};
+      return {
+        ...response,
+        data: {
+          items,
+          page: pagination.page || 1,
+          page_size: pagination.size || pageSize || 20,
+          total: pagination.total ?? 0,
+          total_pages: Math.ceil((pagination.total ?? 0) / (pagination.size || pageSize || 20))
+        }
+      };
+    }
+    return response;
   }
 
   /**
-   * 导出用户操作日志
-   * POST /api/user-operation-logs/export
+   * 导出用户操作日志（后端暂无接口）
    */
-  static async export(params: any) {
-    return apiRequest('/user-operation-logs/export', {
-      method: 'POST',
-      body: JSON.stringify(params)
-    });
+  static async export(_params: any) {
+    return { code: 404, success: false, message: '后端暂未提供操作日志导出接口' };
   }
 
   /**
-   * 获取操作日志详情
-   * GET /api/user-operation-logs/:id
+   * 获取操作日志统计（后端暂无接口）
    */
-  static async getDetail(id: number) {
-    return apiRequest(`/user-operation-logs/${id}`);
-  }
-
-  /**
-   * 获取操作日志统计
-   * GET /api/user-operation-logs/stats
-   */
-  static async getStats(params?: { from?: string; to?: string }) {
-    const searchParams = buildSearchParams(params || {});
-    return apiRequest(
-      `/user-operation-logs/stats${searchParams ? `?${searchParams}` : ''}`
-    );
+  static async getStats(_params?: { from?: string; to?: string }) {
+    return { code: 404, success: false, message: '后端暂未提供操作日志统计接口' };
   }
 }
