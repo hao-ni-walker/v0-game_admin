@@ -48,5 +48,8 @@ export const PERMISSIONS = {
  */
 export const ROUTE_PERMISSIONS = {
   '/dashboard/messages': ['message:read'],
-  '/dashboard/messages/broadcasts': ['message:read']
+  '/dashboard/messages/broadcasts': ['message:read'],
+  '/dashboard/orders/trade-orders': ['risk:read'],
+  '/dashboard/risk/trade-failures': ['risk:read'],
+  '/dashboard/risk/intervention-log': ['risk:read']
 } as const;

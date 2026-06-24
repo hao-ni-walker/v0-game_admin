@@ -26,3 +26,12 @@ export { FundPoolAPI } from './api/fund-pool';
 export type { FundPoolStatus } from './api/fund-pool';
 export { MarketControlAPI } from './api/market-control';
 export type { RiskStatus, PeriodRiskStatus, RiskEventItem, RiskEventsResult } from './api/market-control';
+export { TradeObservabilityAPI } from './api/trade-observability';
+export type {
+  TradeFailureItem,
+  TradeFailuresResult,
+  TradeFailureQuery,
+  TradeOrderItem,
+  TradeOrdersResult,
+  TradeOrderQuery
+} from './api/trade-observability';

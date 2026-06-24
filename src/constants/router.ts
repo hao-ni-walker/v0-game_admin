@@ -105,6 +105,32 @@ export const businessNavList: NavItem[] = [
         }
       },
       {
+        title: '交易失败流',
+        url: '/dashboard/risk/trade-failures',
+        icon: AlertCircle,
+        description: '下单失败与拒单观测',
+        items: [],
+        searchConfig: {
+          keywords: 'trade failures order rejected 交易失败 拒单 下单失败',
+          searchShortcut: ['rf'],
+          searchSection: '风控中心',
+          searchPriority: 6
+        }
+      },
+      {
+        title: '干预日志流',
+        url: '/dashboard/risk/intervention-log',
+        icon: ScrollText,
+        description: '系统与人工风控干预',
+        items: [],
+        searchConfig: {
+          keywords: 'intervention log risk event 干预 日志 风控事件',
+          searchShortcut: ['ri'],
+          searchSection: '风控中心',
+          searchPriority: 7
+        }
+      },
+      {
         title: '异常行为检测',
         url: '/dashboard/risk/anomaly-detection',
         icon: ScanSearch,
@@ -114,7 +140,28 @@ export const businessNavList: NavItem[] = [
           keywords: 'anomaly detection 异常 检测 行为',
           searchShortcut: ['ra'],
           searchSection: '风控中心',
-          searchPriority: 6
+          searchPriority: 8
+        }
+      }
+    ]
+  },
+  {
+    title: '订单管理',
+    url: '#',
+    icon: Receipt,
+    isActive: false,
+    items: [
+      {
+        title: '交易订单',
+        url: '/dashboard/orders/trade-orders',
+        icon: Receipt,
+        description: '用户下单明细与待结算订单',
+        items: [],
+        searchConfig: {
+          keywords: 'trade orders 交易订单 订单管理 待结算 用户下单',
+          searchShortcut: ['to'],
+          searchSection: '订单管理',
+          searchPriority: 9
         }
       }
     ]

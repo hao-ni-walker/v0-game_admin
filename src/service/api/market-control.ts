@@ -31,6 +31,14 @@ export interface RiskEventsResult {
   items: RiskEventItem[];
   pagination: { page: number; size: number; total: number };
 }
+export interface RiskEventsQuery {
+  type?: string;
+  period?: string;
+  start_time?: number;
+  end_time?: number;
+  page?: number;
+  size?: number;
+}
 
 export const MarketControlAPI = {
   getStatus: () => apiRequest<RiskStatus>('/admin/risk/status'),
@@ -46,8 +54,12 @@ export const MarketControlAPI = {
     apiRequest<unknown>('/admin/risk/direction/close', { method: 'POST', body: JSON.stringify({ period, direction, reason }) }),
   restoreDirection: (period: string, direction: 'UP' | 'DOWN', reason: string) =>
     apiRequest<unknown>('/admin/risk/direction/restore', { method: 'POST', body: JSON.stringify({ period, direction, reason }) }),
-  getEvents: (params: { page?: number; size?: number } = {}) => {
+  getEvents: (params: RiskEventsQuery = {}) => {
     const sp = new URLSearchParams();
+    if (params.type) sp.set('type', params.type);
+    if (params.period) sp.set('period', params.period);
+    if (params.start_time) sp.set('start_time', String(params.start_time));
+    if (params.end_time) sp.set('end_time', String(params.end_time));
     if (params.page) sp.set('page', String(params.page));
     if (params.size) sp.set('size', String(params.size));
     const qs = sp.toString();
