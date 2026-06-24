@@ -12,7 +12,7 @@ interface OperationReportPageHeaderProps {
 }
 
 /**
- * 运营报表页面头部组件
+ * 盈亏报表页面头部组件
  */
 export function OperationReportPageHeader({
   onRefresh,
@@ -21,9 +21,9 @@ export function OperationReportPageHeader({
   return (
     <div className='flex items-center justify-between'>
       <div>
-        <h1 className='text-2xl font-semibold'>运营报表</h1>
+        <h1 className='text-2xl font-semibold'>盈亏报表</h1>
         <p className='text-muted-foreground mt-1 text-sm'>
-          按天数统计运营数据，包括访问人数、注册人数、充值、提现等关键指标
+          按天统计平台交易笔数、活跃用户、下注赔付、平台盈利与资金流
         </p>
       </div>
       <Button

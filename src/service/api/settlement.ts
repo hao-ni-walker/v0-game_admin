@@ -3,6 +3,7 @@ import { apiRequest, buildSearchParams } from './base';
 // ========== PRD §7.1 开奖记录 ==========
 export interface SettlementRecord {
   settlement_id: string;
+  asset: string;
   period: string;
   period_start: number;
   period_end: number;

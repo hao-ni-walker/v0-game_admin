@@ -55,7 +55,7 @@ export default function SettlementRecordsPage() {
     <PageContainer>
       <PageHeader
         title='开奖记录'
-        description='按期查询开奖价格、来源及结算状态（数据源自 trades 表）'
+        description='按币种 + 周期查询开奖价格、来源及结算状态（数据源自 trades 表）'
       />
 
       {/* 价格数据源 */}
@@ -63,7 +63,7 @@ export default function SettlementRecordsPage() {
         <CardHeader>
           <CardTitle>价格数据源</CardTitle>
           <CardDescription>
-            开奖价格取自合作行情数据源（如 Binance / Coinbase API），取价逻辑为每期结算时间点的 BTC/USD 1 分钟收盘价
+            开奖价格按币种独立统计；待结算期次不展示收盘价和涨跌幅，避免将不同币种或未结算数据混在一起
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -127,6 +127,7 @@ export default function SettlementRecordsPage() {
               <TableRow>
                 <TableHead>期号</TableHead>
                 <TableHead>周期</TableHead>
+                <TableHead>币种</TableHead>
                 <TableHead>开奖时间</TableHead>
                 <TableHead>开盘价</TableHead>
                 <TableHead>收盘价</TableHead>
@@ -142,7 +143,7 @@ export default function SettlementRecordsPage() {
               {records.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={11}
+                    colSpan={12}
                     className='text-muted-foreground h-32 text-center'
                   >
                     {loading ? '加载中…' : '暂无开奖记录'}
@@ -153,13 +154,16 @@ export default function SettlementRecordsPage() {
                   <TableRow key={r.settlement_id}>
                     <TableCell className='font-medium'>{r.settlement_id}</TableCell>
                     <TableCell>{r.period}</TableCell>
+                    <TableCell>{r.asset}</TableCell>
                     <TableCell className='text-sm'>{fmtTime(r.period_end)}</TableCell>
                     <TableCell>{r.open_price}</TableCell>
                     <TableCell>{r.close_price}</TableCell>
                     <TableCell>
                       <Badge
                         variant={
-                          r.price_change_pct.startsWith('+')
+                          r.price_change_pct === '—'
+                            ? 'secondary'
+                            : r.price_change_pct.startsWith('+')
                             ? 'default'
                             : r.price_change_pct.startsWith('-')
                               ? 'destructive'

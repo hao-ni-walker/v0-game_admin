@@ -107,50 +107,52 @@ export default function DashboardOverview() {
     );
   }
 
+  function renderMoney(value: number | null | undefined) {
+    if (value === null || value === undefined) return '—';
+    return `$${value.toLocaleString()}`;
+  }
+
+  function renderCount(value: number | null | undefined) {
+    if (value === null || value === undefined) return '—';
+    return value.toLocaleString();
+  }
+
   // PRD §2.1 核心指标卡片
   const coreMetrics = [
     {
       title: '净风险敞口',
-      value: metrics?.netRiskExposure
-        ? `$${metrics.netRiskExposure.toLocaleString()}`
-        : '—',
+      value: renderMoney(metrics?.netRiskExposure),
       icon: ShieldAlert,
       description: '买涨 − 买跌总金额',
       variant: (metrics?.netRiskExposure ?? 0) > 6000 ? 'destructive' : 'default'
     },
     {
       title: '当日总流水',
-      value: metrics?.todayVolume
-        ? `$${metrics.todayVolume.toLocaleString()}`
-        : '—',
+      value: renderMoney(metrics?.todayVolume),
       icon: DollarSign,
       description: '所有已下单金额之和'
     },
     {
       title: '当日平台盈利',
-      value: metrics?.todayProfit
-        ? `$${metrics.todayProfit.toLocaleString()}`
-        : '—',
+      value: renderMoney(metrics?.todayProfit),
       icon: metrics?.todayProfit && metrics.todayProfit >= 0 ? TrendingUp : TrendingDown,
       description: '已结算订单平台净收益'
     },
     {
       title: '在线用户数',
-      value: metrics?.onlineUsers?.toLocaleString() || '—',
+      value: renderCount(metrics?.onlineUsers),
       icon: Users,
       description: '当前活跃 MiniApp 用户'
     },
     {
       title: '待结算订单',
-      value: metrics?.pendingOrders?.toLocaleString() || '—',
+      value: renderCount(metrics?.pendingOrders),
       icon: Clock,
       description: '所有未到期订单总数'
     },
     {
       title: '资金池余额',
-      value: metrics?.fundPoolBalance
-        ? `$${metrics.fundPoolBalance.toLocaleString()}`
-        : '—',
+      value: renderMoney(metrics?.fundPoolBalance),
       icon: Landmark,
       description: '平台可用流动性资金'
     }
