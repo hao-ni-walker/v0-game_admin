@@ -35,7 +35,7 @@ import {
   type TradeFailuresResult,
 } from '@/service/request';
 
-const PERIODS = ['', '1m', '3m', '5m', '10m'] as const;
+const PERIODS = ['', '30s', '1m', '3m', '5m', '10m'] as const;
 const ASSETS = ['', 'BTC', 'ETH', 'TON'] as const;
 
 function formatTime(ts: number | null) {

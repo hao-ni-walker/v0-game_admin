@@ -3,7 +3,7 @@ import { requestRemoteAdminApi } from '@/lib/admin-remote';
 import { successResponse, unauthorizedResponse } from '@/service/response';
 
 const STATUS_PATH = '/api/v1/admin/risk/status';
-const PERIODS = ['1m', '3m', '5m', '10m'] as const;
+const PERIODS = ['30s', '1m', '3m', '5m', '10m'] as const;
 const REQUEST_TIMEOUT_MS = 1200;
 
 interface RiskStatusPayload {

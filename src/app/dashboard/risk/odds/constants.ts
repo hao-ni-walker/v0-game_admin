@@ -1,7 +1,8 @@
-export const PERIODS = ['1m', '3m', '5m', '10m'] as const;
+export const PERIODS = ['30s', '1m', '3m', '5m', '10m'] as const;
 export type Period = (typeof PERIODS)[number];
 
 export const PERIOD_LABELS: Record<Period, string> = {
+  '30s': '30 秒',
   '1m': '1 分钟',
   '3m': '3 分钟',
   '5m': '5 分钟',

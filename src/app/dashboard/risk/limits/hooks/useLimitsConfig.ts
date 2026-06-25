@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { RiskParamAPI } from '@/service/request';
 
 const TIER_NAMES = ['L0', 'L1', 'L2', 'L3', 'L4', 'L5'] as const;
-const PERIODS = ['1m', '3m', '5m', '10m'] as const;
+const PERIODS = ['30s', '1m', '3m', '5m', '10m'] as const;
 
 export interface TierLimit {
   single: number;

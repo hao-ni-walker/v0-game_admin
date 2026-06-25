@@ -21,7 +21,7 @@ import PageContainer from '@/components/layout/page-container';
 import { PageHeader } from '@/components/table/page-header';
 import { useSettlementRecords } from './hooks/useSettlementRecords';
 
-const PERIOD_OPTIONS = ['', '1m', '3m', '5m', '10m'];
+const PERIOD_OPTIONS = ['', '30s', '1m', '3m', '5m', '10m'];
 const RESULT_OPTIONS = [
   { value: '', label: '全部结果' },
   { value: 'up', label: '涨' },

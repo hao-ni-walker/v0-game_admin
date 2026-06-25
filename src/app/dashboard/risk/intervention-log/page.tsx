@@ -24,7 +24,7 @@ import { PermissionGuard } from '@/components/auth/permission-guard';
 import { PauseCircle, PlayCircle, RefreshCw, ScrollText } from 'lucide-react';
 import { MarketControlAPI, type RiskEventItem, type RiskEventsResult } from '@/service/request';
 
-const PERIODS = ['', '1m', '3m', '5m', '10m'] as const;
+const PERIODS = ['', '30s', '1m', '3m', '5m', '10m'] as const;
 const EVENT_TYPES = ['', 'manual_zero', 'manual_restore', 'direction_close', 'direction_restore'] as const;
 
 function formatTime(ts: number | null) {

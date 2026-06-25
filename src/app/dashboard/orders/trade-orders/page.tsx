@@ -38,7 +38,7 @@ const STATUS_OPTIONS = [
   { value: 'settling', label: '结算中' },
   { value: 'failed', label: '失败' },
 ];
-const PERIODS = ['', '1m', '3m', '5m', '10m'] as const;
+const PERIODS = ['', '30s', '1m', '3m', '5m', '10m'] as const;
 const ASSETS = ['', 'BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'TON/USDT', 'XRP/USDT', 'ADA/USDT'] as const;
 
 function fmtTime(ts: number | null) {

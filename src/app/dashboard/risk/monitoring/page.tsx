@@ -86,7 +86,7 @@ export default function RiskMonitoringPage() {
 
       {/* 各周期风险敞口卡片 */}
       <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-        {(['1m', '3m', '5m', '10m'] as const).map((period) => {
+        {(['30s', '1m', '3m', '5m', '10m'] as const).map((period) => {
           const exposure = exposures.find((e) => e.period === period);
           return (
             <Card key={period}>

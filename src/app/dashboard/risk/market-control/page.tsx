@@ -29,7 +29,7 @@ import { ParamNumberField } from '../components/ParamNumberField';
 import { SaveBar } from '../components/SaveBar';
 import { useMarketControl } from './hooks/useMarketControl';
 
-const PERIODS = ['1m', '3m', '5m', '10m'] as const;
+const PERIODS = ['30s', '1m', '3m', '5m', '10m'] as const;
 const LEVELS = ['L1', 'L2', 'L3', 'L4'] as const;
 const PRICE_FIELD: Record<string, string> = {
   L1: 'price_1m',
