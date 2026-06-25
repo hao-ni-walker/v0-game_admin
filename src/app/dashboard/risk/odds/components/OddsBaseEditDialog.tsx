@@ -50,12 +50,12 @@ export function OddsBaseEditDialog({
       <DialogContent className='sm:max-w-[400px]'>
         <DialogHeader>
           <DialogTitle>
-            编辑基础赔率
+            编辑基础收益率
             {period ? ` · ${PERIOD_LABELS[period as Period] ?? period}` : ''}
           </DialogTitle>
         </DialogHeader>
         <div className='space-y-2 py-2'>
-          <Label>赔率 (%)</Label>
+          <Label>收益率 (%)</Label>
           <Input
             type='number'
             min={0}
@@ -65,7 +65,7 @@ export function OddsBaseEditDialog({
             onChange={(e) => setPayout(e.target.value)}
           />
           <p className='text-muted-foreground text-xs'>
-            基础赔率作为默认值；存在生效中的窗口赔率时，窗口赔率优先。
+            基础收益率作为默认值；存在生效中的窗口收益率时，窗口收益率优先。
           </p>
         </div>
         <DialogFooter>

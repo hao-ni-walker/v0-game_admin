@@ -17,7 +17,7 @@ export interface RiskExposureResponse {
   pendingOrders: number;
 }
 
-// ========== PRD §4 赔率管理 ==========
+// ========== PRD §4 收益率管理 ==========
 export interface OddsConfig {
   period: string;
   baseOdds: number;
@@ -97,7 +97,7 @@ export const RiskControlAPI = {
   getExposure: () =>
     apiRequest<RiskExposureResponse>('/admin/risk/exposure'),
 
-  // 赔率管理
+  // 收益率管理
   getOddsConfig: () =>
     apiRequest<OddsConfig[]>('/admin/risk/odds'),
 

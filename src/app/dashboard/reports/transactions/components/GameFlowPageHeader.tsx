@@ -15,7 +15,7 @@ interface GameFlowPageHeaderProps {
 }
 
 /**
- * 游戏流水页面头部组件
+ * 交易流水页面头部组件
  */
 export function GameFlowPageHeader({
   onRefresh,
@@ -24,9 +24,9 @@ export function GameFlowPageHeader({
   return (
     <div className='flex items-center justify-between'>
       <div>
-        <h1 className='text-2xl font-semibold'>游戏流水</h1>
+        <h1 className='text-2xl font-semibold'>交易流水</h1>
         <p className='text-muted-foreground mt-1 text-sm'>
-          查看游戏流水数据，包括总下注、输赢和返奖率等信息
+          查看交易流水数据，包括总交易额、盈亏和回报率等信息
         </p>
       </div>
       <Button

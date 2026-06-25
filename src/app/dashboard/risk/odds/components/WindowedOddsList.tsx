@@ -30,7 +30,7 @@ export function WindowedOddsList({ configs, loading, canWrite, onAdd, onDelete }
     { key: 'period', title: '周期' },
     {
       key: 'payout_percent',
-      title: '赔率',
+      title: '收益率',
       render: (_v: unknown, r: OddsConfig) => `${r.payout_percent}%`,
     },
     { key: 'priority', title: '优先级' },
@@ -57,7 +57,7 @@ export function WindowedOddsList({ configs, loading, canWrite, onAdd, onDelete }
           <ActionDropdown
             actions={[]}
             deleteAction={{
-              description: `确认删除该 ${r.period} 窗口赔率？`,
+              description: `确认删除该 ${r.period} 窗口收益率？`,
               onConfirm: () => onDelete(r),
             }}
           />
@@ -70,11 +70,11 @@ export function WindowedOddsList({ configs, loading, canWrite, onAdd, onDelete }
   return (
     <div className='space-y-3'>
       <div className='flex items-center justify-between'>
-        <h2 className='text-lg font-semibold'>窗口活动赔率</h2>
+        <h2 className='text-lg font-semibold'>窗口活动收益率</h2>
         {canWrite && (
           <Button size='sm' onClick={onAdd} disabled={loading} className='cursor-pointer'>
             <Plus className='mr-2 h-4 w-4' />
-            添加窗口赔率
+            添加窗口收益率
           </Button>
         )}
       </div>
@@ -83,7 +83,7 @@ export function WindowedOddsList({ configs, loading, canWrite, onAdd, onDelete }
         data={windowed}
         loading={loading}
         rowKey='id'
-        emptyText='暂无窗口赔率'
+        emptyText='暂无窗口收益率'
         stickyHeader={false}
       />
     </div>

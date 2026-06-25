@@ -79,7 +79,7 @@ export function OddsWindowDialog({ open, onOpenChange, onSubmit }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='sm:max-w-[520px]'>
         <DialogHeader>
-          <DialogTitle>添加窗口活动赔率</DialogTitle>
+          <DialogTitle>添加窗口活动收益率</DialogTitle>
         </DialogHeader>
         <div className='grid grid-cols-2 gap-4 py-2'>
           <div className='space-y-1'>
@@ -101,7 +101,7 @@ export function OddsWindowDialog({ open, onOpenChange, onSubmit }: Props) {
             </Select>
           </div>
           <div className='space-y-1'>
-            <Label>赔率 (%)</Label>
+            <Label>收益率 (%)</Label>
             <Input
               type='number'
               min={0}
@@ -144,7 +144,7 @@ export function OddsWindowDialog({ open, onOpenChange, onSubmit }: Props) {
           </div>
         </div>
         <p className='text-muted-foreground text-xs'>
-          窗口期内该赔率将覆盖基础赔率；优先级数值越大越优先。留空开始/结束表示无下限/上限。
+          窗口期内该收益率将覆盖基础收益率；优先级数值越大越优先。留空开始/结束表示无下限/上限。
         </p>
         <DialogFooter>
           <Button variant='outline' onClick={() => onOpenChange(false)} disabled={submitting}>

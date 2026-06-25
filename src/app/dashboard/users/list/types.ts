@@ -1,4 +1,4 @@
-// 玩家管理相关类型定义
+// 用户管理相关类型定义
 
 // 用户状态枚举
 export type PlayerStatus = 'active' | 'disabled' | 'locked' | boolean;
@@ -24,7 +24,7 @@ export type AdjustType = 'add' | 'subtract';
 // 周期类型
 export type PeriodType = 'daily' | 'weekly' | 'monthly' | 'custom';
 
-// 玩家钱包信息
+// 用户钱包信息
 export interface PlayerWallet {
   balance: number;
   frozen_balance: number;
@@ -77,7 +77,7 @@ export interface AgencyInfo {
   }>;
 }
 
-// 玩家基本信息
+// 用户基本信息
 export interface Player {
   id: number;
   idname?: string;
@@ -101,7 +101,7 @@ export interface Player {
   agency?: AgencyInfo;
 }
 
-// 玩家详情（包含完整关联数据）
+// 用户详情（包含完整关联数据）
 export interface PlayerDetail extends Player {
   wallet: PlayerWallet;
   vip_info: VipInfo;
@@ -160,7 +160,7 @@ export interface SortInfo {
   sort_order?: 'asc' | 'desc';
 }
 
-// 玩家列表响应
+// 用户列表响应
 export interface PlayerListResponse {
   items: Player[];
   total: number;
@@ -177,7 +177,7 @@ export interface PlayerStatistics {
   today_new_players: number;
 }
 
-// 编辑玩家表单数据
+// 编辑用户表单数据
 export interface PlayerEditFormData {
   status?: PlayerStatus;
   vip_level?: number;

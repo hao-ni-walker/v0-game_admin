@@ -27,7 +27,7 @@ import { Player, PlayerDetail } from './types';
 import { useRouter } from 'next/navigation';
 
 /**
- * 玩家管理页面
+ * 用户管理页面
  */
 export default function PlayersPage() {
   const router = useRouter();
@@ -115,7 +115,7 @@ export default function PlayersPage() {
     [fetchPlayerDetail]
   );
 
-  // 编辑玩家
+  // 编辑用户
   const handleEdit = useCallback(
     async (player: Player | PlayerDetail) => {
       if ('wallet' in player && player.wallet) {
@@ -212,7 +212,7 @@ export default function PlayersPage() {
     ]
   );
 
-  // 刷新玩家详情
+  // 刷新用户详情
   const handleRefreshPlayerDetail = useCallback(
     async (playerId: number) => {
       const playerDetail = await fetchPlayerDetail(playerId);
@@ -305,7 +305,7 @@ export default function PlayersPage() {
     await exportPlayers(appliedFilters);
   }, [exportPlayers, appliedFilters]);
 
-  // 选择玩家
+  // 选择用户
   const handleSelectPlayer = useCallback(
     (playerId: number, selected: boolean) => {
       setSelectedPlayerIds((prev) => {
@@ -336,7 +336,7 @@ export default function PlayersPage() {
       <div className='flex w-full flex-1 flex-col space-y-4'>
         {/* 页面头部 */}
         <div className='flex items-center justify-between'>
-          <Heading title='玩家管理' description='查看和管理所有玩家账户信息' />
+          <Heading title='用户管理' description='查看和管理所有用户账户信息' />
           <div className='flex items-center gap-2'>
             <Button variant='outline' onClick={handleExport}>
               <Download className='mr-2 h-4 w-4' />
@@ -387,7 +387,7 @@ export default function PlayersPage() {
         {selectedPlayerIds.length > 0 && (
           <div className='bg-muted/50 flex items-center gap-2 rounded-lg border p-3'>
             <span className='text-sm font-medium'>
-              已选择 {selectedPlayerIds.length} 个玩家
+              已选择 {selectedPlayerIds.length} 个用户
             </span>
             <Button
               variant='outline'
@@ -415,7 +415,7 @@ export default function PlayersPage() {
           </div>
         )}
 
-        {/* 玩家列表表格 */}
+        {/* 用户列表表格 */}
         <PlayerTableEnhanced
           players={players}
           loading={loading}
@@ -480,7 +480,7 @@ export default function PlayersPage() {
               <AlertDialogTitle>确认批量操作</AlertDialogTitle>
               <AlertDialogDescription>
                 确定要{batchOperationType === 'enable' ? '启用' : '禁用'}{' '}
-                {selectedPlayerIds.length} 个玩家吗？
+                {selectedPlayerIds.length} 个用户吗？
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

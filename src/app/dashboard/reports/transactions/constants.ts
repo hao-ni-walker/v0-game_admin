@@ -35,12 +35,12 @@ export const PAGE_SIZE_OPTIONS = [10, 20, 30, 50, 100];
  */
 export const MESSAGES = {
   SUCCESS: {
-    FETCH_FLOWS: '获取游戏流水成功',
+    FETCH_FLOWS: '获取交易流水成功',
     REFRESH: '刷新成功'
   },
   ERROR: {
-    FETCH_FLOWS: '获取游戏流水失败',
-    FETCH_GAMES: '获取游戏列表失败',
+    FETCH_FLOWS: '获取交易流水失败',
+    FETCH_GAMES: '获取交易品种列表失败',
     FETCH_PLATFORMS: '获取平台列表失败'
   }
 };

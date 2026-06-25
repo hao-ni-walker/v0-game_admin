@@ -27,10 +27,10 @@ export function useSettlementRecords() {
         setRecords(res.data.items);
         setTotal(res.data.pagination.total);
       } else {
-        toast.error(res.message || '获取开奖记录失败');
+        toast.error(res.message || '获取结算记录失败');
       }
     } catch {
-      toast.error('获取开奖记录失败');
+      toast.error('获取结算记录失败');
     } finally {
       setLoading(false);
     }

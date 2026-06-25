@@ -5,7 +5,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { PlayerFilters } from '../types';
 
 /**
- * 管理玩家筛选条件的 Hook（增强版）
+ * 管理用户筛选条件的 Hook（增强版）
  * 将筛选条件同步到 URL query 参数
  */
 export function usePlayerFiltersEnhanced() {

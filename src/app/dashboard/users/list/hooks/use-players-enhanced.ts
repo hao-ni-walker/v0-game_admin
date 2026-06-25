@@ -88,7 +88,7 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
   const isFetchingPlayersRef = useRef(false);
   const isFetchingStatsRef = useRef(false);
 
-  // 获取玩家列表
+  // 获取用户列表
   const fetchPlayers = useCallback(
     async (params?: {
       filters?: Partial<PlayerFilters>;
@@ -134,10 +134,10 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
             )
           });
         } else {
-          throw new Error(response.message || '获取玩家列表失败');
+          throw new Error(response.message || '获取用户列表失败');
         }
       } catch (err) {
-        const message = err instanceof Error ? err.message : '获取玩家列表失败';
+        const message = err instanceof Error ? err.message : '获取用户列表失败';
         setError(message);
         toast.error(message);
       } finally {
@@ -148,7 +148,7 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
     [pagination.page, pagination.page_size, sort]
   );
 
-  // 获取玩家详情
+  // 获取用户详情
   const fetchPlayerDetail = useCallback(
     async (playerId: number): Promise<PlayerDetail | null> => {
       try {
@@ -157,10 +157,10 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
         if (response.success && response.data) {
           return response.data;
         } else {
-          throw new Error(response.message || '获取玩家详情失败');
+          throw new Error(response.message || '获取用户详情失败');
         }
       } catch (err) {
-        const message = err instanceof Error ? err.message : '获取玩家详情失败';
+        const message = err instanceof Error ? err.message : '获取用户详情失败';
         toast.error(message);
         return null;
       } finally {
@@ -217,7 +217,7 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
     []
   );
 
-  // 更新玩家
+  // 更新用户
   const updatePlayer = useCallback(
     async (
       playerId: number,
@@ -235,13 +235,13 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
       try {
         const response = await PlayerAPI.updatePlayer(playerId, data);
         if (response.success) {
-          toast.success('玩家更新成功');
+          toast.success('用户更新成功');
           return true;
         } else {
-          throw new Error(response.message || '更新玩家失败');
+          throw new Error(response.message || '更新用户失败');
         }
       } catch (err) {
-        const message = err instanceof Error ? err.message : '更新玩家失败';
+        const message = err instanceof Error ? err.message : '更新用户失败';
         toast.error(message);
         return false;
       }
@@ -360,7 +360,7 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
     []
   );
 
-  // 获取所有玩家数据（用于导出）
+  // 获取所有用户数据（用于导出）
   const fetchAllPlayers = useCallback(
     async (filters?: Partial<PlayerFilters>): Promise<Player[]> => {
       try {
@@ -418,7 +418,7 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
     [sort]
   );
 
-  // 导出玩家
+  // 导出用户
   const exportPlayers = useCallback(
     async (filters?: Partial<PlayerFilters>): Promise<boolean> => {
       try {
@@ -460,8 +460,8 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
           '冻结余额',
           '总存款',
           '总提现',
-          '总投注',
-          '总赢取',
+          '总交易额',
+          '总收益',
           '注册时间',
           '最后登录时间',
           '登录失败次数',
@@ -516,7 +516,7 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
           .toISOString()
           .replace(/[:.]/g, '-')
           .slice(0, -5);
-        const filename = `玩家列表_${timestamp}`;
+        const filename = `用户列表_${timestamp}`;
 
         // 导出 CSV
         exportToCSV(allPlayers, headers, getRowData, filename);

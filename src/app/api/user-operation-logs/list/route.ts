@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
           featured: true,
           priority: 1
         },
-        description: '设置游戏为推荐',
+        description: '设置品种为推荐',
         ipAddress: '203.0.113.45',
         source: 'web',
         userAgent: 'Mozilla/5.0',

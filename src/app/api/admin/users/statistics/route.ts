@@ -39,12 +39,12 @@ export async function GET() {
 
     const result = remoteResponse.data;
     if (!result || (result.code !== 0 && result.code !== 200)) {
-      return errorResponse(result?.message || '获取玩家统计信息失败');
+      return errorResponse(result?.message || '获取用户统计信息失败');
     }
 
     return successResponse(result.data);
   } catch (error) {
-    console.error('获取玩家统计信息失败:', error);
-    return errorResponse('获取玩家统计信息失败');
+    console.error('获取用户统计信息失败:', error);
+    return errorResponse('获取用户统计信息失败');
   }
 }

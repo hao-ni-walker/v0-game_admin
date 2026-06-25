@@ -21,11 +21,11 @@ export async function GET(req: NextRequest) {
     }
     const result = remoteResponse.data;
     if (!result || (result.code !== 0 && result.code !== 200)) {
-      return errorResponse(result?.message || '获取生效赔率失败');
+      return errorResponse(result?.message || '获取生效收益率失败');
     }
     return successResponse(result.data);
   } catch (error) {
-    console.error('获取生效赔率失败:', error);
-    return errorResponse('获取生效赔率失败');
+    console.error('获取生效收益率失败:', error);
+    return errorResponse('获取生效收益率失败');
   }
 }

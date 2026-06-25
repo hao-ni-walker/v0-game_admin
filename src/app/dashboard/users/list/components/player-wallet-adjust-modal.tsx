@@ -64,7 +64,7 @@ export function PlayerWalletAdjustModal({
   });
   const [errors, setErrors] = useState<Partial<Record<keyof WalletAdjustFormData, string>>>({});
 
-  // 当玩家数据变化时，更新表单
+  // 当用户数据变化时，更新表单
   useEffect(() => {
     if (player?.wallet) {
       setFormData({
@@ -117,7 +117,7 @@ export function PlayerWalletAdjustModal({
     try {
       const success = await onSubmit(player.id, formData);
       if (success) {
-        // 刷新玩家数据
+        // 刷新用户数据
         await onRefresh(player.id);
         onClose();
         setFormData({
@@ -288,7 +288,7 @@ export function PlayerWalletAdjustModal({
             <AlertDialogDescription>
               <div className='space-y-2 mt-2'>
                 <p>
-                  <strong>玩家ID：</strong>
+                  <strong>用户ID：</strong>
                   {player.id}
                 </p>
                 <p>

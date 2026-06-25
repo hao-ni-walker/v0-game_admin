@@ -23,7 +23,7 @@ export function OperationReportPageHeader({
       <div>
         <h1 className='text-2xl font-semibold'>盈亏报表</h1>
         <p className='text-muted-foreground mt-1 text-sm'>
-          按天统计平台交易笔数、活跃用户、下注赔付、平台盈利与资金流
+          按天统计平台交易笔数、活跃用户、交易收益、平台盈利与资金流
         </p>
       </div>
       <Button

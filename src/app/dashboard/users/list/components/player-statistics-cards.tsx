@@ -54,21 +54,21 @@ export function PlayerStatisticsCards({
 
   const cards = [
     {
-      title: '总玩家数',
+      title: '总用户数',
       value: statistics.total_players,
       icon: Users,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100 dark:bg-blue-900/20'
     },
     {
-      title: '启用玩家数',
+      title: '启用用户数',
       value: statistics.active_players,
       icon: UserCheck,
       color: 'text-green-600',
       bgColor: 'bg-green-100 dark:bg-green-900/20'
     },
     {
-      title: '禁用玩家数',
+      title: '禁用用户数',
       value: statistics.disabled_players,
       icon: UserX,
       color: 'text-red-600',

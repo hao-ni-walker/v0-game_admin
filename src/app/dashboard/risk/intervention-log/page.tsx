@@ -83,7 +83,7 @@ export default function InterventionLogPage() {
       <PageContainer>
         <PageHeader
           title='干预日志流'
-          description='查看系统和人工风控干预，包括赔率清零/恢复、方向关闭/恢复'
+          description='查看系统和人工风控干预，包括收益率清零/恢复、方向关闭/恢复'
           action={{
             label: autoRefresh ? '暂停刷新' : '开启自动刷新',
             onClick: () => setAutoRefresh((v) => !v),

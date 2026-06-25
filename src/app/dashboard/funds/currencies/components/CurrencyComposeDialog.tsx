@@ -103,7 +103,7 @@ export function CurrencyComposeDialog({ open, mode, editing, onOpenChange, onSub
           </div>
         </div>
         <p className='text-muted-foreground text-xs'>
-          交易状态（激活/停用）请通过列表中的「激活交易」操作切换；激活前需先在赔率管理为该币种配置全部 4 个周期的基础赔率。
+          交易状态（激活/停用）请通过列表中的「激活交易」操作切换；激活前需先在收益率管理为该币种配置全部 4 个周期的基础收益率。
         </p>
         <DialogFooter>
           <Button variant='outline' onClick={() => onOpenChange(false)} disabled={submitting}>取消</Button>

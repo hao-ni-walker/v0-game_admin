@@ -66,13 +66,13 @@ export const businessNavList: NavItem[] = [
         }
       },
       {
-        title: '赔率管理',
+        title: '收益率管理',
         url: '/dashboard/risk/odds',
         icon: SlidersHorizontal,
-        description: '基础赔率与动态调节',
+        description: '基础收益率与动态调节',
         items: [],
         searchConfig: {
-          keywords: 'odds 赔率 管理 调节',
+          keywords: 'odds 收益率 管理 调节',
           searchShortcut: ['ro'],
           searchSection: '风控中心',
           searchPriority: 3
@@ -173,13 +173,13 @@ export const businessNavList: NavItem[] = [
     isActive: false,
     items: [
       {
-        title: '开奖记录',
+        title: '结算记录',
         url: '/dashboard/settlement/records',
         icon: ScrollText,
-        description: '按期查询开奖记录',
+        description: '按期查询结算记录',
         items: [],
         searchConfig: {
-          keywords: 'settlement records 开奖 记录 结算',
+          keywords: 'settlement records 结算 记录',
           searchShortcut: ['sr'],
           searchSection: '结算中心',
           searchPriority: 7

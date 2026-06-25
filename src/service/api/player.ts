@@ -34,9 +34,9 @@ const EMPTY_WALLET = {
   version: 0
 };
 
-// 玩家相关 API
+// 用户相关 API
 export class PlayerAPI {
-  // 获取玩家列表
+  // 获取用户列表
   static async getPlayers(params?: {
     id?: number;
     username?: string;
@@ -140,7 +140,7 @@ export class PlayerAPI {
     return response;
   }
 
-  // 获取玩家统计信息
+  // 获取用户统计信息
   static async getStatistics(_params?: Record<string, any>) {
     const response = await apiRequest<any>('/admin/users/statistics');
     if (response.success && response.data) {
@@ -159,7 +159,7 @@ export class PlayerAPI {
     return response;
   }
 
-  // 获取玩家详情
+  // 获取用户详情
   static async getPlayer(id: number) {
     const response = await apiRequest<any>(`/admin/users/${id}`);
     if (response.success && response.data) {
@@ -203,7 +203,7 @@ export class PlayerAPI {
     return response;
   }
 
-  // 更新玩家信息（status/lock 路由到 freeze/unfreeze）
+  // 更新用户信息（status/lock 路由到 freeze/unfreeze）
   static async updatePlayer(
     id: number,
     data: {
@@ -279,12 +279,12 @@ export class PlayerAPI {
     return { code: 404, success: false, message: '后端暂未提供重置密码接口' };
   }
 
-  // 更新玩家状态（路由到 freeze/unfreeze）
+  // 更新用户状态（路由到 freeze/unfreeze）
   static async updatePlayerStatus(id: number, status: boolean) {
     return PlayerAPI.updatePlayer(id, { status });
   }
 
-  // 更新玩家 VIP 等级（后端暂无接口）
+  // 更新用户 VIP 等级（后端暂无接口）
   static async updatePlayerVipLevel(_id: number, _vipLevel: number) {
     return { code: 404, success: false, message: '后端暂未提供 VIP 等级修改接口' };
   }
@@ -300,7 +300,7 @@ export class PlayerAPI {
     });
   }
 
-  // 导出玩家数据（由前端通过 getPlayers 分页拉取后生成 CSV，此方法保留占位）
+  // 导出用户数据（由前端通过 getPlayers 分页拉取后生成 CSV，此方法保留占位）
   static async exportPlayers(_params?: Record<string, any>) {
     return { code: 404, success: false, message: '请使用前端 CSV 导出' };
   }

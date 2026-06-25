@@ -82,7 +82,7 @@ export function OperationReportTable({
               <TableHead className='w-[100px] text-right'>交易笔数</TableHead>
               <TableHead className='w-[100px] text-right'>活跃用户</TableHead>
               <TableHead className='w-[100px] text-right'>注册人数</TableHead>
-              <TableHead className='w-[120px] text-right'>总下注</TableHead>
+              <TableHead className='w-[120px] text-right'>总交易额</TableHead>
               <TableHead className='w-[120px] text-right'>总赔付</TableHead>
               <TableHead className='w-[120px] text-right'>平台盈利</TableHead>
               <TableHead className='w-[120px] text-right'>充值金额</TableHead>

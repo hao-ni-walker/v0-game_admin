@@ -78,7 +78,7 @@ export default function OddsPage() {
               {activeCurrency && (
                 <div className='flex min-h-0 flex-1 flex-col gap-6 overflow-auto'>
                   <section>
-                    <h2 className='mb-3 text-lg font-semibold'>基础赔率</h2>
+                    <h2 className='mb-3 text-lg font-semibold'>基础收益率</h2>
                     <BaseOddsTable
                       resolved={resolved}
                       configs={configs}

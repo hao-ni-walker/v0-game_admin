@@ -8,7 +8,7 @@ export interface OperationReportItem {
   order_count: number; // 交易笔数
   active_user_count: number; // 活跃交易用户
   register_count: number; // 新注册用户
-  total_bet: string; // 总下注
+  total_bet: string; // 总交易额
   total_payout: string; // 总赔付
   platform_income: string; // 平台盈利
   deposit_amount: string; // 充值金额

@@ -50,7 +50,7 @@ interface PlayerDetailModalProps {
 }
 
 /**
- * 玩家详情弹窗组件
+ * 用户详情弹窗组件
  */
 export function PlayerDetailModal({
   open,
@@ -81,7 +81,7 @@ export function PlayerDetailModal({
     }
   }, [playerId, onRefresh]);
 
-  // 加载玩家详情
+  // 加载用户详情
   useEffect(() => {
     if (open && playerId) {
       loadPlayerDetail();
@@ -104,7 +104,7 @@ export function PlayerDetailModal({
       <DialogContent className='max-h-[90vh] max-w-4xl overflow-y-auto'>
         <DialogHeader>
           <DialogTitle className='flex items-center justify-between'>
-            <span>玩家详情</span>
+            <span>用户详情</span>
             <div className='flex gap-2'>
               {player && (
                 <Button
@@ -129,7 +129,7 @@ export function PlayerDetailModal({
           </div>
         ) : !player ? (
           <div className='text-muted-foreground py-8 text-center'>
-            <p>玩家不存在或加载失败</p>
+            <p>用户不存在或加载失败</p>
             <Button
               variant='outline'
               className='mt-4'
@@ -154,7 +154,7 @@ export function PlayerDetailModal({
               <div className='grid grid-cols-2 gap-4'>
                 <div>
                   <label className='text-muted-foreground text-sm font-medium'>
-                    玩家ID
+                    用户ID
                   </label>
                   <p className='mt-1'>{player.id}</p>
                 </div>
@@ -329,7 +329,7 @@ export function PlayerDetailModal({
                     </div>
                     <div>
                       <label className='text-muted-foreground text-sm font-medium'>
-                        总投注
+                        总交易额
                       </label>
                       <p className='mt-1 font-mono'>
                         {formatCurrency(player.wallet.total_bet)}
@@ -337,7 +337,7 @@ export function PlayerDetailModal({
                     </div>
                     <div>
                       <label className='text-muted-foreground text-sm font-medium'>
-                        总赢取
+                        总收益
                       </label>
                       <p className='mt-1 font-mono'>
                         {formatCurrency(player.wallet.total_win)}

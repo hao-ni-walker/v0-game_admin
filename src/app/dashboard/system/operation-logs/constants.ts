@@ -77,9 +77,9 @@ export const OPERATION_TYPE_OPTIONS = [
   { label: '登出', value: 'LOGOUT' },
   { label: '重置密码', value: 'RESET_PWD' },
   { label: '插入', value: 'INSERT' },
-  { label: '游戏启动', value: 'GAME_LAUNCH' },
+  { label: '交易启动', value: 'GAME_LAUNCH' },
   { label: '签到', value: 'CHECKIN' },
-  { label: '抽奖', value: 'LOTTERY_DRAW' }
+  { label: '营销活动', value: 'LOTTERY_DRAW' }
 ];
 
 /**

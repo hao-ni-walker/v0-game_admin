@@ -1,6 +1,6 @@
 import { apiRequest, buildSearchParams } from './base';
 
-// ========== PRD §7.1 开奖记录 ==========
+// ========== PRD §7.1 结算记录 ==========
 export interface SettlementRecord {
   settlement_id: string;
   asset: string;
@@ -73,7 +73,7 @@ export interface ManualSettlementParams {
 
 // ========== 结算 API ==========
 export const SettlementAPI = {
-  // 开奖记录
+  // 结算记录
   getRecords: (params: { page?: number; size?: number; period?: string; result?: string } = {}) => {
     const sp = new URLSearchParams();
     if (params.page) sp.set('page', String(params.page));

@@ -28,7 +28,7 @@ interface PlayerEditModalProps {
 }
 
 /**
- * 玩家编辑弹窗组件
+ * 用户编辑弹窗组件
  */
 export function PlayerEditModal({
   open,
@@ -48,7 +48,7 @@ export function PlayerEditModal({
     Partial<Record<keyof PlayerEditFormData, string>>
   >({});
 
-  // 当玩家数据变化时，更新表单
+  // 当用户数据变化时，更新表单
   useEffect(() => {
     if (player) {
       // 处理 status，可能是 boolean 或 string
@@ -85,7 +85,7 @@ export function PlayerEditModal({
     e.preventDefault();
     if (!player) return;
 
-    // 验证 direct_superior_id 不能等于当前玩家 ID
+    // 验证 direct_superior_id 不能等于当前用户 ID
     if (formData.direct_superior_id === player.id) {
       setErrors({ direct_superior_id: '直属上级不能是自己' });
       return;
@@ -125,7 +125,7 @@ export function PlayerEditModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className='flex max-h-[90vh] max-w-2xl flex-col gap-0 p-0'>
         <DialogHeader className='shrink-0 px-6 pt-6 pb-2'>
-          <DialogTitle>编辑玩家 - {player.username}</DialogTitle>
+          <DialogTitle>编辑用户 - {player.username}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className='flex min-h-0 flex-1 flex-col'>

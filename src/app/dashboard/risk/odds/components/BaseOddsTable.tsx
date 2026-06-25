@@ -37,7 +37,7 @@ export function BaseOddsTable({ resolved, configs, loading, canWrite, onEditBase
     { key: 'label', title: '周期' },
     {
       key: 'base',
-      title: '基础赔率',
+      title: '基础收益率',
       render: (_v: unknown, row: BaseRow) =>
         row.base !== null ? (
           `${row.base}%`
@@ -47,7 +47,7 @@ export function BaseOddsTable({ resolved, configs, loading, canWrite, onEditBase
     },
     {
       key: 'effective',
-      title: '当前生效赔率',
+      title: '当前生效收益率',
       render: (_v: unknown, row: BaseRow) =>
         row.effective ? (
           <div className='flex items-center gap-2'>

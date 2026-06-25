@@ -54,7 +54,7 @@ interface PlayerTableEnhancedProps {
 }
 
 /**
- * 玩家列表表格组件（增强版）
+ * 用户列表表格组件（增强版）
  */
 export function PlayerTableEnhanced({
   players,
@@ -187,8 +187,8 @@ export function PlayerTableEnhanced({
               <TableHead>可提现金额</TableHead>
               <TableHead>总存款</TableHead>
               <TableHead>总提现</TableHead>
-              <TableHead>总投注</TableHead>
-              <TableHead>总赢取</TableHead>
+              <TableHead>总交易额</TableHead>
+              <TableHead>总收益</TableHead>
               <TableHead className='text-right'>操作</TableHead>
             </TableRow>
           </TableHeader>
@@ -233,7 +233,7 @@ export function PlayerTableEnhanced({
                         onCheckedChange={(checked) =>
                           onSelectPlayer(player.id, checked === true)
                         }
-                        aria-label={`选择玩家 ${player.username}`}
+                        aria-label={`选择用户 ${player.username}`}
                       />
                     </TableCell>
                     <TableCell className='font-medium'>{player.id}</TableCell>

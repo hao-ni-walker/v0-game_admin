@@ -59,10 +59,10 @@ export function usePlayers(): UsePlayersResult {
         setPage(response.data.page || 1);
         setPageSize(response.data.page_size || 20);
       } else {
-        throw new Error(response.message || '获取玩家列表失败');
+        throw new Error(response.message || '获取用户列表失败');
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : '获取玩家列表失败';
+      const message = err instanceof Error ? err.message : '获取用户列表失败';
       setError(message);
       toast.error(message);
     } finally {

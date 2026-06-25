@@ -54,8 +54,8 @@ export default function SettlementRecordsPage() {
   return (
     <PageContainer>
       <PageHeader
-        title='开奖记录'
-        description='按币种 + 周期查询开奖价格、来源及结算状态（数据源自 trades 表）'
+        title='结算记录'
+        description='按币种 + 周期查询结算价格、来源及结算状态（数据源自 trades 表）'
       />
 
       {/* 价格数据源 */}
@@ -63,7 +63,7 @@ export default function SettlementRecordsPage() {
         <CardHeader>
           <CardTitle>价格数据源</CardTitle>
           <CardDescription>
-            开奖价格按币种独立统计；待结算期次不展示收盘价和涨跌幅，避免将不同币种或未结算数据混在一起
+            结算价格按币种独立统计；待结算期次不展示收盘价和涨跌幅，避免将不同币种或未结算数据混在一起
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -84,12 +84,12 @@ export default function SettlementRecordsPage() {
         </CardContent>
       </Card>
 
-      {/* 开奖记录表 */}
+      {/* 结算记录表 */}
       <Card>
         <CardHeader>
           <div className='flex flex-wrap items-center justify-between gap-3'>
             <div>
-              <CardTitle>开奖记录</CardTitle>
+              <CardTitle>结算记录</CardTitle>
               <CardDescription>共 {total} 条记录</CardDescription>
             </div>
             <div className='flex flex-wrap items-center gap-2'>
@@ -128,13 +128,13 @@ export default function SettlementRecordsPage() {
                 <TableHead>期号</TableHead>
                 <TableHead>周期</TableHead>
                 <TableHead>币种</TableHead>
-                <TableHead>开奖时间</TableHead>
+                <TableHead>结算时间</TableHead>
                 <TableHead>开盘价</TableHead>
                 <TableHead>收盘价</TableHead>
                 <TableHead>涨跌幅</TableHead>
                 <TableHead>数据来源</TableHead>
                 <TableHead>总订单</TableHead>
-                <TableHead>赢/输/退</TableHead>
+                <TableHead>盈/亏/退</TableHead>
                 <TableHead>平台盈亏</TableHead>
                 <TableHead>结算状态</TableHead>
               </TableRow>
@@ -146,7 +146,7 @@ export default function SettlementRecordsPage() {
                     colSpan={12}
                     className='text-muted-foreground h-32 text-center'
                   >
-                    {loading ? '加载中…' : '暂无开奖记录'}
+                    {loading ? '加载中…' : '暂无结算记录'}
                   </TableCell>
                 </TableRow>
               ) : (

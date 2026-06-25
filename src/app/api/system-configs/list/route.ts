@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       {
         id: 1,
         key: 'site_name',
-        value: '游戏管理后台',
+        value: '交易管理后台',
         description: '网站名称',
         category: 'general',
         createdAt: '2025-01-01T00:00:00Z',

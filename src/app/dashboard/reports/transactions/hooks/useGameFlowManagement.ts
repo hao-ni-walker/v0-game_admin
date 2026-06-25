@@ -7,8 +7,8 @@ import { DEFAULT_PAGINATION, MESSAGES } from '../constants';
 import { apiRequest } from '@/service/api/base';
 
 /**
- * 游戏流水管理业务逻辑 Hook
- * 负责游戏流水数据的查询
+ * 交易流水管理业务逻辑 Hook
+ * 负责交易流水数据的查询
  */
 export function useGameFlowManagement() {
   const [flows, setFlows] = useState<GameFlowItem[]>([]);
@@ -17,7 +17,7 @@ export function useGameFlowManagement() {
     useState<PaginationInfo>(DEFAULT_PAGINATION);
 
   /**
-   * 获取游戏流水列表
+   * 获取交易流水列表
    */
   const fetchFlows = useCallback(async (filters: GameFlowFilters) => {
     try {
@@ -44,7 +44,7 @@ export function useGameFlowManagement() {
         }
       }
 
-      // 处理游戏ID
+      // 处理品种ID
       if (filters.game_id) {
         params.game_id = filters.game_id;
       }
@@ -91,7 +91,7 @@ export function useGameFlowManagement() {
         setPagination(DEFAULT_PAGINATION);
       }
     } catch (error) {
-      console.error('获取游戏流水失败:', error);
+      console.error('获取交易流水失败:', error);
       toast.error(MESSAGES.ERROR.FETCH_FLOWS);
       setFlows([]);
       setPagination(DEFAULT_PAGINATION);

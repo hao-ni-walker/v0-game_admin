@@ -34,7 +34,7 @@ interface PlayerFilterBarProps {
 }
 
 /**
- * 玩家筛选组件
+ * 用户筛选组件
  */
 export function PlayerFilterBar({
   onSearch,
@@ -104,7 +104,7 @@ export function PlayerFilterBar({
       {/* 第一行：用户基本信息 */}
       <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
         <div className='space-y-2'>
-          <Label>玩家ID</Label>
+          <Label>用户ID</Label>
           <Input
             type='number'
             placeholder='精确ID'
@@ -118,7 +118,7 @@ export function PlayerFilterBar({
           />
         </div>
         <div className='space-y-2'>
-          <Label>玩家ID范围</Label>
+          <Label>用户ID范围</Label>
           <div className='flex gap-2'>
             <Input
               type='number'
@@ -609,7 +609,7 @@ export function PlayerFilterBar({
       <AdvancedFilterContainer
         open={isAdvancedFilterOpen}
         onClose={() => setIsAdvancedFilterOpen(false)}
-        title='玩家筛选'
+        title='用户筛选'
         hasActiveFilters={hasActiveFilters}
         onSearch={handleSearch}
         onReset={handleReset}

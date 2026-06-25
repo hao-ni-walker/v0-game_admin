@@ -96,7 +96,7 @@ export default function MarketControlPage() {
                   <TableHead>周期</TableHead>
                   <TableHead>等级</TableHead>
                   <TableHead>主方向</TableHead>
-                  <TableHead>赔率状态</TableHead>
+                  <TableHead>收益率状态</TableHead>
                   <TableHead>接受下单</TableHead>
                 </TableRow>
               </TableHeader>
@@ -139,7 +139,7 @@ export default function MarketControlPage() {
                       <TableHead>单边占比阈值</TableHead>
                       <TableHead>价格阈值</TableHead>
                       <TableHead>敞口比率</TableHead>
-                      <TableHead>赔率调整(%)</TableHead>
+                      <TableHead>收益率调整(%)</TableHead>
                       <TableHead>限额除数</TableHead>
                       <TableHead>单笔上限</TableHead>
                       <TableHead>冷却(秒)</TableHead>
@@ -228,7 +228,7 @@ export default function MarketControlPage() {
         <Card className='mb-6'>
           <CardHeader>
             <CardTitle>手动风控动作</CardTitle>
-            <CardDescription>赔率清零/恢复、方向关闭/恢复。全部操作立即生效。</CardDescription>
+            <CardDescription>收益率清零/恢复、方向关闭/恢复。全部操作立即生效。</CardDescription>
           </CardHeader>
           <CardContent className='space-y-3'>
             <div className='flex flex-wrap items-end gap-3'>
@@ -277,11 +277,11 @@ export default function MarketControlPage() {
                 onClick={() =>
                   runAction(
                     () => MarketControlAPI.zeroOdds(actPeriod, actReason.trim()),
-                    `清零 ${actPeriod} 赔率`,
+                    `清零 ${actPeriod} 收益率`,
                   )
                 }
               >
-                清零赔率（{actPeriod}）
+                清零收益率（{actPeriod}）
               </Button>
               <Button
                 variant='outline'
@@ -289,11 +289,11 @@ export default function MarketControlPage() {
                 onClick={() =>
                   runAction(
                     () => MarketControlAPI.restoreOdds(actPeriod, actReason.trim()),
-                    `恢复 ${actPeriod} 赔率`,
+                    `恢复 ${actPeriod} 收益率`,
                   )
                 }
               >
-                恢复赔率（{actPeriod}）
+                恢复收益率（{actPeriod}）
               </Button>
               <Button
                 variant='outline'

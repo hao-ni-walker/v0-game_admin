@@ -6,7 +6,7 @@ import { GameFlowFilters } from '../types';
 import { DEFAULT_FILTERS } from '../constants';
 
 /**
- * 游戏流水筛选逻辑 Hook
+ * 交易流水筛选逻辑 Hook
  * 负责管理筛选条件和 URL 同步
  */
 export function useGameFlowFilters() {

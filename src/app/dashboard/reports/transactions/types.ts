@@ -1,7 +1,7 @@
 import type { DateRange } from 'react-day-picker';
 
 /**
- * 游戏流水项接口
+ * 交易流水项接口
  */
 export interface GameFlowItem {
   bet_date: string;
@@ -16,7 +16,7 @@ export interface GameFlowItem {
 }
 
 /**
- * 游戏流水筛选条件
+ * 交易流水筛选条件
  */
 export interface GameFlowFilters {
   bet_time_start?: string; // ISO 日期字符串
@@ -41,7 +41,7 @@ export interface PaginationInfo {
 }
 
 /**
- * 游戏选项
+ * 交易品种选项
  */
 export interface GameOption {
   id: number;

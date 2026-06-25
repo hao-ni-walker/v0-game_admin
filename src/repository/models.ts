@@ -228,7 +228,7 @@ export interface Activity {
   updatedAt: string; // ISO
 }
 
-// 玩家管理模型
+// 用户管理模型
 export type RegistrationMethod =
   | 'email'
   | 'google'

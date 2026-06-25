@@ -32,8 +32,8 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
   try {
     return await forward(req, context, 'PUT');
   } catch (error) {
-    console.error('更新赔率配置失败:', error);
-    return errorResponse('更新赔率配置失败');
+    console.error('更新收益率配置失败:', error);
+    return errorResponse('更新收益率配置失败');
   }
 }
 
@@ -41,7 +41,7 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
   try {
     return await forward(req, context, 'DELETE');
   } catch (error) {
-    console.error('删除赔率配置失败:', error);
-    return errorResponse('删除赔率配置失败');
+    console.error('删除收益率配置失败:', error);
+    return errorResponse('删除收益率配置失败');
   }
 }

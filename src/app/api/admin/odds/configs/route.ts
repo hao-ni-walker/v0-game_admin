@@ -23,12 +23,12 @@ export async function GET(req: NextRequest) {
     }
     const result = remoteResponse.data;
     if (!result || (result.code !== 0 && result.code !== 200)) {
-      return errorResponse(result?.message || '获取赔率配置失败');
+      return errorResponse(result?.message || '获取收益率配置失败');
     }
     return successResponse(result.data);
   } catch (error) {
-    console.error('获取赔率配置失败:', error);
-    return errorResponse('获取赔率配置失败');
+    console.error('获取收益率配置失败:', error);
+    return errorResponse('获取收益率配置失败');
   }
 }
 
@@ -52,11 +52,11 @@ export async function POST(req: NextRequest) {
     }
     const result = remoteResponse.data;
     if (!result || (result.code !== 0 && result.code !== 200)) {
-      return errorResponse(result?.message || '保存赔率配置失败');
+      return errorResponse(result?.message || '保存收益率配置失败');
     }
     return successResponse(result.data);
   } catch (error) {
-    console.error('保存赔率配置失败:', error);
-    return errorResponse('保存赔率配置失败');
+    console.error('保存收益率配置失败:', error);
+    return errorResponse('保存收益率配置失败');
   }
 }

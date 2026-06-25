@@ -18,7 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { GameFlowItem, PaginationInfo } from '../types';
 
 interface GameFlowTableProps {
-  /** 游戏流水列表数据 */
+  /** 交易流水列表数据 */
   data: GameFlowItem[];
   /** 加载状态 */
   loading?: boolean;
@@ -48,7 +48,7 @@ function formatDate(dateStr: string): string {
 }
 
 /**
- * 格式化返奖率
+ * 格式化回报率
  */
 function formatRTP(rtp: string): string {
   const num = parseFloat(rtp);
@@ -92,10 +92,10 @@ export function GameFlowTable({
               <TableHead className='w-[80px] text-center'>序号</TableHead>
               <TableHead className='w-[120px]'>日期</TableHead>
               <TableHead className='w-[120px]'>平台名</TableHead>
-              <TableHead className='min-w-[200px]'>游戏名称</TableHead>
-              <TableHead className='w-[120px] text-right'>总下注</TableHead>
+              <TableHead className='min-w-[200px]'>交易品种</TableHead>
+              <TableHead className='w-[120px] text-right'>总交易额</TableHead>
               <TableHead className='w-[120px] text-right'>输赢</TableHead>
-              <TableHead className='w-[120px] text-right'>返奖率</TableHead>
+              <TableHead className='w-[120px] text-right'>回报率</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

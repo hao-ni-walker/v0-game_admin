@@ -36,7 +36,7 @@ interface GameFlowFiltersProps {
 }
 
 /**
- * 游戏流水筛选组件
+ * 交易流水筛选组件
  */
 export function GameFlowFilters({
   filters,
@@ -53,7 +53,7 @@ export function GameFlowFilters({
     page_size: 10
   });
 
-  // 游戏和平台选项
+  // 交易品种和平台选项
   const [games, setGames] = useState<GameOption[]>([]);
   const [platforms, setPlatforms] = useState<PlatformOption[]>([]);
   const [loadingGames, setLoadingGames] = useState(false);
@@ -70,7 +70,7 @@ export function GameFlowFilters({
     });
   }, [filters]);
 
-  // 加载游戏列表
+  // 加载交易品种列表
   useEffect(() => {
     const loadGames = async () => {
       try {
@@ -83,7 +83,7 @@ export function GameFlowFilters({
           setGames(res.data.items);
         }
       } catch (error) {
-        console.error('获取游戏列表失败:', error);
+        console.error('获取交易品种列表失败:', error);
       } finally {
         setLoadingGames(false);
       }
@@ -201,7 +201,7 @@ export function GameFlowFilters({
         {/* 游戏选择 */}
         <div className='flex items-center gap-2'>
           <span className='text-muted-foreground text-sm font-medium whitespace-nowrap'>
-            游戏
+            品种
           </span>
           <Select
             value={formData.game_id?.toString() || 'all'}
@@ -214,10 +214,10 @@ export function GameFlowFilters({
             disabled={loadingGames}
           >
             <SelectTrigger className='w-[200px]'>
-              <SelectValue placeholder='全部游戏' />
+              <SelectValue placeholder='全部品种' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='all'>全部游戏</SelectItem>
+              <SelectItem value='all'>全部品种</SelectItem>
               {games.map((game) => (
                 <SelectItem key={game.id} value={game.id.toString()}>
                   {game.name}

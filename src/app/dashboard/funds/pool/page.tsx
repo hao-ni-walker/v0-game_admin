@@ -179,7 +179,7 @@ export default function FundPoolPage() {
               {status ? fmtUSD(status.maxPayoutPressure) : '—'}
             </div>
             <p className='text-muted-foreground text-xs'>
-              Σ（每笔未结算订单金额 × 对应赔率）
+              Σ（每笔未结算订单金额 × 对应收益率）
             </p>
           </CardContent>
         </Card>

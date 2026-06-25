@@ -59,7 +59,7 @@ export async function GET(request: Request) {
     const token = cookieStore.get('token');
 
     if (!token?.value) {
-      await logger.warn('用户管理', '获取玩家列表', '未授权访问：缺少 token', {
+      await logger.warn('用户管理', '获取用户列表', '未授权访问：缺少 token', {
         timestamp: new Date().toISOString(),
       });
       return unauthorizedResponse('未授权访问');
@@ -88,7 +88,7 @@ export async function GET(request: Request) {
     });
 
     if (!remoteResponse.ok) {
-      await logger.error('用户管理', '获取玩家列表', '远程API请求失败', {
+      await logger.error('用户管理', '获取用户列表', '远程API请求失败', {
         status: remoteResponse.status,
         errorText: remoteResponse.text,
         timestamp: new Date().toISOString(),
@@ -105,7 +105,7 @@ export async function GET(request: Request) {
 
     const result = remoteResponse.data;
     if (!result || (result.code !== 0 && result.code !== 200) || !result.data) {
-      return errorResponse(result?.message || '获取玩家列表失败');
+      return errorResponse(result?.message || '获取用户列表失败');
     }
 
     const items = (result.data.items || []).map((item) => ({
@@ -148,7 +148,7 @@ export async function GET(request: Request) {
     }));
     const pagination = result.data.pagination || {};
 
-    await logger.info('用户管理', '获取玩家列表', '获取玩家列表成功', {
+    await logger.info('用户管理', '获取用户列表', '获取用户列表成功', {
       total: pagination.total || 0,
       page: pagination.page || 1,
       timestamp: new Date().toISOString(),
@@ -161,12 +161,12 @@ export async function GET(request: Request) {
       total: pagination.total || 0,
     });
   } catch (error) {
-    await logger.error('用户管理', '获取玩家列表', '获取玩家列表失败', {
+    await logger.error('用户管理', '获取用户列表', '获取用户列表失败', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       timestamp: new Date().toISOString(),
     });
 
-    return errorResponse('获取玩家列表失败');
+    return errorResponse('获取用户列表失败');
   }
 }

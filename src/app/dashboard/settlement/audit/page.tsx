@@ -27,7 +27,7 @@ import { SettlementAPI, type SettlementAuditRecord } from '@/service/request';
 const PAGE_SIZE = 20;
 
 const RESULT_LABEL: Record<SettlementAuditRecord['result'], { text: string; cls: string }> = {
-  win: { text: '获奖', cls: 'bg-green-100 text-green-800' },
+  win: { text: '盈利', cls: 'bg-green-100 text-green-800' },
   lose: { text: '亏损', cls: 'bg-red-100 text-red-800' },
   draw: { text: '平局', cls: 'bg-gray-100 text-gray-800' }
 };
@@ -122,8 +122,8 @@ export default function SettlementAuditPage() {
                 <TableHead>方向</TableHead>
                 <TableHead>金额</TableHead>
                 <TableHead>开单价格</TableHead>
-                <TableHead>开奖价格</TableHead>
-                <TableHead>赔率(%)</TableHead>
+                <TableHead>结算价格</TableHead>
+                <TableHead>收益率(%)</TableHead>
                 <TableHead>结果</TableHead>
                 <TableHead>到账金额</TableHead>
                 <TableHead>结算时间</TableHead>
@@ -207,12 +207,12 @@ export default function SettlementAuditPage() {
         </CardHeader>
         <CardContent>
           <ol className='list-inside list-decimal space-y-1 text-sm text-muted-foreground'>
-            <li>获取结算时间点的开奖价格</li>
+            <li>获取结算时间点的结算价格</li>
             <li>查询本期所有未结算订单</li>
             <li>逐笔判定涨跌结果</li>
-            <li>批量更新订单状态（获奖 / 亏损 / 平局）</li>
+            <li>批量更新订单状态（盈利 / 亏损 / 平局）</li>
             <li>批量更新用户余额（加减账）</li>
-            <li>写入结算审计日志（含开奖价、每笔明细）</li>
+            <li>写入结算审计日志（含结算价、每笔明细）</li>
             <li>推送结果通知至前端（WebSocket）</li>
             <li>生成本期结算汇总报告</li>
           </ol>

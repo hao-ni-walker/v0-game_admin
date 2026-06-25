@@ -32,8 +32,8 @@ import {
 const STATUS_OPTIONS = [
   { value: 'pending', label: '待结算' },
   { value: 'all', label: '全部状态' },
-  { value: 'won', label: '已赢' },
-  { value: 'lost', label: '已输' },
+  { value: 'won', label: '盈利' },
+  { value: 'lost', label: '亏损' },
   { value: 'refunded', label: '已退款' },
   { value: 'settling', label: '结算中' },
   { value: 'failed', label: '失败' },
@@ -252,7 +252,7 @@ export default function TradeOrdersPage() {
                   <TableHead>币种/周期</TableHead>
                   <TableHead>方向</TableHead>
                   <TableHead>金额</TableHead>
-                  <TableHead>赔率</TableHead>
+                  <TableHead>收益率</TableHead>
                   <TableHead>开仓/收盘</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>下单时间</TableHead>
