@@ -40,6 +40,11 @@ export const PERMISSIONS = {
   BROADCAST: {
     READ: 'message:read',
     APPROVE: 'message:approve'
+  },
+  // 跟单管理权限
+  COPYTRADE: {
+    READ: 'copytrade:read',
+    WRITE: 'copytrade:write'
   }
 } as const;
 
@@ -51,5 +56,10 @@ export const ROUTE_PERMISSIONS = {
   '/dashboard/messages/broadcasts': ['message:read'],
   '/dashboard/orders/trade-orders': ['risk:read'],
   '/dashboard/risk/trade-failures': ['risk:read'],
-  '/dashboard/risk/intervention-log': ['risk:read']
+  '/dashboard/risk/intervention-log': ['risk:read'],
+  '/dashboard/copy-trade/leaders': ['copytrade:read'],
+  '/dashboard/copy-trade/applications': ['copytrade:read'],
+  '/dashboard/copy-trade/commissions': ['copytrade:read'],
+  '/dashboard/copy-trade/overview': ['copytrade:read'],
+  '/dashboard/copy-trade/config': ['copytrade:read']
 } as const;

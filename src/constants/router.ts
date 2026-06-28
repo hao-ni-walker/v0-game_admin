@@ -15,6 +15,8 @@ import {
   FileCheck,
   AlertCircle,
   UserCog,
+  UserCheck,
+  ClipboardCheck,
   Ban,
   ArrowDownCircle,
   Landmark,
@@ -488,6 +490,80 @@ export const systemNavList: NavItem[] = [
           searchShortcut: ['so'],
           searchSection: '系统配置',
           searchPriority: 23
+        }
+      }
+    ]
+  },
+  {
+    title: '跟单管理',
+    url: '#',
+    icon: Users,
+    isActive: false,
+    description: '带单员、佣金与跟单数据管理',
+    items: [
+      {
+        title: '带单员管理',
+        url: '/dashboard/copy-trade/leaders',
+        icon: UserCheck,
+        description: '带单员列表与状态管理',
+        items: [],
+        searchConfig: {
+          keywords: 'copy trade leader 带单员 跟单',
+          searchShortcut: ['cl'],
+          searchSection: '跟单管理',
+          searchPriority: 27
+        }
+      },
+      {
+        title: '申请审核',
+        url: '/dashboard/copy-trade/applications',
+        icon: ClipboardCheck,
+        description: '带单员申请审核',
+        items: [],
+        searchConfig: {
+          keywords: 'copy trade application 申请 审核 带单',
+          searchShortcut: ['ca'],
+          searchSection: '跟单管理',
+          searchPriority: 28
+        }
+      },
+      {
+        title: '佣金结算',
+        url: '/dashboard/copy-trade/commissions',
+        icon: Receipt,
+        description: '佣金结算记录查询',
+        items: [],
+        searchConfig: {
+          keywords: 'commission 佣金 结算 跟单',
+          searchShortcut: ['cc'],
+          searchSection: '跟单管理',
+          searchPriority: 29
+        }
+      },
+      {
+        title: '数据总览',
+        url: '/dashboard/copy-trade/overview',
+        icon: BarChart3,
+        description: '跟单业务数据总览',
+        items: [],
+        searchConfig: {
+          keywords: 'copy trade overview 数据 总览 跟单',
+          searchShortcut: ['co'],
+          searchSection: '跟单管理',
+          searchPriority: 30
+        }
+      },
+      {
+        title: '全局配置',
+        url: '/dashboard/copy-trade/config',
+        icon: SlidersHorizontal,
+        description: '跟单参数全局配置',
+        items: [],
+        searchConfig: {
+          keywords: 'copy trade config 配置 跟单',
+          searchShortcut: ['cf'],
+          searchSection: '跟单管理',
+          searchPriority: 31
         }
       }
     ]
