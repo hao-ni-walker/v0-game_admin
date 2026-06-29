@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: process.env.NODE_ENV === 'development' ? false : true,
+  // Docker-friendly self-contained output (.next/standalone + static assets).
+  // Lets the runtime image run `node server.js` with no node_modules copy.
+  output: 'standalone',
   // 基础配置
   experimental: {
     optimizePackageImports: ['@radix-ui/react-icons', 'lucide-react']

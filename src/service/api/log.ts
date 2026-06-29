@@ -72,21 +72,30 @@ export class OperationLogAPI {
 
     if (response.success && response.data) {
       const rawItems: any[] = response.data.items || [];
-      const items = rawItems.map((l: any) => ({
-        id: l.log_id ?? l.id,
-        user_id: l.operator_id,
-        username: l.operator_name,
-        operation: l.operation_type,
-        table_name: l.target_type,
-        object_id: l.target_id,
-        old_data: l.data_before,
-        new_data: l.data_after,
-        description: l.reason,
-        ip_address: l.operator_ip,
-        source: l.trace_id,
-        operation_at: l.created_at,
-        created_at: l.created_at
-      }));
+      const items = rawItems.map((l: any) => {
+        // 后端 created_at 是秒级 Unix 时间戳（int），需转成毫秒再格式化为 ISO 字符串，
+        // 否则 new Date(秒) 会被当成毫秒，显示成 1970 年。
+        const ts = Number(l.created_at);
+        const createdAtIso =
+          !Number.isNaN(ts) && ts > 0
+            ? new Date(ts * 1000).toISOString()
+            : '';
+        return {
+          id: l.log_id ?? l.id,
+          user_id: l.operator_id,
+          username: l.operator_name,
+          operation: l.operation_type,
+          table_name: l.target_type,
+          object_id: l.target_id,
+          old_data: l.data_before,
+          new_data: l.data_after,
+          description: l.reason,
+          ip_address: l.operator_ip,
+          source: l.trace_id,
+          operation_at: createdAtIso,
+          created_at: createdAtIso
+        };
+      });
       const pagination = response.data.pagination || {};
       return {
         ...response,

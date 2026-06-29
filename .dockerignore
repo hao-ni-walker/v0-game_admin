@@ -1,0 +1,37 @@
+# Version control & editor
+.git
+.gitignore
+.vscode
+.idea
+.DS_Store
+
+# Build outputs (regenerated in the image)
+.next/
+out/
+dist/
+build/
+
+# Dependencies (installed in the deps stage)
+node_modules/
+
+# Tests / coverage
+test/
+coverage/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Secrets — never bake into image
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Misc
+.turbo/
+screenshot/
+tsconfig.tsbuildinfo
