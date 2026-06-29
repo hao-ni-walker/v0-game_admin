@@ -90,6 +90,8 @@ export interface Player {
   identity_category: IdentityCategory;
   agent?: string;
   direct_superior_id?: number;
+  // Admin tags — users tagged bot/dev/test are excluded from all admin reports
+  tags?: string[];
   created_at: string;
   updated_at: string;
   last_login?: string;
@@ -183,6 +185,7 @@ export interface PlayerEditFormData {
   vip_level?: number;
   agent?: string;
   direct_superior_id?: number;
+  tags?: string[];
   lock?: {
     action: 'lock' | 'unlock';
     lock_time?: string;

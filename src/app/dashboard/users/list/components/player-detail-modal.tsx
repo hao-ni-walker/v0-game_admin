@@ -223,6 +223,29 @@ export function PlayerDetailModal({
                 </div>
                 <div>
                   <label className='text-muted-foreground text-sm font-medium'>
+                    标签
+                  </label>
+                  <div className='mt-1 flex flex-wrap gap-1'>
+                    {(player.tags || []).length === 0 ? (
+                      <span className='text-muted-foreground'>-</span>
+                    ) : (
+                      (player.tags || []).map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant={
+                            ['bot', 'dev', 'test'].includes(tag)
+                              ? 'destructive'
+                              : 'secondary'
+                          }
+                        >
+                          {tag}
+                        </Badge>
+                      ))
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className='text-muted-foreground text-sm font-medium'>
                     创建时间
                   </label>
                   <p className='mt-1'>{formatDateTime(player.created_at)}</p>

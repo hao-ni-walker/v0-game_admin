@@ -16,9 +16,14 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PlayerDetail, PlayerEditFormData } from '../types';
+
+// 标记为内部/测试账号的快捷标签（含此类标签的用户将从所有 admin 报表中排除）
+const QUICK_TAGS = ['bot', 'dev', 'test'];
+const INTERNAL_TAGS = new Set(QUICK_TAGS);
 
 interface PlayerEditModalProps {
   open: boolean;
@@ -42,8 +47,10 @@ export function PlayerEditModal({
     vip_level: undefined,
     agent: undefined,
     direct_superior_id: undefined,
+    tags: [],
     lock: undefined
   });
+  const [customTagInput, setCustomTagInput] = useState('');
   const [errors, setErrors] = useState<
     Partial<Record<keyof PlayerEditFormData, string>>
   >({});
@@ -67,8 +74,10 @@ export function PlayerEditModal({
         vip_level: vipLevel,
         agent: player.agent || '',
         direct_superior_id: player.direct_superior_id || undefined,
+        tags: Array.isArray(player.tags) ? [...player.tags] : [],
         lock: undefined
       });
+      setCustomTagInput('');
       setErrors({});
     }
   }, [player]);
@@ -79,6 +88,27 @@ export function PlayerEditModal({
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
+  };
+
+  const currentTags: string[] = Array.isArray(formData.tags) ? formData.tags : [];
+
+  const toggleTag = (tag: string) => {
+    const t = tag.trim().toLowerCase();
+    if (!t) return;
+    const next = currentTags.includes(t)
+      ? currentTags.filter((x) => x !== t)
+      : [...currentTags, t];
+    handleChange('tags', next);
+  };
+
+  const addCustomTag = () => {
+    const t = customTagInput.trim().toLowerCase();
+    if (!t || currentTags.includes(t)) {
+      setCustomTagInput('');
+      return;
+    }
+    handleChange('tags', [...currentTags, t]);
+    setCustomTagInput('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,8 +131,10 @@ export function PlayerEditModal({
           vip_level: undefined,
           agent: undefined,
           direct_superior_id: undefined,
+          tags: [],
           lock: undefined
         });
+        setCustomTagInput('');
         setErrors({});
       }
     } finally {
@@ -194,6 +226,65 @@ export function PlayerEditModal({
               {errors.direct_superior_id && (
                 <p className='text-destructive text-sm'>
                   {errors.direct_superior_id}
+                </p>
+              )}
+            </div>
+
+            {/* 标签：含 bot/dev/test 的用户将从所有 admin 报表中排除 */}
+            <div className='space-y-2'>
+              <Label>标签</Label>
+              <div className='flex flex-wrap items-center gap-2'>
+                {QUICK_TAGS.map((tag) => {
+                  const active = currentTags.includes(tag);
+                  return (
+                    <Badge
+                      key={tag}
+                      variant={active ? 'destructive' : 'outline'}
+                      className='cursor-pointer'
+                      onClick={() => toggleTag(tag)}
+                    >
+                      {tag}
+                      {active ? ' ✕' : ''}
+                    </Badge>
+                  );
+                })}
+                {currentTags
+                  .filter((t) => !INTERNAL_TAGS.has(t))
+                  .map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant='secondary'
+                      className='cursor-pointer'
+                      onClick={() => toggleTag(tag)}
+                    >
+                      {tag} ✕
+                    </Badge>
+                  ))}
+              </div>
+              <div className='flex gap-2'>
+                <Input
+                  value={customTagInput}
+                  onChange={(e) => setCustomTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addCustomTag();
+                    }
+                  }}
+                  placeholder='自定义标签（回车添加）'
+                />
+                <Button
+                  type='button'
+                  variant='outline'
+                  size='sm'
+                  onClick={addCustomTag}
+                >
+                  添加
+                </Button>
+              </div>
+              {currentTags.some((t) => INTERNAL_TAGS.has(t)) && (
+                <p className='text-muted-foreground text-xs'>
+                  该用户已标记为内部/测试账号，其所有交易金额将从后台报表中排除。
                 </p>
               )}
             </div>

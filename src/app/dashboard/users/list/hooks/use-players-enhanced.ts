@@ -36,6 +36,7 @@ interface UsePlayersEnhancedResult {
       vip_level?: number;
       agent?: string;
       direct_superior_id?: number;
+      tags?: string[];
       lock?: {
         action: 'lock' | 'unlock';
         lock_time?: string;
@@ -226,6 +227,7 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
         vip_level?: number;
         agent?: string;
         direct_superior_id?: number;
+        tags?: string[];
         lock?: {
           action: 'lock' | 'unlock';
           lock_time?: string;
@@ -233,7 +235,21 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
       }
     ): Promise<boolean> => {
       try {
-        const response = await PlayerAPI.updatePlayer(playerId, data);
+        // 标签走独立的 tags 接口（tags 含 bot/dev/test 的用户会从所有 admin
+        // 报表中排除）。仅当本次提交包含 tags 字段时才调用。
+        if (data.tags !== undefined) {
+          const tagRes = await PlayerAPI.updateTags(playerId, data.tags);
+          if (!tagRes.success) {
+            throw new Error(tagRes.message || '更新标签失败');
+          }
+        }
+        const { tags: _omitTags, ...rest } = data;
+        const hasOther = Object.keys(rest).length > 0;
+        if (!hasOther) {
+          toast.success('用户更新成功');
+          return true;
+        }
+        const response = await PlayerAPI.updatePlayer(playerId, rest);
         if (response.success) {
           toast.success('用户更新成功');
           return true;

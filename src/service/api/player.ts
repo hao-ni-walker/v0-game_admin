@@ -112,6 +112,7 @@ export class PlayerAPI {
         email: '',
         status: toFrontendStatus(it.status),
         vip_level: it.vip_level || 0,
+        tags: Array.isArray(it.tags) ? it.tags : [],
         created_at: tsToIso(it.registered_at) || '',
         updated_at: '',
         last_login: tsToIso(it.last_active_at),
@@ -175,6 +176,7 @@ export class PlayerAPI {
           email: '',
           status: toFrontendStatus(d.status),
           vip_level: d.vip_level || 0,
+          tags: Array.isArray(d.tags) ? d.tags : [],
           created_at: tsToIso(d.registered_at) || '',
           updated_at: '',
           last_login: tsToIso(d.last_active_at),
@@ -287,6 +289,14 @@ export class PlayerAPI {
   // 更新用户 VIP 等级（后端暂无接口）
   static async updatePlayerVipLevel(_id: number, _vipLevel: number) {
     return { code: 404, success: false, message: '后端暂未提供 VIP 等级修改接口' };
+  }
+
+  // 更新用户标签（tags 包含 bot/dev/test 的用户将从所有 admin 报表中排除）
+  static async updateTags(id: number, tags: string[], reason?: string) {
+    return apiRequest(`/admin/users/${id}/tags`, {
+      method: 'POST',
+      body: JSON.stringify({ tags, reason: reason || '' })
+    });
   }
 
   // 发送通知（后端暂无接口）
