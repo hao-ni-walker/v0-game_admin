@@ -11,6 +11,7 @@ import {
   WindowedOddsList,
   OddsBaseEditDialog,
   OddsWindowDialog,
+  OddsBatchEditDialog,
 } from './components';
 import { useOddsManagement } from './hooks';
 import { MESSAGES } from './constants';
@@ -34,6 +35,10 @@ export default function OddsPage() {
     windowCompose,
     openWindowCompose,
     closeWindowCompose,
+    batchCompose,
+    openBatchCompose,
+    closeBatchCompose,
+    batchUpdateBase,
   } = useOddsManagement();
 
   const { hasPermission } = usePermissions();
@@ -56,15 +61,26 @@ export default function OddsPage() {
     [deleteConfig]
   );
 
+  const handleBatchUpdate = useCallback(
+    async (period: string, payout_percent: number, reason: string) =>
+      batchUpdateBase(period, payout_percent, reason),
+    [batchUpdateBase]
+  );
+
   const baseConfigForEdit = baseEdit.period
     ? configs.find((c) => c.is_base && c.period === baseEdit.period) ?? null
     : null;
 
   return (
     <PermissionGuard permissions='odds:read'>
-      <PageContainer scrollable={false}>
-        <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
-          <OddsPageHeader onRefresh={handleRefresh} loading={loading} />
+      <PageContainer>
+        <div className='flex w-full flex-col gap-6 pb-8'>
+          <OddsPageHeader
+            onRefresh={handleRefresh}
+            loading={loading}
+            canWrite={canWrite && currencies.length > 0}
+            onBatch={openBatchCompose}
+          />
 
           {currencies.length === 0 && !loading ? (
             <div className='flex h-full flex-col items-center justify-center space-y-3 p-8'>
@@ -76,7 +92,7 @@ export default function OddsPage() {
               <CurrencyTabs currencies={currencies} active={activeCurrency} onChange={setActiveCurrency} />
 
               {activeCurrency && (
-                <div className='flex min-h-0 flex-1 flex-col gap-6 overflow-auto'>
+                <div className='flex flex-col gap-8'>
                   <section>
                     <h2 className='mb-3 text-lg font-semibold'>基础收益率</h2>
                     <BaseOddsTable
@@ -114,6 +130,13 @@ export default function OddsPage() {
             open={windowCompose.open}
             onOpenChange={(open) => { if (!open) closeWindowCompose(); }}
             onSubmit={handleSubmitWindow}
+          />
+
+          <OddsBatchEditDialog
+            open={batchCompose.open}
+            currencyCount={currencies.length}
+            onOpenChange={(open) => { if (!open) closeBatchCompose(); }}
+            onSubmit={handleBatchUpdate}
           />
         </div>
       </PageContainer>

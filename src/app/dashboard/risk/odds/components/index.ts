@@ -4,3 +4,4 @@ export { BaseOddsTable } from './BaseOddsTable';
 export { WindowedOddsList } from './WindowedOddsList';
 export { OddsBaseEditDialog } from './OddsBaseEditDialog';
 export { OddsWindowDialog } from './OddsWindowDialog';
+export { OddsBatchEditDialog } from './OddsBatchEditDialog';

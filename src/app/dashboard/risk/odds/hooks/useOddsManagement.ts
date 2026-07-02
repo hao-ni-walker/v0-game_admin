@@ -14,6 +14,7 @@ export function useOddsManagement() {
 
   const [baseEdit, setBaseEdit] = useState<{ open: boolean; period: string | null }>({ open: false, period: null });
   const [windowCompose, setWindowCompose] = useState<{ open: boolean }>({ open: false });
+  const [batchCompose, setBatchCompose] = useState<{ open: boolean }>({ open: false });
 
   // load currencies once (for tabs); default to first currency
   useEffect(() => {
@@ -113,6 +114,50 @@ export function useOddsManagement() {
   const closeBaseEdit = useCallback(() => setBaseEdit({ open: false, period: null }), []);
   const openWindowCompose = useCallback(() => setWindowCompose({ open: true }), []);
   const closeWindowCompose = useCallback(() => setWindowCompose({ open: false }), []);
+  const openBatchCompose = useCallback(() => setBatchCompose({ open: true }), []);
+  const closeBatchCompose = useCallback(() => setBatchCompose({ open: false }), []);
+
+  // Batch-update the base odds of a single period across ALL currencies.
+  // Reuses the existing per-currency upsert path (audit + OddsEngine reload).
+  const batchUpdateBase = useCallback(
+    async (
+      period: string,
+      payout_percent: number,
+      reason: string,
+    ): Promise<{ ok: boolean; success: number; total: number } | null> => {
+      const targets = currencies;
+      if (targets.length === 0) return null;
+      let success = 0;
+      let firstError = '';
+      for (const c of targets) {
+        const res = await OddsAPI.upsert({
+          currency_id: c.id,
+          period,
+          payout_percent,
+          is_base: true,
+          reason: reason || null,
+        });
+        if (res.success) {
+          success += 1;
+        } else if (!firstError) {
+          firstError = res.message || MESSAGES.ERROR.BATCH_UPDATE;
+        }
+      }
+      // refresh the currently active currency so the table reflects changes
+      await refresh();
+      if (success === targets.length) {
+        toast.success(MESSAGES.SUCCESS.BATCH_UPDATE(success, targets.length, period));
+      } else if (success > 0) {
+        toast.warning(
+          `${MESSAGES.SUCCESS.BATCH_UPDATE(success, targets.length, period)}${firstError ? `（${firstError}）` : ''}`,
+        );
+      } else {
+        toast.error(firstError || MESSAGES.ERROR.BATCH_UPDATE);
+      }
+      return { ok: success === targets.length, success, total: targets.length };
+    },
+    [currencies, refresh],
+  );
 
   return {
     currencies,
@@ -131,5 +176,9 @@ export function useOddsManagement() {
     windowCompose,
     openWindowCompose,
     closeWindowCompose,
+    batchCompose,
+    openBatchCompose,
+    closeBatchCompose,
+    batchUpdateBase,
   };
 }
