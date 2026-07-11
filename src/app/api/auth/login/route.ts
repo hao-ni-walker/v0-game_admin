@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { getAdminApiUrl } from '@/lib/admin-api';
 import { encryptPassword } from '@/lib/crypto';
 import {
   successResponse,
@@ -6,7 +7,7 @@ import {
   unauthorizedResponse
 } from '@/service/response';
 
-const REMOTE_API_URL = 'https://api.xreddeercasino.com/api/admin/login';
+const REMOTE_API_URL = getAdminApiUrl('/api/admin/login');
 
 export async function POST(request: Request) {
   try {

@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 import { encryptPassword } from '@/lib/crypto';
 import { successResponse, errorResponse } from '@/service/response';
+import { getAdminApiUrl } from '@/lib/admin-api';
 
-const REMOTE_API_URL = 'https://api.xreddeercasino.com/api/admin/register';
+const REMOTE_API_URL = getAdminApiUrl('/api/admin/register');
 
 interface RegisterRequest {
   username: string;

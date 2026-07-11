@@ -7,3 +7,21 @@ export function hasPermission(_user: unknown, _permission: string): boolean {
 export function hasRole(_user: unknown, _role: string): boolean {
   return true;
 }
+
+export async function getUserPermissions(_userId: string | number): Promise<string[]> {
+  return [];
+}
+
+export async function hasAnyPermission(
+  _permissions: string[],
+  _userId: string | number
+): Promise<boolean> {
+  return true;
+}
+
+export async function hasAllPermissions(
+  _permissions: string[],
+  _userId: string | number
+): Promise<boolean> {
+  return true;
+}

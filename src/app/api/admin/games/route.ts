@@ -5,8 +5,9 @@ import {
   errorResponse,
   unauthorizedResponse
 } from '@/service/response';
+import { getAdminApiUrl } from '@/lib/admin-api';
 
-const REMOTE_API_URL = 'https://api.xreddeercasino.com/api/admin/games';
+const REMOTE_API_URL = getAdminApiUrl('/api/admin/games');
 
 /**
  * 获取游戏列表 API - 代理到远程 API

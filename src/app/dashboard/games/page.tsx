@@ -1,16 +1,46 @@
 'use client';
 
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+
+type Room = {
+  id: string;
+  seats?: number;
+  phase?: string;
+  created_at?: string;
+};
 
 export default function GamesPage() {
-  const { data, isLoading } = useQuery({
-    queryKey: ['rooms'],
-    queryFn: async () => {
-      const res = await fetch('/api/admin/games');
-      return res.json();
-    },
-  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [rooms, setRooms] = useState<Room[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadRooms() {
+      try {
+        const res = await fetch('/api/admin/games');
+        const data = await res.json();
+
+        if (!cancelled) {
+          setRooms(Array.isArray(data?.data?.items) ? data.data.items : []);
+        }
+      } catch {
+        if (!cancelled) {
+          setRooms([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadRooms();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className="container mx-auto py-6">
@@ -29,11 +59,11 @@ export default function GamesPage() {
           <tbody>
             {isLoading ? (
               <tr><td colSpan={4} className="p-8 text-center text-muted-foreground">加载中...</td></tr>
-            ) : data?.data?.items?.length ? (
-              data.data.items.map((room: any) => (
+            ) : rooms.length ? (
+              rooms.map((room) => (
                 <tr key={room.id} className="border-b">
                   <td className="p-3 font-mono">{room.id}</td>
-                  <td className="p-3">{room.seats}/4</td>
+                  <td className="p-3">{room.seats ?? 0}/4</td>
                   <td className="p-3">{room.phase || '-'}</td>
                   <td className="p-3">{room.created_at || '-'}</td>
                 </tr>

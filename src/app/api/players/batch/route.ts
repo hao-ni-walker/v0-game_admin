@@ -6,8 +6,9 @@ import {
   unauthorizedResponse
 } from '@/service/response';
 import { logger } from '@/lib/logger';
+import { getAdminApiUrl } from '@/lib/admin-api';
 
-const REMOTE_API_URL = 'https://api.xreddeercasino.com/api/admin/users/batch';
+const REMOTE_API_URL = getAdminApiUrl('/api/admin/users/batch');
 
 /**
  * 批量操作玩家 API - 代理到远程 API

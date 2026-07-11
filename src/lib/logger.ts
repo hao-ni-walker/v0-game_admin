@@ -9,9 +9,41 @@ function log(level: LogLevel, message: string, meta?: Record<string, unknown>) {
   else console.log(JSON.stringify(entry));
 }
 
+function normalizeArgs(
+  args: [string, Record<string, unknown>?] | [string, string, string, Record<string, unknown>?]
+): { message: string; meta?: Record<string, unknown> } {
+  if (args.length >= 3) {
+    const [module, action, message, meta] =
+      args as [string, string, string, Record<string, unknown>?];
+    return {
+      message,
+      meta: {
+        module,
+        action,
+        ...meta
+      }
+    };
+  }
+
+  const [message, meta] = args as [string, Record<string, unknown>?];
+  return { message, meta };
+}
+
 export const logger = {
-  info: (msg: string, meta?: Record<string, unknown>) => log('info', msg, meta),
-  warn: (msg: string, meta?: Record<string, unknown>) => log('warn', msg, meta),
-  error: (msg: string, meta?: Record<string, unknown>) => log('error', msg, meta),
-  debug: (msg: string, meta?: Record<string, unknown>) => log('debug', msg, meta),
+  info: (...args: [string, Record<string, unknown>?] | [string, string, string, Record<string, unknown>?]) => {
+    const { message, meta } = normalizeArgs(args);
+    log('info', message, meta);
+  },
+  warn: (...args: [string, Record<string, unknown>?] | [string, string, string, Record<string, unknown>?]) => {
+    const { message, meta } = normalizeArgs(args);
+    log('warn', message, meta);
+  },
+  error: (...args: [string, Record<string, unknown>?] | [string, string, string, Record<string, unknown>?]) => {
+    const { message, meta } = normalizeArgs(args);
+    log('error', message, meta);
+  },
+  debug: (...args: [string, Record<string, unknown>?] | [string, string, string, Record<string, unknown>?]) => {
+    const { message, meta } = normalizeArgs(args);
+    log('debug', message, meta);
+  },
 };
