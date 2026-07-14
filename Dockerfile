@@ -15,7 +15,9 @@ WORKDIR /app
 # package-lock.json is committed (npm). pnpm-lock.yaml also exists but npm is
 # the canonical lockfile used here for Docker reproducibility.
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev=false
+# --legacy-peer-deps: date-fns@4 vs react-day-picker@8 peer conflict (RDP wants ^2||^3).
+# devDeps still install here (this stage has no NODE_ENV=production); needed for build.
+RUN npm ci --legacy-peer-deps
 
 # ── Stage 2: builder ──────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION}-slim AS builder
