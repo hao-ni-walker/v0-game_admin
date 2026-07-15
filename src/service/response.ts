@@ -77,3 +77,29 @@ export function forbiddenResponse(message: string = '权限不足'): NextRespons
     { status: 403 }
   );
 }
+
+// 429 响应
+export function tooManyRequestsResponse(
+  message: string = '请求过于频繁，请稍后再试'
+): NextResponse {
+  return NextResponse.json(
+    {
+      code: -1,
+      message
+    },
+    { status: 429 }
+  );
+}
+
+// 503 响应（上游服务不可用 / 网关错误 / 超时）
+export function serviceUnavailableResponse(
+  message: string = '服务暂不可用，请稍后重试'
+): NextResponse {
+  return NextResponse.json(
+    {
+      code: -1,
+      message
+    },
+    { status: 503 }
+  );
+}

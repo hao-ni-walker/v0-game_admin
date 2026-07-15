@@ -3,7 +3,9 @@ import { requestRemoteAdminApi } from '@/lib/admin-remote';
 import {
   successResponse,
   errorResponse,
-  unauthorizedResponse
+  unauthorizedResponse,
+  serviceUnavailableResponse,
+  tooManyRequestsResponse
 } from '@/service/response';
 
 export async function POST(request: Request) {
@@ -49,11 +51,36 @@ export async function POST(request: Request) {
       body: JSON.stringify(remotePayload)
     });
 
-    // 检查 HTTP 状态码
+    // 检查 HTTP 状态码 —— 区分“上游不可用”与“凭据/请求问题”，避免误导成 401
+    const status = remoteResponse.status;
+
+    if (status === 0 || status >= 500) {
+      // 上游异常（500/502/503/504/超时）——不是密码问题，别提示检查密码
+      await logger.warn('用户认证', '用户登录', '登录失败：登录服务不可用', {
+        username,
+        status,
+        errorText: remoteResponse.text,
+        timestamp: new Date().toISOString()
+      });
+
+      return serviceUnavailableResponse('登录服务暂不可用，请稍后重试');
+    }
+
+    if (status === 429) {
+      await logger.warn('用户认证', '用户登录', '登录失败：触发限流', {
+        username,
+        status,
+        timestamp: new Date().toISOString()
+      });
+
+      return tooManyRequestsResponse('尝试过于频繁，请稍后再试');
+    }
+
     if (!remoteResponse.ok) {
+      // 其他非 2xx（401/403/422 等）——按凭据/请求问题处理
       await logger.warn('用户认证', '用户登录', '登录失败：远程API HTTP错误', {
         username,
-        status: remoteResponse.status,
+        status,
         errorText: remoteResponse.text,
         timestamp: new Date().toISOString()
       });
@@ -78,12 +105,15 @@ export async function POST(request: Request) {
       const tokenType = result.data?.tokenType || result.data?.token_type || 'bearer';
 
       if (!token) {
-        await logger.error('用户认证', '用户登录', '登录失败：token不存在', {
+        // 后端返回 200 + code:0 但无 token = 认证失败（用户名/密码/验证码错误）
+        await logger.warn('用户认证', '用户登录', '登录失败：后端拒绝凭据', {
           username,
-          result,
+          remoteMessage: result.message || result.msg,
           timestamp: new Date().toISOString()
         });
-        return errorResponse('登录失败：服务器响应异常');
+        return unauthorizedResponse(
+          result.message || result.msg || '用户名、密码或验证码错误'
+        );
       }
 
       // 记录登录成功日志
@@ -127,6 +157,6 @@ export async function POST(request: Request) {
       timestamp: new Date().toISOString()
     });
 
-    return errorResponse('上游后台不可达');
+    return serviceUnavailableResponse('登录服务暂不可用，请稍后重试');
   }
 }
