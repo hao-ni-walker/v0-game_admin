@@ -1,5 +1,5 @@
 # ──────────────────────────────────────────────────────────────────────────────
-# CryptoExchange admin — Next.js production image (standalone output)
+# PredictXGo admin — Next.js production image (standalone output)
 #
 # Requires `output: 'standalone'` in next.config.ts (already enabled).
 # Produces a minimal runtime image that runs `node server.js` without copying

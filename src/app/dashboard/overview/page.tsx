@@ -172,7 +172,7 @@ export default function DashboardOverview() {
         {/* 页面头部 */}
         <PageHeader
           title={`欢迎回来，${user.username} 👋`}
-          description='BTC 秒合约管理后台 — 实时经营概览'
+          description='PredictXGo 管理后台 — 实时经营概览'
           action={{
             label: autoRefresh ? '暂停刷新' : '开启自动刷新',
             onClick: () => setAutoRefresh(!autoRefresh),
