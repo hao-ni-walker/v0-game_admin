@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 import { encryptPassword } from '@/lib/crypto';
 import { successResponse, errorResponse } from '@/service/response';
+import { buildRemoteAdminUrl } from '@/lib/admin-remote';
 
-const REMOTE_API_URL = (process.env.NEXT_PUBLIC_ADMIN_API_URL || 'https://apiexchange.haohaotest.xyz') + '/api/admin/register';
+const REMOTE_API_URL = buildRemoteAdminUrl('/api/admin/register');
 
 interface RegisterRequest {
   username: string;

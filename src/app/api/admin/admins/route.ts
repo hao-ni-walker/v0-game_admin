@@ -6,10 +6,7 @@ import {
   unauthorizedResponse
 } from '@/service/response';
 import { logger } from '@/lib/logger';
-
-const REMOTE_API_URL =
-  (process.env.NEXT_PUBLIC_ADMIN_API_URL ||
-    'https://apiexchange.haohaotest.xyz') + '/api/v1/admin/admin/members';
+import { buildRemoteAdminUrl } from '@/lib/admin-remote';
 
 /**
  * 获取管理员列表 API - 代理到远程 API
@@ -39,9 +36,10 @@ export async function GET(request: NextRequest) {
     const queryString = searchParams.toString();
 
     // 构建远程 API URL
-    const remoteUrl = queryString
-      ? `${REMOTE_API_URL}?${queryString}`
-      : REMOTE_API_URL;
+    const remoteUrl = buildRemoteAdminUrl(
+      '/api/v1/admin/admin/members',
+      queryString
+    );
 
     // 记录请求日志
     console.log('[管理员管理] 发送请求到远程API:', remoteUrl);

@@ -11,13 +11,14 @@ export interface RemoteApiResponse<T = unknown> {
   data: T | null;
 }
 
-const DEFAULT_REMOTE_ORIGIN = 'https://apiexchange.haohaotest.xyz';
+const DEFAULT_REMOTE_ORIGIN = 'https://api.predictxgo.com';
 
 function getRemoteOrigin() {
-  return (process.env.NEXT_PUBLIC_ADMIN_API_URL || DEFAULT_REMOTE_ORIGIN).replace(
-    /\/+$/,
-    ''
-  );
+  return (
+    process.env.ADMIN_API_URL ||
+    process.env.NEXT_PUBLIC_ADMIN_API_URL ||
+    DEFAULT_REMOTE_ORIGIN
+  ).replace(/\/+$/, '');
 }
 
 export function buildRemoteAdminUrl(
