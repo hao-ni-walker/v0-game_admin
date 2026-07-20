@@ -74,7 +74,7 @@ export default function TradeOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState('pending');
+  const [status, setStatus] = useState('all');
   const [email, setEmail] = useState('');
   const [asset, setAsset] = useState('');
   const [period, setPeriod] = useState('');
@@ -130,7 +130,7 @@ export default function TradeOrdersPage() {
       <PageContainer>
         <PageHeader
           title='订单管理'
-          description='实时查看用户单笔交易订单，默认展示待结算订单'
+          description='实时查看用户和机器人单笔交易订单，默认展示全部订单'
           action={{
             label: autoRefresh ? '暂停刷新' : '开启自动刷新',
             onClick: () => setAutoRefresh((value) => !value),
@@ -191,7 +191,7 @@ export default function TradeOrdersPage() {
         <Card className='mb-6'>
           <CardHeader>
             <CardTitle>筛选</CardTitle>
-            <CardDescription>默认每 5 秒刷新一次；状态默认为待结算。</CardDescription>
+            <CardDescription>默认每 5 秒刷新一次；状态默认为全部订单。</CardDescription>
           </CardHeader>
           <CardContent>
             <div className='flex flex-wrap items-end gap-3'>

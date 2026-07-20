@@ -19,6 +19,17 @@ function tsToIso(ts: number | null | undefined): string | undefined {
   return ts ? new Date(ts * 1000).toISOString() : undefined;
 }
 
+function valueToIso(value: unknown): string | undefined {
+  if (typeof value === 'number') return tsToIso(value);
+  if (typeof value === 'string' && value) return value;
+  return undefined;
+}
+
+function numericId(value: unknown): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 const EMPTY_WALLET = {
   balance: 0,
   frozen_balance: 0,
@@ -106,26 +117,36 @@ export class PlayerAPI {
     const response = await apiRequest<any>(`/admin/users${search ? `?${search}` : ''}`);
 
     if (response.success && response.data) {
-      const items = (response.data.items || []).map((it: any) => ({
-        id: parseInt(it.user_id, 10),
-        username: it.tg_username || it.display_name || '',
-        email: '',
-        status: toFrontendStatus(it.status),
-        vip_level: it.vip_level || 0,
-        tags: Array.isArray(it.tags) ? it.tags : [],
-        created_at: tsToIso(it.registered_at) || '',
-        updated_at: '',
-        last_login: tsToIso(it.last_active_at),
-        wallet: {
-          ...EMPTY_WALLET,
-          balance: it.balance || 0,
-          withdrawable: it.balance || 0,
-          total_deposit: it.total_deposit || 0,
-          total_withdraw: it.total_withdraw || 0,
-          total_bet: it.total_bet || 0,
-          total_win: (it.total_bet || 0) + (it.net_pnl || 0)
-        }
-      }));
+      const items = (response.data.items || []).map((it: any) => {
+        const wallet = it.wallet || {};
+        const userId = it.id ?? it.user_id;
+        const totalBet = it.total_bet ?? wallet.total_bet ?? 0;
+        const totalWin = it.total_win ?? wallet.total_win ?? totalBet + (it.net_pnl ?? 0);
+
+        return {
+          id: numericId(userId),
+          idname: it.idname || it.display_name || '',
+          username: it.username || it.tg_username || it.display_name || '',
+          email: '',
+          status: toFrontendStatus(it.status),
+          vip_level: it.vip_level || 0,
+          tags: Array.isArray(it.tags) ? it.tags : [],
+          created_at: valueToIso(it.created_at ?? it.registered_at) || '',
+          updated_at: valueToIso(it.updated_at),
+          last_login: valueToIso(it.last_login ?? it.last_active_at),
+          wallet: {
+            ...EMPTY_WALLET,
+            ...wallet,
+            balance: it.balance ?? wallet.balance ?? 0,
+            withdrawable:
+              it.withdrawable ?? wallet.withdrawable ?? it.balance ?? wallet.balance ?? 0,
+            total_deposit: it.total_deposit ?? wallet.total_deposit ?? 0,
+            total_withdraw: it.total_withdraw ?? wallet.total_withdraw ?? 0,
+            total_bet: totalBet,
+            total_win: totalWin
+          }
+        };
+      });
       const pagination = response.data.pagination || {};
       return {
         ...response,
@@ -171,15 +192,16 @@ export class PlayerAPI {
       return {
         ...response,
         data: {
-          id: parseInt(d.user_id, 10),
-          username: d.tg_username || d.display_name || '',
+          id: numericId(d.id ?? d.user_id),
+          idname: d.idname || d.display_name || '',
+          username: d.username || d.tg_username || d.display_name || '',
           email: '',
           status: toFrontendStatus(d.status),
           vip_level: d.vip_level || 0,
           tags: Array.isArray(d.tags) ? d.tags : [],
-          created_at: tsToIso(d.registered_at) || '',
-          updated_at: '',
-          last_login: tsToIso(d.last_active_at),
+          created_at: valueToIso(d.created_at ?? d.registered_at) || '',
+          updated_at: valueToIso(d.updated_at),
+          last_login: valueToIso(d.last_login ?? d.last_active_at),
           wallet: {
             ...EMPTY_WALLET,
             balance: d.balance || 0,
