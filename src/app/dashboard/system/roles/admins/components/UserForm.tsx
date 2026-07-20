@@ -11,17 +11,18 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { Role } from '../types';
 
 interface UserFormProps {
   initialData?: any;
+  roles: Role[];
   onSubmit: (values: any) => void;
   onCancel?: () => void;
 }
 
-export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
-  const [roles, setRoles] = useState([]);
+export function UserForm({ initialData, roles, onSubmit, onCancel }: UserFormProps) {
   const [formData, setFormData] = useState({
     username: initialData?.username || '',
     email: initialData?.email || '',
@@ -30,20 +31,6 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
     roleId: initialData?.roleId ? String(initialData.roleId) : '',
     status: initialData?.status || 'active'
   });
-
-  useEffect(() => {
-    // 获取角色列表
-    const fetchRoles = async () => {
-      try {
-        const response = await fetch('/api/roles/label');
-        const res = await response.json();
-        setRoles(res.data);
-      } catch (error) {
-        toast.error('获取角色列表失败');
-      }
-    };
-    fetchRoles();
-  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -98,10 +85,10 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
         <Input
           id='email'
           name='email'
-          type='email'
+          type='text'
           value={formData.email}
           onChange={handleChange}
-          placeholder='请输入显示名称'
+          placeholder='例如：风控主管 Alice'
           required
         />
       </div>
@@ -143,7 +130,7 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
             <SelectValue placeholder='请选择角色' />
           </SelectTrigger>
           <SelectContent className='w-full'>
-            {roles.map((role: any) => (
+            {roles.map((role) => (
               <SelectItem key={role.id} value={String(role.id)}>
                 {role.name}
               </SelectItem>

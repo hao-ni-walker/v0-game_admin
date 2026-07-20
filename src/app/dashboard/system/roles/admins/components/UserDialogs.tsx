@@ -8,13 +8,15 @@ import {
 } from '@/components/ui/dialog';
 import { X } from 'lucide-react';
 import { UserForm } from './UserForm';
-import { UserFormData, UserDialogState } from '../types';
+import { Role, UserFormData, UserDialogState } from '../types';
 
 interface UserDialogsProps {
   /** 对话框状态 */
   dialogState: UserDialogState;
   /** 关闭对话框回调 */
   onClose: () => void;
+  /** Roles supplied by the production Admin API. */
+  roles: Role[];
   /** 创建用户回调 */
   onCreateUser: (data: UserFormData) => Promise<void>;
   /** 更新用户回调 */
@@ -28,6 +30,7 @@ interface UserDialogsProps {
 export function UserDialogs({
   dialogState,
   onClose,
+  roles,
   onCreateUser,
   onUpdateUser
 }: UserDialogsProps) {
@@ -73,6 +76,7 @@ export function UserDialogs({
           {open && (
             <UserForm
               initialData={type === 'edit' ? user : undefined}
+              roles={roles}
               onSubmit={handleSubmit}
               onCancel={onClose}
             />

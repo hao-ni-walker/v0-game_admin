@@ -214,6 +214,7 @@ export default function UserManagementPage() {
         <UserDialogs
           dialogState={dialogState}
           onClose={handleCloseDialog}
+          roles={roles}
           onCreateUser={handleCreateUser}
           onUpdateUser={handleUpdateUser}
         />
