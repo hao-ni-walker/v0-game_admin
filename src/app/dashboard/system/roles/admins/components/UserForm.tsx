@@ -26,6 +26,7 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
     username: initialData?.username || '',
     email: initialData?.email || '',
     password: '',
+    confirmPassword: '',
     roleId: initialData?.roleId ? String(initialData.roleId) : '',
     status: initialData?.status || 'active'
   });
@@ -67,7 +68,12 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onSubmit(formData);
+    if (formData.password && formData.password !== formData.confirmPassword) {
+      toast.error('两次输入的密码不一致');
+      return;
+    }
+    const { confirmPassword, ...values } = formData;
+    onSubmit(values);
   };
 
   return (
@@ -81,17 +87,21 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
           onChange={handleChange}
           placeholder='请输入用户名'
           required
+          disabled={Boolean(initialData)}
         />
+        {initialData && (
+          <p className='text-muted-foreground text-xs'>用户名创建后不可修改</p>
+        )}
       </div>
       <div className='grid gap-2'>
-        <Label htmlFor='email'>邮箱</Label>
+        <Label htmlFor='email'>显示名称</Label>
         <Input
           id='email'
           name='email'
           type='email'
           value={formData.email}
           onChange={handleChange}
-          placeholder='请输入邮箱'
+          placeholder='请输入显示名称'
           required
         />
       </div>
@@ -103,8 +113,22 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
           type='password'
           value={formData.password}
           onChange={handleChange}
-          placeholder='请输入密码'
+          placeholder={initialData ? '留空则不修改密码' : '请输入初始密码'}
           required={!initialData}
+          minLength={8}
+        />
+      </div>
+      <div className='grid gap-2'>
+        <Label htmlFor='confirmPassword'>确认密码</Label>
+        <Input
+          id='confirmPassword'
+          name='confirmPassword'
+          type='password'
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          placeholder={initialData ? '修改密码时请再次输入' : '请再次输入初始密码'}
+          required={Boolean(formData.password)}
+          minLength={8}
         />
       </div>
       <div className='grid gap-2'>

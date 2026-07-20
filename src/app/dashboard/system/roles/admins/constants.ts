@@ -67,7 +67,7 @@ export const TABLE_COLUMNS = [
   },
   {
     key: 'email',
-    title: '邮箱',
+    title: '显示名称',
     className: 'font-medium'
   },
   {
@@ -109,31 +109,31 @@ export const DIALOG_TYPES = {
  */
 export const MESSAGES = {
   SUCCESS: {
-    CREATE: '用户创建成功',
-    UPDATE: '用户更新成功',
-    DELETE: '用户删除成功',
-    ENABLE: '用户启用成功',
-    DISABLE: '用户禁用成功'
+    CREATE: '管理员创建成功',
+    UPDATE: '管理员更新成功',
+    DELETE: '管理员停用成功',
+    ENABLE: '管理员启用成功',
+    DISABLE: '管理员停用成功'
   },
   ERROR: {
-    CREATE: '创建用户失败',
-    UPDATE: '更新用户失败',
-    DELETE: '删除用户失败',
-    ENABLE: '启用用户失败',
-    DISABLE: '禁用用户失败',
-    FETCH_USERS: '获取用户列表失败',
+    CREATE: '创建管理员失败',
+    UPDATE: '更新管理员失败',
+    DELETE: '停用管理员失败',
+    ENABLE: '启用管理员失败',
+    DISABLE: '停用管理员失败',
+    FETCH_USERS: '获取管理员列表失败',
     FETCH_ROLES: '获取角色列表失败'
   },
   EMPTY: {
-    USERS: '暂无用户数据',
+    USERS: '暂无管理员数据',
     ROLE: '未分配',
     LAST_LOGIN: '从未登录'
   },
   CONFIRM: {
     DELETE: (username: string) =>
-      `确定要删除用户 "${username}" 吗？此操作不可撤销。`,
-    ENABLE: (username: string) => `确定要启用用户 "${username}" 吗？`,
+      `确定要停用管理员 "${username}" 吗？`,
+    ENABLE: (username: string) => `确定要启用管理员 "${username}" 吗？`,
     DISABLE: (username: string) =>
-      `确定要禁用用户 "${username}" 吗？禁用后该用户将无法登录系统。`
+      `确定要停用管理员 "${username}" 吗？停用后该账号无法登录后台。`
   }
 } as const;

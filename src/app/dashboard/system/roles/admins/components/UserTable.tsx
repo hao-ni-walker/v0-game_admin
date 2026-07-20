@@ -142,7 +142,7 @@ export function UserTable({
           const actions: ActionItem[] = [
             {
               key: 'edit',
-              label: '编辑',
+              label: '编辑 / 修改密码',
               icon: <Edit className='mr-2 h-4 w-4' />,
               onClick: () => onEdit(record)
             }

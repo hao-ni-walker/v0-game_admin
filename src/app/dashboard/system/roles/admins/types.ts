@@ -13,13 +13,13 @@ export interface User {
   lockTime?: string | null;
   updatedAt?: string;
   role?: {
-    id: number;
+    id: string;
     name: string;
   };
 }
 
 export interface Role {
-  id: number;
+  id: string;
   name: string;
 }
 

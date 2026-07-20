@@ -195,7 +195,7 @@ export function UserFilters({
    */
   const renderAdvancedFilterForm = () => (
     <div className='grid gap-4'>
-      {/* 第一行：用户名和邮箱 */}
+      {/* 第一行：用户名和显示名称 */}
       <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
         <div className='space-y-2'>
           <Label>用户名</Label>
@@ -207,9 +207,9 @@ export function UserFilters({
           />
         </div>
         <div className='space-y-2'>
-          <Label>邮箱</Label>
+          <Label>显示名称</Label>
           <Input
-            placeholder='请输入邮箱'
+            placeholder='请输入显示名称'
             value={formData.email || ''}
             onChange={(e) => updateFormField('email', e.target.value)}
             onKeyDown={handleKeyPress}

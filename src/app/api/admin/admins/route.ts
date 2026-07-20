@@ -6,7 +6,7 @@ import {
   unauthorizedResponse
 } from '@/service/response';
 import { logger } from '@/lib/logger';
-import { buildRemoteAdminUrl } from '@/lib/admin-remote';
+import { buildRemoteAdminUrl, requestRemoteAdminApi } from '@/lib/admin-remote';
 
 /**
  * 获取管理员列表 API - 代理到远程 API
@@ -157,5 +157,47 @@ export async function GET(request: NextRequest) {
     });
 
     return errorResponse('获取管理员列表失败');
+  }
+}
+
+/** Create an admin account through the backend admin-members API. */
+export async function POST(request: NextRequest) {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token');
+    if (!token?.value) return unauthorizedResponse('未授权访问');
+
+    const body = await request.json();
+    const remoteResponse = await requestRemoteAdminApi<{
+      code?: number;
+      message?: string;
+      data?: unknown;
+    }>({
+      path: '/api/v1/admin/admin/members',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token.value}`
+      },
+      body: JSON.stringify({
+        username: body.username,
+        display_name: body.email || body.displayName || body.username,
+        role: body.roleId,
+        initial_password: body.password,
+        is_active: body.status !== 'disabled'
+      })
+    });
+    if (!remoteResponse.ok) {
+      if (remoteResponse.status === 401) return unauthorizedResponse('认证失败，请重新登录');
+      return errorResponse(remoteResponse.data?.message || '创建管理员失败');
+    }
+    const result = remoteResponse.data;
+    if (!result || (result.code !== 0 && result.code !== 200)) {
+      return errorResponse(result?.message || '创建管理员失败');
+    }
+    return successResponse(result.data);
+  } catch (error) {
+    console.error('创建管理员失败:', error);
+    return errorResponse('创建管理员失败');
   }
 }

@@ -8,9 +8,8 @@ import {
   UserFormData
 } from '../types';
 import { DEFAULT_PAGINATION, MESSAGES } from '../constants';
-import { UserAPI } from '@/service/api/user';
-import { RoleAPI } from '@/service/api/role';
 import { apiRequest, buildSearchParams } from '@/service/api/base';
+import { AdminAPI } from '@/service/api/admin-api';
 
 /**
  * 用户管理业务逻辑 Hook
@@ -28,9 +27,11 @@ export function useUserManagement() {
    */
   const fetchRoles = useCallback(async () => {
     try {
-      const res = await RoleAPI.getAllRoles();
-      if (res.code === 0) {
-        setRoles(res.data || []);
+      const res = await apiRequest<{
+        items: Array<{ role_id: string; name: string }>;
+      }>('/admin/admin-roles');
+      if (res.code === 0 && res.data) {
+        setRoles(res.data.items.map((role) => ({ id: role.role_id, name: role.name })));
       } else {
         toast.error(res.message || MESSAGES.ERROR.FETCH_ROLES);
       }
@@ -86,7 +87,7 @@ export function useUserManagement() {
           username: string;
           email: string;
           avatar: string | null;
-          role_id: number;
+          role_id: string;
           role_name: string;
           is_super_admin: boolean;
           status: string;
@@ -152,8 +153,12 @@ export function useUserManagement() {
   const createUser = useCallback(
     async (data: UserFormData): Promise<boolean> => {
       try {
-        const res = await UserAPI.createUser(data);
-        if (res.code === 0) {
+        if (!data.password) {
+          toast.error('请输入初始密码');
+          return false;
+        }
+        const res = await AdminAPI.createAdmin({ ...data, password: data.password });
+        if (res.success) {
           toast.success(MESSAGES.SUCCESS.CREATE);
           return true;
         } else {
@@ -175,8 +180,8 @@ export function useUserManagement() {
   const updateUser = useCallback(
     async (id: number, data: Partial<UserFormData>): Promise<boolean> => {
       try {
-        const res = await UserAPI.updateUser(id, data);
-        if (res.code === 0) {
+        const res = await AdminAPI.updateAdmin(id, data);
+        if (res.success) {
           toast.success(MESSAGES.SUCCESS.UPDATE);
           return true;
         } else {
@@ -197,8 +202,8 @@ export function useUserManagement() {
    */
   const deleteUser = useCallback(async (id: number): Promise<boolean> => {
     try {
-      const res = await UserAPI.deleteUser(id);
-      if (res.code === 0) {
+      const res = await AdminAPI.deleteAdmin(id);
+      if (res.success) {
         toast.success(MESSAGES.SUCCESS.DELETE);
         return true;
       } else {

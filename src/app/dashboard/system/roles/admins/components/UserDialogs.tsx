@@ -50,9 +50,9 @@ export function UserDialogs({
   const getDialogTitle = () => {
     switch (type) {
       case 'create':
-        return '新增用户';
+        return '新增管理员';
       case 'edit':
-        return '编辑用户';
+        return '编辑管理员';
       default:
         return '';
     }
