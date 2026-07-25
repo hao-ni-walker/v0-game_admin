@@ -198,6 +198,10 @@ export function PlayerDetailModal({
                       VIP {player.vip_level}
                     </Badge>
                   </p>
+                  {/* 红线:VIP 仅展示,不参与命中率/赔率计算 */}
+                  <p className='text-muted-foreground mt-1 text-[11px]'>
+                    展示字段,不参与命中率计算
+                  </p>
                 </div>
                 <div>
                   <label className='text-muted-foreground text-sm font-medium'>
