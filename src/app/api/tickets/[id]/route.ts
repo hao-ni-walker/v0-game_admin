@@ -34,7 +34,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const currentUser = getCurrentUser(request);
+  const currentUser = await getCurrentUser(request);
   const logger = new Logger('工单管理', currentUser?.id);
 
   try {
@@ -77,7 +77,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const currentUser = getCurrentUser(request);
+  const currentUser = await getCurrentUser(request);
   const logger = new Logger('工单管理', currentUser?.id);
 
   try {

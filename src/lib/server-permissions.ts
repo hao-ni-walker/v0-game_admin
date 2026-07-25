@@ -15,7 +15,7 @@ export async function getUserFromRequest(): Promise<number | null> {
       return null;
     }
 
-    const user = verifyToken(token.value);
+    const user = await verifyToken(token.value);
     return user?.id || null;
   } catch (error) {
     console.error('getUserFromRequest error:', error);

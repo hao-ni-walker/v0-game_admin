@@ -40,7 +40,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const currentUser = getCurrentUser(request);
+  const currentUser = await getCurrentUser(request);
   const logger = new Logger('角色管理', currentUser?.id);
 
   try {

@@ -5,7 +5,7 @@ import type { TicketStatus, TicketPriority } from '@/repository/models';
 
 export async function POST(request: Request) {
   try {
-    const currentUser = getCurrentUser(request);
+    const currentUser = await getCurrentUser(request);
     const body = await request.json();
 
     const {

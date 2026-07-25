@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { verifyAdminToken } from '@/lib/jwt';
 
 export interface User {
   id: number;
@@ -13,7 +14,19 @@ export interface Session {
 }
 
 /**
- * 服务端认证函数 - 只能在服务端组件中使用
+ * 从环境变量读取 JWT 密钥。缺密钥属于配置错误,应显式失败而非静默放行。
+ */
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret || secret.length < 32) {
+    throw new Error('JWT_SECRET must be configured (>= 32 chars)');
+  }
+  return secret;
+}
+
+/**
+ * 服务端认证函数 - 只能在服务端组件中使用。
+ * 用 HS256 验签;签名无效/过期/alg=none 一律视为未登录。
  */
 export async function auth(): Promise<Session | null> {
   const cookieStore = await cookies();
@@ -23,108 +36,51 @@ export async function auth(): Promise<Session | null> {
     return null;
   }
 
-  try {
-    // 直接解析 JWT token 的 payload（不验证签名，因为远程 API 的 secret 可能不同）
-    // JWT 格式：header.payload.signature
-    const parts = token.value.split('.');
-    if (parts.length !== 3) {
-      return null;
-    }
-
-    // 解析 payload（base64 解码）
-    const payload = JSON.parse(
-      Buffer.from(parts[1], 'base64').toString()
-    ) as any;
-
-    // 检查 token 是否过期
-    if (payload.exp && payload.exp * 1000 < Date.now()) {
-      return null;
-    }
-
-    // 支持远程 API 的 token 结构（sub, username, type）和本地结构（id, email, username）
-    const userId = payload.id || payload.sub || payload.userId;
-    const username = payload.username || payload.name || '';
-    const email = payload.email || '';
-    const avatar = payload.avatar || '';
-    const roleId = payload.roleId || payload.role_id || payload.type || '';
-
-    if (!userId) {
-      return null;
-    }
-
-    return {
-      user: {
-        id: typeof userId === 'string' ? parseInt(userId) || 0 : userId,
-        email: email || username || '',
-        username: username || email || '用户',
-        avatar: avatar || '/avatars/default.jpg',
-        roleId: String(roleId)
-      }
-    };
-  } catch (error) {
-    // 解析失败，返回 null
+  const payload = await verifyAdminToken(token.value, getJwtSecret());
+  if (!payload) {
     return null;
   }
+
+  return {
+    user: {
+      id: payload.sub,
+      username: payload.username,
+      roleId: String(payload.roleId),
+      email: '',
+      avatar: ''
+    }
+  };
 }
 
 /**
- * 验证token的工具函数 - 可以在任何地方使用
- * 注意：不验证签名，因为远程 API 的 token 可能使用不同的 secret
+ * 验证 token 的工具函数 - 可以在任何地方使用。
+ * 注意:现在用 HS256 验签(之前模板直接 base64 解析 payload,可被伪造)。
  */
-export function verifyToken(token: string): User | null {
-  try {
-    // 直接解析 JWT token 的 payload（不验证签名，因为远程 API 的 secret 可能不同）
-    // JWT 格式：header.payload.signature
-    const parts = token.split('.');
-    if (parts.length !== 3) {
-      return null;
-    }
-
-    // 解析 payload（base64 解码）
-    const payload = JSON.parse(
-      Buffer.from(parts[1], 'base64').toString()
-    ) as any;
-
-    // 检查 token 是否过期
-    if (payload.exp && payload.exp * 1000 < Date.now()) {
-      return null;
-    }
-
-    // 支持远程 API 的 token 结构（sub, username, type）和本地结构（id, email, username）
-    const userId = payload.id || payload.sub || payload.userId;
-    const username = payload.username || payload.name || '';
-    const email = payload.email || '';
-    const avatar = payload.avatar || '';
-    const roleId = payload.roleId || payload.role_id || payload.type || '';
-
-    if (!userId) {
-      return null;
-    }
-
-    return {
-      id: typeof userId === 'string' ? parseInt(userId) || 0 : userId,
-      email: email || username || '',
-      username: username || email || '用户',
-      avatar: avatar || '/avatars/default.jpg',
-      roleId: String(roleId)
-    };
-  } catch (error) {
-    // 解析失败，返回 null
-    console.error('verifyToken error:', error);
+export async function verifyToken(token: string): Promise<User | null> {
+  const payload = await verifyAdminToken(token, getJwtSecret());
+  if (!payload) {
     return null;
   }
+
+  return {
+    id: payload.sub,
+    username: payload.username,
+    roleId: String(payload.roleId),
+    email: payload.username || '',
+    avatar: ''
+  };
 }
 
 /**
- * 从Request中获取当前用户信息 - 用于API routes
+ * 从 Request 中获取当前用户信息 - 用于 API routes。
  */
-export function getCurrentUser(request: Request): User | null {
+export async function getCurrentUser(request: Request): Promise<User | null> {
   try {
     const token = request.headers.get('cookie')?.match(/token=([^;]+)/)?.[1];
     if (!token) {
       return null;
     }
-    return verifyToken(token);
+    return await verifyToken(token);
   } catch {
     return null;
   }

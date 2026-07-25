@@ -42,7 +42,7 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const currentUser = getCurrentUser(request);
+  const currentUser = await getCurrentUser(request);
   const logger = new Logger('权限管理', currentUser?.id);
 
   try {
