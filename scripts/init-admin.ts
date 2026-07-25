@@ -130,6 +130,23 @@ async function ensureSuperAdminUser(roleId: number) {
     return;
   }
 
+  // 🔴 禁止默认口令进生产:.env.example 的默认值与常见弱口令一律拒绝。
+  const FORBIDDEN = new Set([
+    'Admin@123456',
+    'admin@123456',
+    'Administrator@123456',
+    '12345678',
+    'password',
+    'password123',
+    'admin123',
+    'qwerty123'
+  ]);
+  if (!passwordPlain || passwordPlain.length < 12 || FORBIDDEN.has(passwordPlain)) {
+    throw new Error(
+      '拒绝初始化:ADMIN_PASSWORD 为空、短于 12 位或为默认弱口令。请在 .env 设置强口令后重试。'
+    );
+  }
+
   const saltRounds = Number(process.env.SALT_ROUNDS || 12);
   const password = await bcrypt.hash(passwordPlain, saltRounds);
 
@@ -140,7 +157,9 @@ async function ensureSuperAdminUser(roleId: number) {
     avatar: '/avatars/admin.jpg',
     roleId,
     status: 'active',
-    isSuperAdmin: true
+    isSuperAdmin: true,
+    // 🔴 首次登录强制改密。
+    mustChangePassword: true
   });
 
   console.log('超级管理员账号创建成功！');

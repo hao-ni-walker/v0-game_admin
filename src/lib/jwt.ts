@@ -4,6 +4,7 @@ export interface AdminTokenPayload {
   sub: number;
   username: string;
   roleId: number;
+  mustChangePassword: boolean;
   exp: number;
   iat: number;
 }
@@ -19,6 +20,8 @@ function key(secret: string): Uint8Array {
 
 /**
  * 用 HS256 签发管理员 JWT。sub=admin_id,roleId 为角色 id。
+ * mustChangePassword 写进 token,这样 Next middleware(edge runtime,无法连 PG)
+ * 可在不查库的情况下对未改密会话返回 428。
  * jose 默认拒绝 alg:none,不要手写 HMAC 比较。
  */
 export async function signAdminToken(
@@ -27,7 +30,11 @@ export async function signAdminToken(
   ttlSec: number
 ): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
-  return new SignJWT({ username: payload.username, roleId: payload.roleId })
+  return new SignJWT({
+    username: payload.username,
+    roleId: payload.roleId,
+    mustChangePassword: payload.mustChangePassword ?? false
+  })
     .setProtectedHeader({ alg: ALG })
     .setSubject(String(payload.sub))
     .setIssuedAt(now)
@@ -51,6 +58,7 @@ export async function verifyAdminToken(
       sub: Number(payload.sub),
       username: String(payload.username ?? ''),
       roleId: payload.roleId,
+      mustChangePassword: Boolean(payload.mustChangePassword),
       exp: payload.exp!,
       iat: payload.iat!
     };

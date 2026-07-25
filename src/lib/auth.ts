@@ -7,6 +7,7 @@ export interface User {
   username: string;
   avatar: string;
   roleId: string;
+  mustChangePassword: boolean;
 }
 
 export interface Session {
@@ -46,6 +47,7 @@ export async function auth(): Promise<Session | null> {
       id: payload.sub,
       username: payload.username,
       roleId: String(payload.roleId),
+      mustChangePassword: payload.mustChangePassword,
       email: '',
       avatar: ''
     }
@@ -66,6 +68,7 @@ export async function verifyToken(token: string): Promise<User | null> {
     id: payload.sub,
     username: payload.username,
     roleId: String(payload.roleId),
+    mustChangePassword: payload.mustChangePassword,
     email: payload.username || '',
     avatar: ''
   };
