@@ -12,6 +12,7 @@ export interface User {
   roleId: ID;
   isSuperAdmin?: boolean;
   status?: 'active' | 'disabled';
+  mustChangePassword?: boolean; // 首次登录/重置后强制改密
   lastLoginAt?: string | null; // ISO 字符串
   createdAt?: string; // ISO
   updatedAt?: string; // ISO
