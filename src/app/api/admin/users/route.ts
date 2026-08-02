@@ -120,6 +120,7 @@ export async function GET(request: Request) {
       identity_category: 'user',
       agent: '',
       direct_superior_id: undefined,
+      tags: Array.isArray(item.tags) ? item.tags : [],
       created_at: item.registered_at
         ? new Date(Number(item.registered_at) * 1000).toISOString()
         : new Date(0).toISOString(),

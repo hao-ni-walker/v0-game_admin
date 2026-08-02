@@ -176,6 +176,7 @@ export function PlayerTableEnhanced({
               {renderSortableHeader('username', '用户名')}
               <TableHead>邮箱</TableHead>
               <TableHead>状态</TableHead>
+              <TableHead>标签</TableHead>
               <TableHead>上级用户ID</TableHead>
               {renderSortableHeader('vip_level', 'VIP等级')}
               {renderSortableHeader('created_at', '注册时间')}
@@ -196,7 +197,7 @@ export function PlayerTableEnhanced({
             {players.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={20}
+                  colSpan={21}
                   className='text-muted-foreground text-center'
                 >
                   暂无数据
@@ -249,6 +250,26 @@ export function PlayerTableEnhanced({
                         }
                         disabled={!onStatusChange || !canToggleStatus}
                       />
+                    </TableCell>
+                    <TableCell>
+                      {(player.tags || []).length === 0 ? (
+                        <span className='text-muted-foreground'>-</span>
+                      ) : (
+                        <div className='flex flex-wrap gap-1'>
+                          {(player.tags || []).map((tag) => (
+                            <Badge
+                              key={tag}
+                              variant={
+                                ['bot', 'dev', 'test'].includes(tag)
+                                  ? 'destructive'
+                                  : 'secondary'
+                              }
+                            >
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>
                       {player.direct_superior_id
