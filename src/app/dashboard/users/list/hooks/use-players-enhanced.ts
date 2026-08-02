@@ -85,6 +85,12 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
   const [statistics, setStatistics] = useState<PlayerStatistics | null>(null);
   const [statisticsLoading, setStatisticsLoading] = useState(false);
 
+  // Mirror `players` into a ref so updatePlayer (stable callback) can read the
+  // current row without re-subscribing. Used to detect whether the edit form's
+  // `status` actually changed before firing a freeze/unfreeze call.
+  const playersRef = useRef<Player[]>([]);
+  playersRef.current = players;
+
   // 请求锁，防止重复请求
   const isFetchingPlayersRef = useRef(false);
   const isFetchingStatsRef = useRef(false);
@@ -244,6 +250,22 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
           }
         }
         const { tags: _omitTags, ...rest } = data;
+        // The edit form always carries `status` (and `lock` is undefined unless
+        // explicitly toggled). Drop `status`/`lock` when they match the user's
+        // current state, otherwise PlayerAPI.updatePlayer maps an unchanged
+        // "active" status to an unfreeze call and the backend rejects it with
+        // "User account is not frozen".
+        if (rest.lock === undefined) {
+          const current = playersRef.current.find((p) => p.id === playerId);
+          const currentActive =
+            current !== undefined &&
+            (current.status === 'active' || current.status === true);
+          const submittedActive =
+            rest.status === 'active' || rest.status === true;
+          if (currentActive === submittedActive) {
+            delete rest.status;
+          }
+        }
         const hasOther = Object.keys(rest).length > 0;
         if (!hasOther) {
           toast.success('用户更新成功');
