@@ -160,8 +160,8 @@ export function PlayerTableEnhanced({
   }
 
   return (
-    <div className='flex flex-1 flex-col space-y-4'>
-      <Card className='flex-1 overflow-auto'>
+    <div className='flex w-full max-w-full min-w-0 flex-1 flex-col space-y-4'>
+      <Card className='w-full max-w-full min-w-0 flex-1 overflow-hidden'>
         <Table>
           <TableHeader>
             <TableRow>
@@ -344,16 +344,22 @@ export function PlayerTableEnhanced({
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align='end'>
-                            <DropdownMenuItem onClick={() => onViewDetail(player)}>
+                            <DropdownMenuItem
+                              onClick={() => onViewDetail(player)}
+                            >
                               查看详情
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => onEdit(player)}>
                               编辑
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onAdjustWallet(player)}>
+                            <DropdownMenuItem
+                              onClick={() => onAdjustWallet(player)}
+                            >
                               调整钱包
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onViewLogs(player)}>
+                            <DropdownMenuItem
+                              onClick={() => onViewLogs(player)}
+                            >
                               查看操作记录
                             </DropdownMenuItem>
                           </DropdownMenuContent>

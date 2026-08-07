@@ -333,11 +333,11 @@ export default function PlayersPage() {
 
   return (
     <PageContainer>
-      <div className='flex w-full flex-1 flex-col space-y-4'>
+      <div className='flex w-full max-w-full min-w-0 flex-1 flex-col space-y-4 overflow-x-hidden'>
         {/* 页面头部 */}
-        <div className='flex items-center justify-between'>
+        <div className='flex flex-wrap items-center justify-between gap-4'>
           <Heading title='用户管理' description='查看和管理所有用户账户信息' />
-          <div className='flex items-center gap-2'>
+          <div className='flex shrink-0 items-center gap-2'>
             <Button variant='outline' onClick={handleExport}>
               <Download className='mr-2 h-4 w-4' />
               导出
@@ -385,7 +385,7 @@ export default function PlayersPage() {
 
         {/* 批量操作栏 */}
         {selectedPlayerIds.length > 0 && (
-          <div className='bg-muted/50 flex items-center gap-2 rounded-lg border p-3'>
+          <div className='bg-muted/50 flex flex-wrap items-center gap-2 rounded-lg border p-3'>
             <span className='text-sm font-medium'>
               已选择 {selectedPlayerIds.length} 个用户
             </span>
