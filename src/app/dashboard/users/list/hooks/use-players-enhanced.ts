@@ -241,6 +241,27 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
       }
     ): Promise<boolean> => {
       try {
+        const current = playersRef.current.find((p) => p.id === playerId);
+
+        // The edit form includes fields that currently have no update API.
+        // Ignore them when unchanged so a tags-only edit is not reported as a
+        // failure after the dedicated tags request succeeds.
+        const currentVipLevel =
+          (current as any)?.vip_info?.vip_level ??
+          (current as any)?.vip_info?.level ??
+          current?.vip_level;
+        const unsupportedFieldChanged =
+          (data.vip_level !== undefined &&
+            Number(data.vip_level) !== Number(currentVipLevel)) ||
+          (data.agent !== undefined && data.agent !== (current?.agent ?? '')) ||
+          (data.direct_superior_id !== undefined &&
+            (data.direct_superior_id ?? undefined) !==
+              (current?.direct_superior_id ?? undefined));
+
+        if (unsupportedFieldChanged) {
+          throw new Error('该字段暂不支持修改（仅支持状态切换和标签）');
+        }
+
         // 标签走独立的 tags 接口（tags 含 bot/dev/test 的用户会从所有 admin
         // 报表中排除）。仅当本次提交包含 tags 字段时才调用。
         if (data.tags !== undefined) {
@@ -249,14 +270,19 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
             throw new Error(tagRes.message || '更新标签失败');
           }
         }
-        const { tags: _omitTags, ...rest } = data;
+        const {
+          tags: _omitTags,
+          vip_level: _omitVipLevel,
+          agent: _omitAgent,
+          direct_superior_id: _omitDirectSuperiorId,
+          ...rest
+        } = data;
         // The edit form always carries `status` (and `lock` is undefined unless
         // explicitly toggled). Drop `status`/`lock` when they match the user's
         // current state, otherwise PlayerAPI.updatePlayer maps an unchanged
         // "active" status to an unfreeze call and the backend rejects it with
         // "User account is not frozen".
         if (rest.lock === undefined) {
-          const current = playersRef.current.find((p) => p.id === playerId);
           const currentActive =
             current !== undefined &&
             (current.status === 'active' || current.status === true);
