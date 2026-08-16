@@ -30,7 +30,8 @@ import {
   Mail,
   Coins,
   Megaphone,
-  Gift
+  Gift,
+  Timer
 } from 'lucide-react';
 
 // 业务导航列表
@@ -430,6 +431,19 @@ export const systemNavList: NavItem[] = [
           searchShortcut: ['sc'],
           searchSection: '系统配置',
           searchPriority: 19
+        }
+      },
+      {
+        title: '自动化任务',
+        url: '/dashboard/system/automation',
+        icon: Timer,
+        description: '定时备份、报表推送与自定义脚本',
+        items: [],
+        searchConfig: {
+          keywords: 'automation cron schedule task 定时 任务 备份 backup 报表 report',
+          searchShortcut: ['sat'],
+          searchSection: '系统配置',
+          searchPriority: 20
         }
       },
       {

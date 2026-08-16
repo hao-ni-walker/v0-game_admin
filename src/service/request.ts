@@ -11,6 +11,16 @@ export { LogAPI, OperationLogAPI } from './api/log';
 export { SystemConfigAPI } from './api/system-config';
 export { ReferralConfigAPI } from './api/referral-config';
 export type { ReferralRewardConfig } from './api/referral-config';
+export { AutomationAPI } from './api/automation';
+export type {
+  AutomationTask,
+  AutomationTaskType,
+  AutomationTaskFormData,
+  AutomationTaskUpdateData,
+  AutomationTaskRun,
+  AutomationTaskListResult,
+  AutomationRunListResult,
+} from './api/automation';
 export { MessageAPI } from './api/message';
 export { BroadcastAPI } from './api/broadcast';
 export type { BroadcastFormData, BroadcastCreateResult, BroadcastApproveResult } from './api/broadcast';
