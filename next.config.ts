@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   reactStrictMode: process.env.NODE_ENV === 'development' ? false : true,
@@ -47,4 +48,13 @@ const nextConfig: NextConfig = {
   }
 };
 
-export default nextConfig;
+// Source-map upload only runs when SENTRY_AUTH_TOKEN is provided at build
+// time; otherwise the wrapper is a pass-through (silent, no telemetry).
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  sourcemaps: { disable: !process.env.SENTRY_AUTH_TOKEN },
+  silent: true,
+  telemetry: false,
+});

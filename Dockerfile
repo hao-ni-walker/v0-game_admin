@@ -31,6 +31,11 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1 \
     NODE_ENV=production
 
+# Client Sentry DSN is INLINED into the bundle at build time (server-side DSN
+# comes from the runtime env instead). Pass via compose build args — empty
+# default keeps Sentry disabled without touching the build.
+ARG NEXT_PUBLIC_SENTRY_DSN=""
+ENV NEXT_PUBLIC_SENTRY_DSN=$NEXT_PUBLIC_SENTRY_DSN
 RUN npm run build
 
 # ── Stage 3: runtime ──────────────────────────────────────────────────────────
