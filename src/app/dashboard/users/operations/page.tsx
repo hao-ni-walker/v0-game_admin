@@ -30,7 +30,7 @@ import {
 import { Label } from '@/components/ui/label';
 import PageContainer from '@/components/layout/page-container';
 import { PageHeader } from '@/components/table/page-header';
-import { UserCog, Search, Snowflake, Sun, Ban, DollarSign } from 'lucide-react';
+import { UserCog, Search, Snowflake, Sun, Ban, DollarSign, RotateCcw } from 'lucide-react';
 import { apiRequest } from '@/service/api/base';
 import { toast } from 'sonner';
 
@@ -50,6 +50,7 @@ const accountOperations = [
   { operation: '冻结账户', permission: '风控专员', description: '禁止该账户下单、充值、提现' },
   { operation: '解冻账户', permission: '风控主管', description: '需填写解冻理由' },
   { operation: '调整余额', permission: '主管以上', description: '加/减余额，记录入审计日志' },
+  { operation: '人工退款', permission: '主管以上', description: '正向退款入账，写入 Refund 流水与审计日志' },
   { operation: '加入黑名单', permission: '风控主管', description: '永久禁止，立即生效' },
 ];
 
@@ -60,7 +61,7 @@ const STATUS_LABEL: Record<string, { text: string; cls: string }> = {
   warning: { text: '预警', cls: 'bg-yellow-100 text-yellow-800' },
 };
 
-type ActionType = 'freeze' | 'unfreeze' | 'blacklist' | 'balance-adjust';
+type ActionType = 'freeze' | 'unfreeze' | 'blacklist' | 'balance-adjust' | 'refund';
 
 export default function UserOperationsPage() {
   const [searchId, setSearchId] = useState('');
@@ -69,6 +70,8 @@ export default function UserOperationsPage() {
   const [pendingAction, setPendingAction] = useState<ActionType | null>(null);
   const [reason, setReason] = useState('');
   const [delta, setDelta] = useState('');
+  const [refundAmount, setRefundAmount] = useState('');
+  const [refundReference, setRefundReference] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const fetchUser = useCallback(async () => {
@@ -97,12 +100,14 @@ export default function UserOperationsPage() {
   const openAction = (a: ActionType) => {
     setReason('');
     setDelta('');
+    setRefundAmount('');
+    setRefundReference('');
     setPendingAction(a);
   };
 
   const handleSubmit = useCallback(async () => {
     if (!user || !pendingAction) return;
-    const minLen = pendingAction === 'balance-adjust' ? 10 : pendingAction === 'blacklist' ? 10 : 5;
+    const minLen = pendingAction === 'balance-adjust' || pendingAction === 'blacklist' || pendingAction === 'refund' ? 10 : 5;
     if (reason.trim().length < minLen) {
       toast.error(`原因至少 ${minLen} 个字符`);
       return;
@@ -114,11 +119,24 @@ export default function UserOperationsPage() {
         return;
       }
     }
+    if (pendingAction === 'refund') {
+      const a = parseFloat(refundAmount);
+      if (Number.isNaN(a) || a <= 0) {
+        toast.error('退款金额必须是正数');
+        return;
+      }
+    }
     setSubmitting(true);
     try {
       let body: Record<string, unknown>;
       if (pendingAction === 'balance-adjust') {
         body = { delta: parseFloat(delta), reason: reason.trim() };
+      } else if (pendingAction === 'refund') {
+        body = {
+          amount: parseFloat(refundAmount),
+          reason: reason.trim(),
+          reference: refundReference.trim() || null,
+        };
       } else if (pendingAction === 'freeze') {
         body = { reason: reason.trim(), freeze_type: 'full' };
       } else {
@@ -140,7 +158,7 @@ export default function UserOperationsPage() {
     } finally {
       setSubmitting(false);
     }
-  }, [user, pendingAction, reason, delta, fetchUser]);
+  }, [user, pendingAction, reason, delta, refundAmount, refundReference, fetchUser]);
 
   const statusMeta = user ? (STATUS_LABEL[user.status] || { text: user.status, cls: 'bg-gray-100 text-gray-800' }) : null;
 
@@ -148,6 +166,7 @@ export default function UserOperationsPage() {
     { key: 'freeze' as const, label: '冻结', icon: Snowflake, disabled: user?.status === 'frozen' },
     { key: 'unfreeze' as const, label: '解冻', icon: Sun, disabled: user?.status !== 'frozen' && user?.status !== 'blacklist' },
     { key: 'balance-adjust' as const, label: '调整余额', icon: DollarSign, disabled: user?.status === 'blacklist' },
+    { key: 'refund' as const, label: '人工退款', icon: RotateCcw, disabled: user?.status === 'blacklist' },
     { key: 'blacklist' as const, label: '加黑名单', icon: Ban, disabled: user?.status === 'blacklist' },
   ];
 
@@ -156,6 +175,7 @@ export default function UserOperationsPage() {
     unfreeze: '解冻账户',
     blacklist: '加入黑名单',
     'balance-adjust': '调整余额',
+    refund: '人工退款',
   };
 
   return (
@@ -287,11 +307,37 @@ export default function UserOperationsPage() {
                 )}
               </div>
             )}
+            {pendingAction === 'refund' && (
+              <div className='space-y-2'>
+                <Label htmlFor='op-refund-amount'>退款金额（正数，USD）</Label>
+                <Input
+                  id='op-refund-amount'
+                  placeholder='例如 25.5'
+                  type='number'
+                  min='0.01'
+                  step='0.01'
+                  value={refundAmount}
+                  onChange={(e) => setRefundAmount(e.target.value)}
+                />
+                {user && (
+                  <p className='text-muted-foreground text-xs'>
+                    当前余额 ${user.balance.toLocaleString()}
+                  </p>
+                )}
+                <Label htmlFor='op-refund-ref'>参考号（可选：交易/订单/工单 ID）</Label>
+                <Input
+                  id='op-refund-ref'
+                  placeholder='例如 tx:1024 / ticket:8871'
+                  value={refundReference}
+                  onChange={(e) => setRefundReference(e.target.value)}
+                />
+              </div>
+            )}
             <div className='space-y-2'>
               <Label htmlFor='op-reason'>原因</Label>
               <Input
                 id='op-reason'
-                placeholder={pendingAction === 'balance-adjust' || pendingAction === 'blacklist' ? '至少 10 个字符' : '至少 5 个字符'}
+                placeholder={pendingAction === 'balance-adjust' || pendingAction === 'blacklist' || pendingAction === 'refund' ? '至少 10 个字符' : '至少 5 个字符'}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
               />
