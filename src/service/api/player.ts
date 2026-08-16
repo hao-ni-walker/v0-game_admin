@@ -219,7 +219,10 @@ export class PlayerAPI {
             created_at: '',
             updated_at: ''
           },
-          agency: { subordinate_count: 0 },
+          agency: {
+            direct_superior_id: d.referred_by_user_id || undefined,
+            subordinate_count: 0
+          },
           spin_quotas: []
         }
       };

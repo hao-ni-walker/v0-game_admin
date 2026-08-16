@@ -9,6 +9,8 @@ export { PermissionAPI } from './api/permission';
 export { DashboardAPI } from './api/dashboard';
 export { LogAPI, OperationLogAPI } from './api/log';
 export { SystemConfigAPI } from './api/system-config';
+export { ReferralConfigAPI } from './api/referral-config';
+export type { ReferralRewardConfig } from './api/referral-config';
 export { MessageAPI } from './api/message';
 export { BroadcastAPI } from './api/broadcast';
 export type { BroadcastFormData, BroadcastCreateResult, BroadcastApproveResult } from './api/broadcast';

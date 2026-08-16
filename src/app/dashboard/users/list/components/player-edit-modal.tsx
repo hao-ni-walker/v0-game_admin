@@ -115,12 +115,6 @@ export function PlayerEditModal({
     e.preventDefault();
     if (!player) return;
 
-    // 验证 direct_superior_id 不能等于当前用户 ID
-    if (formData.direct_superior_id === player.id) {
-      setErrors({ direct_superior_id: '直属上级不能是自己' });
-      return;
-    }
-
     setLoading(true);
     try {
       const success = await onSubmit(player.id, formData);
@@ -208,26 +202,16 @@ export function PlayerEditModal({
             </div>
 
             <div className='space-y-2'>
-              <Label>直属上级ID</Label>
+              <Label>邀请人ID</Label>
               <Input
                 type='number'
                 value={formData.direct_superior_id ?? ''}
-                onChange={(e) =>
-                  handleChange(
-                    'direct_superior_id',
-                    e.target.value ? Number(e.target.value) : null
-                  )
-                }
-                placeholder='上级用户ID'
-                className={
-                  errors.direct_superior_id ? 'border-destructive' : ''
-                }
+                placeholder='无邀请人'
+                disabled
               />
-              {errors.direct_superior_id && (
-                <p className='text-destructive text-sm'>
-                  {errors.direct_superior_id}
-                </p>
-              )}
+              <p className='text-muted-foreground text-xs'>
+                注册时绑定的邀请关系，仅供查看，不能在后台修改。
+              </p>
             </div>
 
             {/* 标签：含 bot/dev/test 的用户将从所有 admin 报表中排除 */}

@@ -177,7 +177,7 @@ export function PlayerTableEnhanced({
               <TableHead>邮箱</TableHead>
               <TableHead>状态</TableHead>
               <TableHead>标签</TableHead>
-              <TableHead>上级用户ID</TableHead>
+              <TableHead>邀请人ID</TableHead>
               {renderSortableHeader('vip_level', 'VIP等级')}
               {renderSortableHeader('created_at', '注册时间')}
               {renderSortableHeader('last_login', '最后登录时间')}

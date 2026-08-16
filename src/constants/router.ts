@@ -29,7 +29,8 @@ import {
   Key,
   Mail,
   Coins,
-  Megaphone
+  Megaphone,
+  Gift
 } from 'lucide-react';
 
 // 业务导航列表
@@ -429,6 +430,19 @@ export const systemNavList: NavItem[] = [
           searchShortcut: ['sc'],
           searchSection: '系统配置',
           searchPriority: 19
+        }
+      },
+      {
+        title: '邀请奖励',
+        url: '/dashboard/system/referral',
+        icon: Gift,
+        description: '配置投注流水邀请分佣',
+        items: [],
+        searchConfig: {
+          keywords: 'referral invite commission 邀请 奖励 佣金',
+          searchShortcut: ['sir'],
+          searchSection: '系统配置',
+          searchPriority: 20
         }
       },
       {

@@ -24,6 +24,41 @@ function toStatusCode(status: string | null | undefined): number {
   }
 }
 
+// Inverse of toStatusCode: the admin filters send numeric status codes, but the
+// backend `/admin/deposit/records` expects the raw Deposit.status STRING.
+// Returns undefined for unknown codes so we don't silently over-filter.
+function toBackendStatus(code: number | string): string | undefined {
+  switch (Number(code)) {
+    case 3:
+      return 'completed';
+    case 4:
+      return 'failed';
+    case 5:
+      return 'expired';
+    case 2:
+      return 'awaiting_transfer';
+    case 1:
+      return 'initiated';
+    default:
+      return undefined;
+  }
+}
+
+// Normalize the deposit channel label for the admin "渠道" column. Fiat rows
+// carry method = "fiat" / "paypal" / "apple pay" (chain is NULL), so collapse
+// them to a single "Fiat" channel — the specific rail (PayPal/Apple Pay) is a
+// sub-method, not a channel. Crypto chains pass through unchanged.
+function toChannelLabel(item: any): string {
+  const method = String(item.method || '').toLowerCase();
+  if (method === 'fiat' || method === 'paypal' || method === 'apple pay') {
+    return 'Fiat';
+  }
+  if (item.chain) return String(item.chain);
+  if (item.method) return String(item.method);
+  if (item.asset) return String(item.asset);
+  return 'TON';
+}
+
 function toIso(value: unknown): string {
   if (typeof value === 'number') {
     return new Date(value * 1000).toISOString();
@@ -58,7 +93,7 @@ function normalizeList(payload: any, page: number, pageSize: number) {
       order_no: String(item.deposit_id || item.id || ''),
       user_id: Number(item.user_id || 0),
       username: item.username || undefined,
-      channel_name: item.chain || item.method || item.asset || 'TON',
+      channel_name: toChannelLabel(item),
       amount: Number(item.amount || item.amount_usd || 0),
       fee: 0,
       bonus_amount: 0,
@@ -91,6 +126,19 @@ export async function GET(request: NextRequest) {
   if (sp.has('page_size')) {
     sp.set('size', sp.get('page_size') as string);
     sp.delete('page_size');
+  }
+  // The admin filters send numeric status codes (status=3&status=4), but the
+  // backend Deposit.status is a string ("completed"). Map each code back and
+  // send a single comma-joined `status` value the backend understands.
+  if (sp.has('status')) {
+    const codes = sp.getAll('status');
+    const mapped = codes
+      .map((c) => toBackendStatus(c))
+      .filter((s): s is string => Boolean(s));
+    sp.delete('status');
+    if (mapped.length) {
+      sp.set('status', Array.from(new Set(mapped)).join(','));
+    }
   }
 
   const remote = await requestRemoteAdminApi<{

@@ -28,6 +28,11 @@ function mapUserListQuery(searchParams: URLSearchParams) {
       continue;
     }
 
+    if (key === 'direct_superior_id') {
+      remote.set('referred_by_user_id', value);
+      continue;
+    }
+
     if (key === 'sort_by' && value === 'register_at') {
       remote.set('sort_by', 'created_at');
       continue;
@@ -119,7 +124,10 @@ export async function GET(request: Request) {
       registration_source: '',
       identity_category: 'user',
       agent: '',
-      direct_superior_id: undefined,
+      direct_superior_id:
+        item.referred_by_user_id == null
+          ? undefined
+          : Number(item.referred_by_user_id),
       tags: Array.isArray(item.tags) ? item.tags : [],
       created_at: item.registered_at
         ? new Date(Number(item.registered_at) * 1000).toISOString()

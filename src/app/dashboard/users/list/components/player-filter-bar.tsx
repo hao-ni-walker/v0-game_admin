@@ -267,7 +267,7 @@ export function PlayerFilterBar({
         </div>
       </div>
 
-      {/* 第三行：代理关系 */}
+      {/* 第三行：代理与邀请关系 */}
       <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
         <div className='space-y-2'>
           <Label>代理商</Label>
@@ -280,10 +280,10 @@ export function PlayerFilterBar({
           />
         </div>
         <div className='space-y-2'>
-          <Label>直属上级ID</Label>
+          <Label>邀请人ID</Label>
           <Input
             type='number'
-            placeholder='上级用户ID'
+            placeholder='邀请人用户ID'
             value={formData.direct_superior_id || ''}
             onChange={(e) =>
               updateFormField(
