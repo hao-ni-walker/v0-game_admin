@@ -31,7 +31,8 @@ import {
   Coins,
   Megaphone,
   Gift,
-  Timer
+  Timer,
+  Boxes
 } from 'lucide-react';
 
 // 业务导航列表
@@ -359,6 +360,19 @@ export const businessNavList: NavItem[] = [
           searchShortcut: ['fp'],
           searchSection: '资金管理',
           searchPriority: 15
+        }
+      },
+      {
+        title: '钱包余额统计',
+        url: '/dashboard/funds/wallet-balances',
+        icon: Boxes,
+        description: '充值地址链上余额汇总',
+        items: [],
+        searchConfig: {
+          keywords: 'wallet balance 钱包 余额 链上 统计 充值地址',
+          searchShortcut: ['fb'],
+          searchSection: '资金管理',
+          searchPriority: 16
         }
       }
     ]
