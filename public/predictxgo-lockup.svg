@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 600" role="img" aria-labelledby="title desc">
+  <title id="title">PredictXGo horizontal logo</title>
+  <desc id="desc">PredictXGo symbol and wordmark lockup.</desc>
+  <defs>
+    <linearGradient id="gold" x1="0" y1="1" x2="1" y2="0">
+      <stop stop-color="#D99200"/><stop offset=".52" stop-color="#F0B90B"/><stop offset="1" stop-color="#FFD866"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="1" x2="1" y2="0">
+      <stop stop-color="#2EBD85"/><stop offset="1" stop-color="#5CF2A9"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(55 50) scale(.49)">
+    <path d="M196 184h168l462 616H658L196 184Z" fill="url(#gold)"/>
+    <path d="m166 800 104 48 430-474 79 78 79-308-310 104 80 78-462 474Z" fill="url(#gold)"/>
+    <path d="m629 264 229-120-79 308-79-78-71-110Z" fill="url(#green)"/>
+  </g>
+  <g transform="translate(570 0) skewX(-8)">
+    <text x="0" y="375" fill="#F5F7FA" font-family="Geist, Inter, Arial, sans-serif" font-size="270" font-weight="780" letter-spacing="-15">Predict</text>
+    <text x="850" y="375" fill="#F0B90B" font-family="Geist, Inter, Arial, sans-serif" font-size="270" font-weight="820" letter-spacing="-17">XGo</text>
+  </g>
+</svg>
