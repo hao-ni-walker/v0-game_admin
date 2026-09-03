@@ -19,14 +19,21 @@ function toStatusCode(status: string | null | undefined): number {
     case 'expired':
     case 'timeout':
       return 5;
+    // Mid-flight states (seen on-chain, not finalized) — distinct from a
+    // never-paid placeholder: lumping them into 待支付 hid stuck rows during
+    // the 2026-09-03 incident diagnosis.
+    case 'broadcasting':
+    case 'confirming':
+      return 1;
     default:
       return 2;
   }
 }
 
 // Inverse of toStatusCode: the admin filters send numeric status codes, but the
-// backend `/admin/deposit/records` expects the raw Deposit.status STRING.
-// Returns undefined for unknown codes so we don't silently over-filter.
+// backend `/admin/deposit/records` expects the raw Deposit.status STRING
+// (comma-joined for multi-select). Returns undefined for unknown codes so we
+// don't silently over-filter.
 function toBackendStatus(code: number | string): string | undefined {
   switch (Number(code)) {
     case 3:
@@ -38,7 +45,7 @@ function toBackendStatus(code: number | string): string | undefined {
     case 2:
       return 'awaiting_transfer';
     case 1:
-      return 'initiated';
+      return 'broadcasting,confirming';
     default:
       return undefined;
   }
@@ -102,7 +109,11 @@ function normalizeList(payload: any, page: number, pageSize: number) {
       status: toStatusCode(item.status),
       status_text: item.status || '',
       created_at: toIso(item.created_at),
-      completed_at: toStatusCode(item.status) === 3 ? toIso(item.created_at) : null,
+      // Real completion time (backend updated_at = credit/expiry moment) for
+      // completed rows ONLY — non-terminal rows render '—'. Never fabricate
+      // from created_at: an awaiting placeholder showing a "completion time"
+      // misled ops during the 2026-09-03 stuck-order investigation.
+      completed_at: toStatusCode(item.status) === 3 ? toIso(item.updated_at) : null,
       remark: item.tx_hash || item.external_tx_id || null,
     })),
     total,
