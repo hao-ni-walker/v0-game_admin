@@ -7,6 +7,31 @@ import {
 } from '@/service/response';
 
 const LIST_PATH = '/api/v1/admin/withdraw/pending-review';
+const RECORDS_PATH = '/api/v1/admin/withdraw/records';
+
+// Backend Withdrawal.status → page WithdrawOrderStatus. The page could
+// previously only ever see pending-review rows — broadcasting/completed/
+// failed payouts were invisible (ops had to query the DB directly during the
+// 2026-09-03 incident triage).
+const STATUS_TO_PAGE: Record<string, string> = {
+  validating: 'pending_audit',
+  pending_review: 'pending_audit',
+  processing: 'audit_passed',
+  broadcasting: 'payout_processing',
+  completed: 'success',
+  refunded: 'rejected',
+  failed: 'failed',
+};
+
+// Inverse map for the page's status filter (comma-joined backend statuses).
+const PAGE_STATUS_TO_BACKEND: Record<string, string> = {
+  pending_audit: 'validating,pending_review',
+  audit_passed: 'processing',
+  payout_processing: 'broadcasting',
+  success: 'completed',
+  rejected: 'refunded',
+  failed: 'failed',
+};
 
 function toIso(value: unknown): string {
   if (typeof value === 'number') {
@@ -90,6 +115,70 @@ function normalizeList(payload: any, page: number, pageSize: number) {
   };
 }
 
+function normalizeRecords(payload: any, page: number, pageSize: number) {
+  const items = Array.isArray(payload?.items) ? payload.items : [];
+  const pagination = payload?.pagination || {};
+  const data = items.map((item: any) => ({
+    id: Number(item.withdraw_id || item.id || 0),
+    orderNo: `WD${item.withdraw_id || item.id || ''}`,
+    channelOrderNo: item.tx_hash || null,
+    userId: Number(item.user_id || 0),
+    username: item.user_masked || item.username || undefined,
+    paymentChannelId: 0,
+    paymentChannelName: item.asset || 'USDT',
+    paymentChannelCode: item.chain || item.asset || 'USDT',
+    amount: Number(item.amount || 0),
+    fee: 0,
+    actualAmount:
+      item.amount_asset !== undefined && item.amount_asset !== null
+        ? Number(item.amount_asset)
+        : null,
+    status: STATUS_TO_PAGE[item.status] || 'pending_audit',
+    statusText: item.status || '',
+    currency: item.asset || 'USDT',
+    accountNumber: item.to_address || '',
+    auditStatus:
+      item.status === 'pending_review' || item.status === 'validating' ? 'pending' : 'approved',
+    payoutStatus:
+      item.status === 'broadcasting' || item.status === 'processing'
+        ? 'processing'
+        : item.status === 'completed'
+          ? 'success'
+          : item.status === 'failed' || item.status === 'refunded'
+            ? 'failed'
+            : 'pending',
+    remark: item.reason || null,
+    createdAt: toIso(item.created_at),
+    completedAt: item.status === 'completed' ? toIso(item.updated_at) : null,
+    updatedAt: toIso(item.updated_at),
+  }));
+
+  return {
+    data,
+    stats: {
+      totalAmount: data.reduce(
+        (sum: number, row: { amount?: number }) => sum + Number(row.amount || 0),
+        0
+      ),
+      totalFee: 0,
+      totalActualAmount: 0,
+      successCount: data.filter((row: { status?: string }) => row.status === 'success').length,
+      failedCount: data.filter(
+        (row: { status?: string }) => row.status === 'failed' || row.status === 'rejected'
+      ).length,
+    },
+    pager: {
+      page: Number(pagination.page || page || 1),
+      limit: Number(pagination.size || pageSize || 20),
+      total: Number(pagination.total || items.length || 0),
+      totalPages: Math.max(
+        1,
+        Math.ceil(Number(pagination.total || items.length || 0) / Math.max(pageSize, 1))
+      ),
+    },
+  };
+}
+
 export async function GET(request: NextRequest) {
   const cookieStore = await cookies();
   const token = cookieStore.get('token');
@@ -106,13 +195,33 @@ export async function GET(request: NextRequest) {
     sp.delete('page_size');
   }
 
+  // Default view = the FULL lifecycle via /records (was: pending-review only).
+  // The page's status filter values are page-level codes — translate them to
+  // backend statuses. No filter → all statuses.
+  const recordsSp = new URLSearchParams();
+  recordsSp.set('page', String(page));
+  recordsSp.set('size', String(pageSize));
+  if (sp.has('status')) {
+    const backendStatus = PAGE_STATUS_TO_BACKEND[sp.get('status') as string];
+    if (backendStatus) {
+      recordsSp.set('status', backendStatus);
+    }
+    sp.delete('status');
+  }
+  if (sp.has('username')) {
+    // pending-review proxy used username as a keyword; records filters by id.
+    const kw = sp.get('username') as string;
+    if (/^\d+$/.test(kw)) recordsSp.set('user_id', kw);
+    sp.delete('username');
+  }
+
   const remote = await requestRemoteAdminApi<{
     code?: number;
     message?: string;
     msg?: string;
     data?: unknown;
   }>({
-    path: `${LIST_PATH}${sp.size ? `?${sp.toString()}` : ''}`,
+    path: `${RECORDS_PATH}?${recordsSp.toString()}`,
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -121,7 +230,27 @@ export async function GET(request: NextRequest) {
   });
 
   if (remote.ok && remote.data && (remote.data.code === 0 || remote.data.code === 200)) {
-    return successResponse(normalizeList(remote.data.data, page, pageSize));
+    return successResponse(normalizeRecords(remote.data.data, page, pageSize));
+  }
+
+  // Fallback to the legacy pending-review proxy so the page still shows the
+  // review queue if the records endpoint is unavailable (older backend).
+  const legacy = await requestRemoteAdminApi<{
+    code?: number;
+    message?: string;
+    msg?: string;
+    data?: unknown;
+  }>({
+    path: `${LIST_PATH}?page=${page}&size=${pageSize}`,
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token.value}`,
+    },
+  });
+
+  if (legacy.ok && legacy.data && (legacy.data.code === 0 || legacy.data.code === 200)) {
+    return successResponse(normalizeList(legacy.data.data, page, pageSize));
   }
 
   console.warn('[admin/withdraw-orders] upstream unavailable, returning empty list', {
