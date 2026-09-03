@@ -114,9 +114,9 @@ export function DepositOrderDetailDrawer({
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('zh-CN', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'CNY',
+      currency: 'USD',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(value);
@@ -273,7 +273,7 @@ export function DepositOrderDetailDrawer({
 
                   <div className='space-y-2'>
                     <Label className='text-muted-foreground'>币种</Label>
-                    <div>{order.currency || 'CNY'}</div>
+                    <div>{order.currency || 'USD'}</div>
                   </div>
 
                   <div className='space-y-2'>

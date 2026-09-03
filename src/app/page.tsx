@@ -28,7 +28,7 @@ const jsonLd = {
       offers: {
         '@type': 'Offer',
         price: '0',
-        priceCurrency: 'CNY'
+        priceCurrency: 'USD'
       },
       author: {
         '@type': 'Organization',

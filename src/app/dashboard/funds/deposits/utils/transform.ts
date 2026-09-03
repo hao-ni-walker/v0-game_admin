@@ -121,9 +121,9 @@ export function transformDepositOrder(order: any): any {
   }
   // currency 字段可能不存在，设置默认值
   if (order.currency !== undefined) {
-    transformed.currency = order.currency || 'CNY';
+    transformed.currency = order.currency || 'USD';
   } else {
-    transformed.currency = 'CNY'; // 默认币种
+    transformed.currency = 'USD'; // 默认币种
   }
 
   // updatedAt 字段可能不存在，如果没有则使用 createdAt

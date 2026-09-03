@@ -122,9 +122,9 @@ export function useWithdrawOrderManagement() {
         // 格式化货币
         const formatCurrency = (value: number | null | undefined) => {
           if (value === null || value === undefined) return '';
-          return new Intl.NumberFormat('zh-CN', {
+          return new Intl.NumberFormat('en-US', {
             style: 'currency',
-            currency: 'CNY',
+            currency: 'USD',
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
           }).format(value);
@@ -191,7 +191,7 @@ export function useWithdrawOrderManagement() {
             formatCurrency(order.amount),
             formatCurrency(order.fee),
             formatCurrency(order.actualAmount),
-            order.currency || 'CNY',
+            order.currency || 'USD',
             ORDER_STATUS_LABELS[order.status] || order.status,
             order.accountName || '',
             order.accountNumber || '',

@@ -21,9 +21,9 @@ export function WithdrawOrderStatsCards({
   loading
 }: WithdrawOrderStatsCardsProps) {
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('zh-CN', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'CNY',
+      currency: 'USD',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(value);

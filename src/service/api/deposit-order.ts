@@ -94,7 +94,7 @@ function transformDepositOrder(raw: RawDepositOrder): DepositOrder {
         ? 0
         : parseNumber(raw.actual_amount),
     status: STATUS_MAP[raw.status] || 'pending',
-    currency: 'CNY', // 接口未返回，设为默认值
+    currency: 'USD', // 接口未返回，设为默认值
     ipAddress: null,
     remark: raw.remark || null,
     createdAt: raw.created_at || new Date().toISOString(),

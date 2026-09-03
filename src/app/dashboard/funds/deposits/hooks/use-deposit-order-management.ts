@@ -268,7 +268,7 @@ export function useDepositOrderManagement() {
               ? formatCurrency(order.actualAmount)
               : '',
             ORDER_STATUS_LABELS[order.status] || order.status,
-            order.currency || 'CNY',
+            order.currency || 'USD',
             order.ipAddress || '',
             order.remark || '',
             formatDateTime(order.createdAt),

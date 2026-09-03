@@ -345,7 +345,7 @@ export function DepositOrderFilters({
             <div className='space-y-2'>
               <label className='text-sm font-medium'>币种</label>
               <Input
-                placeholder='输入币种（如：CNY、USD）'
+                placeholder='输入币种（如：USD）'
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
               />
