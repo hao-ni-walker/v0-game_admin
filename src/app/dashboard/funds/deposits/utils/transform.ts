@@ -51,10 +51,14 @@ export function transformDepositOrder(order: any): any {
   }
 
   // 处理状态字段：将数字状态转换为字符串状态
+  // BFF 数字码语义（deposit-orders route 的 toStatusCode）：
+  // 1=支付中(broadcasting/confirming) 2=待支付(awaiting_transfer)
+  // 3=成功 4=失败 5=超时。此前这里 1/2 写反，导致"待支付"和
+  // "支付中"两个标签对调显示。
   if (order.status !== undefined) {
     const statusMap: Record<number, string> = {
-      1: 'pending',
-      2: 'processing',
+      1: 'processing',
+      2: 'pending',
       3: 'success',
       4: 'failed',
       5: 'timeout'

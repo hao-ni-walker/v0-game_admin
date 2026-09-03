@@ -135,15 +135,21 @@ function transformFiltersToParams(
   }
 
   // 状态（将字符串数组转换为数字数组）
+  // 数字码语义必须与 BFF（deposit-orders route 的 toStatusCode）一致：
+  // 1=支付中(broadcasting/confirming) 2=待支付(awaiting_transfer)。
+  // 此前 pending/processing 的码值写反，筛选结果与标签错位；
+  // 未知状态不再兜底为 1，直接丢弃以免误筛。
   if (filters.statuses && filters.statuses.length > 0) {
     const statusMap: Record<string, number> = {
-      pending: 1,
-      processing: 2,
+      pending: 2,
+      processing: 1,
       success: 3,
       failed: 4,
       timeout: 5
     };
-    params.status = filters.statuses.map((s) => statusMap[s] || 1);
+    params.status = filters.statuses
+      .map((s) => statusMap[s])
+      .filter((code): code is number => code !== undefined);
   }
 
   // 时间范围
