@@ -95,8 +95,17 @@ export function useDepositOrderManagement() {
           ordersList = Array.isArray(response.data) ? response.data : [];
         }
 
-        // 转换订单数据（下划线转驼峰）
-        const transformedOrders = transformDepositOrderList(ordersList);
+        // 转换订单数据（下划线转驼峰）。
+        // 注意：service 的 getDepositOrders 对 'data' 分支（旧结构）返回的
+        // 已是驼峰 DepositOrder，再跑一遍 snake→camel 转换会把字符串状态
+        // 误兜底成 'pending'（整列表显示"待支付"的事故根源）。只有
+        // 'items' 分支（原始 snake_case）需要转换；transform 现已对字符串
+        // 状态幂等，这里双保险仍只对原始数据转换。
+        const isRawList =
+          'items' in response.data && Array.isArray(response.data.items);
+        const transformedOrders = isRawList
+          ? transformDepositOrderList(ordersList)
+          : ordersList;
 
         setOrders(transformedOrders as DepositOrder[]);
         setStats(statsData);

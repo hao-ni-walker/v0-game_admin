@@ -53,8 +53,10 @@ export function transformDepositOrder(order: any): any {
   // 处理状态字段：将数字状态转换为字符串状态
   // BFF 数字码语义（deposit-orders route 的 toStatusCode）：
   // 1=支付中(broadcasting/confirming) 2=待支付(awaiting_transfer)
-  // 3=成功 4=失败 5=超时。此前这里 1/2 写反，导致"待支付"和
-  // "支付中"两个标签对调显示。
+  // 3=成功 4=失败 5=超时。
+  // 幂等保护：service 层已把状态转成字符串，历史上这里对字符串再查
+  // 数字键映射会 miss 并兜底成 'pending'，导致整列表显示"待支付"。
+  // 字符串状态原样放行（仅校验为已知值）。
   if (order.status !== undefined) {
     const statusMap: Record<number, string> = {
       1: 'processing',
@@ -63,7 +65,12 @@ export function transformDepositOrder(order: any): any {
       4: 'failed',
       5: 'timeout'
     };
-    transformed.status = statusMap[order.status] || 'pending';
+    if (typeof order.status === 'number') {
+      transformed.status = statusMap[order.status] || 'pending';
+    } else {
+      const known = ['pending', 'processing', 'success', 'failed', 'timeout'];
+      transformed.status = known.includes(order.status) ? order.status : 'pending';
+    }
   }
 
   // 处理金额字段，确保是数字类型
