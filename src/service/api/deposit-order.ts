@@ -53,9 +53,13 @@ interface RawDepositOrderListResponse {
 }
 
 // 状态映射：数字 -> 字符串
+// 数字码语义与 BFF（deposit-orders route 的 toStatusCode）一致：
+// 1=支付中(broadcasting/confirming) 2=待支付(awaiting_transfer)。
+// 此前 1/2 写反，导致列表"待支付/支付中"标签互换（与 utils/transform.ts、
+// 本文件筛选映射同源的三处错位，此为列表实际使用的一处）。
 const STATUS_MAP: Record<number, DepositOrder['status']> = {
-  1: 'pending', // 待支付
-  2: 'processing', // 支付中
+  1: 'processing', // 支付中
+  2: 'pending', // 待支付
   3: 'success', // 成功
   4: 'failed', // 失败
   5: 'timeout' // 超时
