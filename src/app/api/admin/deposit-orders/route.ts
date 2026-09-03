@@ -114,6 +114,7 @@ function normalizeList(payload: any, page: number, pageSize: number) {
       // from created_at: an awaiting placeholder showing a "completion time"
       // misled ops during the 2026-09-03 stuck-order investigation.
       completed_at: toStatusCode(item.status) === 3 ? toIso(item.updated_at) : null,
+      platform_address: item.platform_address || null,
       remark: item.tx_hash || item.external_tx_id || null,
     })),
     total,

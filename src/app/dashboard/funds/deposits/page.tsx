@@ -10,7 +10,8 @@ import {
   DepositOrderFilters,
   DepositOrderTable,
   DepositOrderDetailDrawer,
-  DepositOrderPageHeader
+  DepositOrderPageHeader,
+  ChainCheckDialog
 } from './components';
 import { useDepositOrderFilters, useDepositOrderManagement } from './hooks';
 import type { DepositOrder } from './types';
@@ -101,11 +102,23 @@ export default function DepositOrdersPage() {
     fetchOrders(filters);
   };
 
+  // 链上查证（单用户 TON 链上到账 vs 已入账）
+  const [chainCheckOpen, setChainCheckOpen] = useState(false);
+  const [chainCheckUserId, setChainCheckUserId] = useState<number | null>(null);
+  const handleOpenChainCheck = (userId?: number) => {
+    setChainCheckUserId(userId ?? null);
+    setChainCheckOpen(true);
+  };
+
   return (
     <PageContainer scrollable={false}>
       <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
         {/* 页面头部 */}
-        <DepositOrderPageHeader onRefresh={handleRefresh} loading={loading} />
+        <DepositOrderPageHeader
+          onRefresh={handleRefresh}
+          onChainCheck={() => handleOpenChainCheck()}
+          loading={loading}
+        />
 
         {/* 统计概览 */}
         <DepositOrderStatsCards stats={stats} loading={loading} />
@@ -127,6 +140,7 @@ export default function DepositOrdersPage() {
               loading={loading}
               pagination={pagination}
               onView={handleViewOrder}
+              onChainCheck={handleOpenChainCheck}
               emptyState={{
                 icon: <Wallet className='text-muted-foreground h-8 w-8' />,
                 title: hasActiveFilters ? '未找到匹配的订单' : '还没有订单',
@@ -161,6 +175,13 @@ export default function DepositOrdersPage() {
           onOpenChange={setDrawerOpen}
           orderId={selectedOrderId}
           onOrderUpdate={handleOrderUpdate}
+        />
+
+        {/* 链上查证（单用户 TON 链上到账 vs 已入账） */}
+        <ChainCheckDialog
+          open={chainCheckOpen}
+          onOpenChange={setChainCheckOpen}
+          initialUserId={chainCheckUserId}
         />
 
         {/* 导出确认对话框 */}

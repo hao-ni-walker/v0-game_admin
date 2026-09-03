@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Eye, Copy, ExternalLink } from 'lucide-react';
+import { MoreHorizontal, Eye, Copy, ExternalLink, Search } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,6 +40,7 @@ interface DepositOrderTableProps {
     totalPages: number;
   };
   onView: (order: DepositOrder) => void;
+  onChainCheck?: (userId: number) => void;
   emptyState?: {
     icon: React.ReactNode;
     title: string;
@@ -53,6 +54,7 @@ export function DepositOrderTable({
   loading,
   pagination,
   onView,
+  onChainCheck,
   emptyState
 }: DepositOrderTableProps) {
   const formatCurrency = (value: number) => {
@@ -284,6 +286,12 @@ export function DepositOrderTable({
                       <Eye className='mr-2 h-4 w-4' />
                       查看详情
                     </DropdownMenuItem>
+                    {onChainCheck && (
+                      <DropdownMenuItem onClick={() => onChainCheck(order.userId)}>
+                        <Search className='mr-2 h-4 w-4' />
+                        链上查证
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       onClick={() => copyOrderNo(order.orderNo)}
                     >

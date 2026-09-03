@@ -26,7 +26,8 @@ export interface DepositOrder {
   status: DepositOrderStatus;
   currency: string; // 币种
   ipAddress?: string | null; // IP 地址
-  remark?: string | null; // 备注
+  remark?: string | null; // 备注（链上凭证 external_tx_id）
+  platformAddress?: string | null; // 用户链上收款地址（链上查证用）
   createdAt: string; // 创建时间
   completedAt?: string | null; // 完成时间
   updatedAt?: string; // 更新时间

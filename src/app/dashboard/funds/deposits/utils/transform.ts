@@ -119,6 +119,9 @@ export function transformDepositOrder(order: any): any {
   if (order.ip_address !== undefined) {
     transformed.ipAddress = order.ip_address;
   }
+  if (order.platform_address !== undefined) {
+    transformed.platformAddress = order.platform_address;
+  }
   // currency 字段可能不存在，设置默认值
   if (order.currency !== undefined) {
     transformed.currency = order.currency || 'USD';

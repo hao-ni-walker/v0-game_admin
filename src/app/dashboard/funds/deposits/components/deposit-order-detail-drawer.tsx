@@ -281,6 +281,64 @@ export function DepositOrderDetailDrawer({
                     <div>{order.ipAddress || '—'}</div>
                   </div>
 
+                  {order.platformAddress && (
+                    <div className='col-span-2 space-y-2'>
+                      <Label className='text-muted-foreground'>链上收款地址（TON）</Label>
+                      <div className='flex items-center gap-2'>
+                        <span className='break-all font-mono text-xs'>
+                          {order.platformAddress}
+                        </span>
+                        <Button
+                          variant='ghost'
+                          size='icon'
+                          className='h-6 w-6 shrink-0'
+                          onClick={() => copyToClipboard(order.platformAddress!)}
+                        >
+                          <Copy className='h-3 w-3' />
+                        </Button>
+                        <a
+                          href={`https://tonscan.org/address/${order.platformAddress}`}
+                          target='_blank'
+                          rel='noreferrer'
+                          className='inline-flex shrink-0 items-center gap-1 text-xs text-blue-600 hover:underline'
+                        >
+                          <ExternalLink className='h-3 w-3' />
+                          查链上
+                        </a>
+                      </div>
+                    </div>
+                  )}
+
+                  {order.remark &&
+                   (/^jetton:[0-9a-f]{64}:\d+$/.test(order.remark) ||
+                    /^[0-9a-f]{64}$/.test(order.remark)) && (
+                    <div className='col-span-2 space-y-2'>
+                      <Label className='text-muted-foreground'>链上凭证（交易事件 ID）</Label>
+                      <div className='flex items-center gap-2'>
+                        <span className='break-all font-mono text-xs'>
+                          {order.remark}
+                        </span>
+                        <Button
+                          variant='ghost'
+                          size='icon'
+                          className='h-6 w-6 shrink-0'
+                          onClick={() => copyToClipboard(order.remark!)}
+                        >
+                          <Copy className='h-3 w-3' />
+                        </Button>
+                        <a
+                          href={`https://tonscan.org/transaction/${order.remark!.replace(/^jetton:/, '').replace(/:\d+$/, '')}`}
+                          target='_blank'
+                          rel='noreferrer'
+                          className='inline-flex shrink-0 items-center gap-1 text-xs text-blue-600 hover:underline'
+                        >
+                          <ExternalLink className='h-3 w-3' />
+                          区块浏览器
+                        </a>
+                      </div>
+                    </div>
+                  )}
+
                   <div className='space-y-2'>
                     <Label className='text-muted-foreground'>创建时间</Label>
                     <div>{formatDateTime(order.createdAt)}</div>
