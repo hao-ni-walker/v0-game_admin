@@ -7,10 +7,13 @@ export interface PeriodRiskStatus {
   short_amount: number;
   risk_level: string;
   odds_status: string;
-  is_accepting: boolean;
+  // null = 上游不可用(BFF 降级态),UI 应显示"不可用"而非"是/否"
+  is_accepting: boolean | null;
   dominant_side: string | null;
 }
 export interface RiskStatus {
+  // degraded=true: 上游超时/失败,BFF 返回的是占位结构而非实时风控状态
+  degraded?: boolean;
   overall_level: string;
   periods: PeriodRiskStatus[];
   single_side_triggered: boolean;

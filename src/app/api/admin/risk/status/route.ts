@@ -21,17 +21,23 @@ interface RiskStatusPayload {
   single_side_triggered?: boolean;
 }
 
-function buildFallbackStatus() {
+function buildDegradedStatus() {
+  // Upstream unavailable/timeout: the risk page must NOT render a fabricated
+  // "normal & accepting" green board while the real risk backend may have
+  // PAUSED odds or be unreachable (same silent-fake-healthy class as the
+  // background_worker_up-on-dead-loop incident). Mark the payload degraded
+  // and null the decision fields so the UI shows "unavailable" instead.
   return {
-    overall_level: 'normal',
+    degraded: true,
+    overall_level: 'unknown',
     periods: PERIODS.map((period) => ({
       period,
       net_exposure: 0,
       long_amount: 0,
       short_amount: 0,
-      risk_level: 'normal',
-      odds_status: 'active',
-      is_accepting: true,
+      risk_level: 'unknown',
+      odds_status: 'unknown',
+      is_accepting: null,
       dominant_side: null,
     })),
     single_side_triggered: false,
@@ -39,9 +45,8 @@ function buildFallbackStatus() {
 }
 
 function normalizeStatus(payload?: RiskStatusPayload | null) {
-  const fallback = buildFallbackStatus();
   if (!payload) {
-    return fallback;
+    return buildDegradedStatus();
   }
 
   const periodMap = new Map(
@@ -51,7 +56,7 @@ function normalizeStatus(payload?: RiskStatusPayload | null) {
   );
 
   return {
-    overall_level: payload.overall_level || fallback.overall_level,
+    overall_level: payload.overall_level || 'normal',
     periods: PERIODS.map((period) => {
       const current = periodMap.get(period);
       return {
@@ -102,5 +107,5 @@ export async function GET() {
     console.warn('[admin/risk/status] upstream request failed, returning fallback', error);
   }
 
-  return successResponse(buildFallbackStatus());
+  return successResponse(buildDegradedStatus());
 }

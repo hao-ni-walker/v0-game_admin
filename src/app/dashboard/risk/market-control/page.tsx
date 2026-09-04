@@ -89,6 +89,11 @@ export default function MarketControlPage() {
               每 5 秒自动刷新。level/dominant_side/is_accepting 来自 MarketMonitor；敞口金额需检测引擎（暂为 0）。
             </CardDescription>
           </CardHeader>
+          {status?.degraded && (
+            <div className='mx-6 mb-2 rounded-md border border-orange-300 bg-orange-50 p-3 text-sm text-orange-800 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300'>
+              ⚠️ 风控状态不可用（上游超时/失败）——下表为占位数据，不代表实时盘口状态。请检查后端 /admin/risk/status。
+            </div>
+          )}
           <CardContent>
             <Table>
               <TableHeader>
@@ -106,12 +111,12 @@ export default function MarketControlPage() {
                     <TableCell className='font-medium'>{p.period}</TableCell>
                     <TableCell>
                       <Badge variant={p.risk_level === 'normal' ? 'outline' : 'destructive'}>
-                        {p.risk_level}
+                        {p.risk_level === 'unknown' ? '不可用' : p.risk_level}
                       </Badge>
                     </TableCell>
                     <TableCell>{p.dominant_side ?? '—'}</TableCell>
-                    <TableCell>{p.odds_status}</TableCell>
-                    <TableCell>{p.is_accepting ? '是' : '否'}</TableCell>
+                    <TableCell>{p.odds_status === 'unknown' ? '不可用' : p.odds_status}</TableCell>
+                    <TableCell>{p.is_accepting === null ? '不可用' : p.is_accepting ? '是' : '否'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
