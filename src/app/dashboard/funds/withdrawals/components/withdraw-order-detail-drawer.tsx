@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   X,
   Loader2,
-  Save,
   ExternalLink,
   Copy,
   CheckCircle,
@@ -24,7 +23,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -170,7 +168,6 @@ export function WithdrawOrderDetailDrawer({
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [remark, setRemark] = useState('');
-  const [isEditingRemark, setIsEditingRemark] = useState(false);
 
   // 审核对话框状态
   const [auditDialogOpen, setAuditDialogOpen] = useState(false);
@@ -178,14 +175,6 @@ export function WithdrawOrderDetailDrawer({
     'approve'
   );
   const [auditRemark, setAuditRemark] = useState('');
-
-  // 标记出款对话框状态
-  const [payoutDialogOpen, setPayoutDialogOpen] = useState(false);
-  const [payoutAction, setPayoutAction] = useState<'success' | 'failed'>(
-    'success'
-  );
-  const [payoutChannelOrderNo, setPayoutChannelOrderNo] = useState('');
-  const [payoutFailureReason, setPayoutFailureReason] = useState('');
 
   // 获取订单详情
   const fetchOrderDetail = useCallback(async () => {
@@ -220,39 +209,9 @@ export function WithdrawOrderDetailDrawer({
       setTransactions([]);
       setRiskInfo(null);
       setRemark('');
-      setIsEditingRemark(false);
       setAuditDialogOpen(false);
-      setPayoutDialogOpen(false);
     }
   }, [open, orderId, fetchOrderDetail]);
-
-  // 保存备注
-  const handleSaveRemark = async () => {
-    if (!orderId) return;
-
-    setSaving(true);
-    try {
-      const response = await WithdrawOrderAPI.updateOrderRemark(
-        orderId,
-        remark
-      );
-      if (response.success) {
-        setIsEditingRemark(false);
-        if (response.data) {
-          setOrder(response.data);
-        }
-        onOrderUpdate?.();
-        toast.success('备注更新成功');
-      } else {
-        toast.error(response.message || '更新备注失败');
-      }
-    } catch (error) {
-      console.error('更新备注失败:', error);
-      toast.error('更新备注失败');
-    } finally {
-      setSaving(false);
-    }
-  };
 
   // 打开审核对话框
   const handleOpenAuditDialog = (action: 'approve' | 'reject') => {
@@ -263,8 +222,10 @@ export function WithdrawOrderDetailDrawer({
 
   // 提交审核
   const handleSubmitAudit = async () => {
-    if (!orderId || !auditRemark.trim()) {
-      toast.error('请填写审核备注');
+    if (!orderId) return;
+    // 拒绝必须给出原因；通过时备注可选（与后端 comment 语义一致）
+    if (auditAction === 'reject' && !auditRemark.trim()) {
+      toast.error('请填写拒绝原因');
       return;
     }
 
@@ -287,56 +248,6 @@ export function WithdrawOrderDetailDrawer({
     } catch (error) {
       console.error('审核失败:', error);
       toast.error('审核失败');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // 打开标记出款对话框
-  const handleOpenPayoutDialog = (action: 'success' | 'failed') => {
-    setPayoutAction(action);
-    setPayoutChannelOrderNo('');
-    setPayoutFailureReason('');
-    setPayoutDialogOpen(true);
-  };
-
-  // 提交标记出款结果
-  const handleSubmitPayout = async () => {
-    if (!orderId) return;
-
-    if (payoutAction === 'success' && !payoutChannelOrderNo.trim()) {
-      toast.error('请填写渠道订单号');
-      return;
-    }
-
-    if (payoutAction === 'failed' && !payoutFailureReason.trim()) {
-      toast.error('请填写失败原因');
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const response = await WithdrawOrderAPI.markPayoutResult({
-        orderId,
-        action: payoutAction,
-        channelOrderNo: payoutChannelOrderNo || undefined,
-        failureReason: payoutFailureReason || undefined
-      });
-      if (response.success && response.data) {
-        setOrder(response.data);
-        setPayoutDialogOpen(false);
-        setPayoutChannelOrderNo('');
-        setPayoutFailureReason('');
-        onOrderUpdate?.();
-        toast.success(
-          payoutAction === 'success' ? '标记出款成功' : '标记出款失败'
-        );
-      } else {
-        toast.error(response.message || '标记出款结果失败');
-      }
-    } catch (error) {
-      console.error('标记出款结果失败:', error);
-      toast.error('标记出款结果失败');
     } finally {
       setSaving(false);
     }
@@ -571,62 +482,16 @@ export function WithdrawOrderDetailDrawer({
 
                       <div className='col-span-2 space-y-2'>
                         <Label className='text-muted-foreground'>备注</Label>
-                        {isEditingRemark ? (
-                          <div className='space-y-2'>
-                            <Textarea
-                              value={remark}
-                              onChange={(e) => setRemark(e.target.value)}
-                              rows={3}
-                              placeholder='输入备注信息'
-                            />
-                            <div className='flex gap-2'>
-                              <Button
-                                size='sm'
-                                onClick={handleSaveRemark}
-                                disabled={saving}
-                              >
-                                {saving ? (
-                                  <>
-                                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                                    保存中...
-                                  </>
-                                ) : (
-                                  <>
-                                    <Save className='mr-2 h-4 w-4' />
-                                    保存
-                                  </>
-                                )}
-                              </Button>
-                              <Button
-                                size='sm'
-                                variant='outline'
-                                onClick={() => {
-                                  setIsEditingRemark(false);
-                                  setRemark(order.remark || '');
-                                }}
-                              >
-                                取消
-                              </Button>
-                            </div>
+                        {/* 只读：后端提现表无备注字段，此处展示审核备注（拒绝原因） */}
+                        <div className='flex items-center justify-between'>
+                          <div className='flex-1'>
+                            {remark || (
+                              <span className='text-muted-foreground'>
+                                暂无备注
+                              </span>
+                            )}
                           </div>
-                        ) : (
-                          <div className='flex items-center justify-between'>
-                            <div className='flex-1'>
-                              {remark || (
-                                <span className='text-muted-foreground'>
-                                  暂无备注
-                                </span>
-                              )}
-                            </div>
-                            <Button
-                              size='sm'
-                              variant='outline'
-                              onClick={() => setIsEditingRemark(true)}
-                            >
-                              编辑
-                            </Button>
-                          </div>
-                        )}
+                        </div>
                       </div>
                     </div>
                   </TabsContent>
@@ -1005,49 +870,25 @@ export function WithdrawOrderDetailDrawer({
           </div>
 
           {/* 操作区（固定在底部） */}
-          {order && (
+          {order && order.status === 'pending_audit' && (
             <DrawerFooter className='border-t'>
               <div className='flex justify-end gap-2'>
-                {order.status === 'pending_audit' && (
-                  <>
-                    <Button
-                      variant='default'
-                      onClick={() => handleOpenAuditDialog('approve')}
-                      disabled={saving}
-                    >
-                      <CheckCircle className='mr-2 h-4 w-4' />
-                      审核通过
-                    </Button>
-                    <Button
-                      variant='destructive'
-                      onClick={() => handleOpenAuditDialog('reject')}
-                      disabled={saving}
-                    >
-                      <XCircle className='mr-2 h-4 w-4' />
-                      审核拒绝
-                    </Button>
-                  </>
-                )}
-                {order.payoutStatus === 'pending' && (
-                  <>
-                    <Button
-                      variant='default'
-                      onClick={() => handleOpenPayoutDialog('success')}
-                      disabled={saving}
-                    >
-                      <CheckCircle className='mr-2 h-4 w-4' />
-                      标记出款成功
-                    </Button>
-                    <Button
-                      variant='destructive'
-                      onClick={() => handleOpenPayoutDialog('failed')}
-                      disabled={saving}
-                    >
-                      <XCircle className='mr-2 h-4 w-4' />
-                      标记出款失败
-                    </Button>
-                  </>
-                )}
+                <Button
+                  variant='default'
+                  onClick={() => handleOpenAuditDialog('approve')}
+                  disabled={saving}
+                >
+                  <CheckCircle className='mr-2 h-4 w-4' />
+                  审核通过
+                </Button>
+                <Button
+                  variant='destructive'
+                  onClick={() => handleOpenAuditDialog('reject')}
+                  disabled={saving}
+                >
+                  <XCircle className='mr-2 h-4 w-4' />
+                  审核拒绝
+                </Button>
               </div>
             </DrawerFooter>
           )}
@@ -1070,7 +911,7 @@ export function WithdrawOrderDetailDrawer({
           <div className='space-y-4 py-4'>
             <div className='space-y-2'>
               <Label>
-                {auditAction === 'approve' ? '审核备注' : '拒绝原因'} *
+                {auditAction === 'approve' ? '审核备注' : '拒绝原因 *'}
               </Label>
               <Textarea
                 value={auditRemark}
@@ -1096,69 +937,6 @@ export function WithdrawOrderDetailDrawer({
               取消
             </Button>
             <Button onClick={handleSubmitAudit} disabled={saving}>
-              {saving ? (
-                <>
-                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                  提交中...
-                </>
-              ) : (
-                '确认'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* 标记出款对话框 */}
-      <Dialog open={payoutDialogOpen} onOpenChange={setPayoutDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {payoutAction === 'success' ? '标记出款成功' : '标记出款失败'}
-            </DialogTitle>
-            <DialogDescription>
-              {payoutAction === 'success'
-                ? '请填写渠道订单号等信息'
-                : '请填写出款失败原因'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className='space-y-4 py-4'>
-            {payoutAction === 'success' && (
-              <div className='space-y-2'>
-                <Label>渠道订单号 *</Label>
-                <Input
-                  value={payoutChannelOrderNo}
-                  onChange={(e) => setPayoutChannelOrderNo(e.target.value)}
-                  placeholder='输入渠道订单号'
-                  required
-                />
-              </div>
-            )}
-            {payoutAction === 'failed' && (
-              <div className='space-y-2'>
-                <Label>失败原因 *</Label>
-                <Textarea
-                  value={payoutFailureReason}
-                  onChange={(e) => setPayoutFailureReason(e.target.value)}
-                  placeholder='请输入出款失败原因'
-                  rows={4}
-                  required
-                />
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button
-              variant='outline'
-              onClick={() => {
-                setPayoutDialogOpen(false);
-                setPayoutChannelOrderNo('');
-                setPayoutFailureReason('');
-              }}
-            >
-              取消
-            </Button>
-            <Button onClick={handleSubmitPayout} disabled={saving}>
               {saving ? (
                 <>
                   <Loader2 className='mr-2 h-4 w-4 animate-spin' />

@@ -110,6 +110,46 @@ export default function WithdrawOrdersPage() {
     // 详情抽屉中会处理审核操作
   };
 
+  // 打款(TRON USDT):人工触发一次性广播,系统扫链确认;成功后展示
+  // tx hash + tronscan 直链的凭证面板供截图留证。
+  const [payTarget, setPayTarget] = useState<WithdrawOrder | null>(null);
+  const [paying, setPaying] = useState(false);
+  const [payResult, setPayResult] = useState<{
+    tx_hash: string;
+    explorer_url: string;
+    status?: string;
+    note?: string;
+  } | null>(null);
+
+  const handlePayOrder = (order: WithdrawOrder) => {
+    setPayResult(null);
+    setPayTarget(order);
+  };
+
+  const handleConfirmPay = async () => {
+    if (!payTarget) return;
+    setPaying(true);
+    try {
+      const res = await fetch('/api/admin/withdraw-pay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ withdraw_id: String(payTarget.id) }),
+      });
+      const payload = await res.json();
+      if (!res.ok || payload.code !== 0) {
+        toast.error(payload.message || '打款失败');
+        return;
+      }
+      setPayResult(payload.data);
+      toast.success('打款已广播,等待链上确认');
+      refreshOrders();
+    } catch {
+      toast.error('网络错误,请重试');
+    } finally {
+      setPaying(false);
+    }
+  };
+
   // 处理选择变化
   const handleSelectChange = (selectedIds: number[]) => {
     setSelectedOrderIds(selectedIds);
@@ -196,6 +236,7 @@ export default function WithdrawOrdersPage() {
               pagination={pagination}
               onView={handleViewOrder}
               onAudit={handleAuditOrder}
+              onPay={handlePayOrder}
               onSelectChange={handleSelectChange}
               emptyState={{
                 icon: (
@@ -226,6 +267,56 @@ export default function WithdrawOrdersPage() {
         </div>
 
         {/* 订单详情抽屉 */}
+        {/* 打款确认 + 凭证面板(TRON) */}
+        <Dialog open={payTarget !== null} onOpenChange={(o) => !o && setPayTarget(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>打款确认(TRON USDT)</DialogTitle>
+              <DialogDescription>
+                {payResult
+                  ? '交易已广播,等待链上确认(约 1 分钟)。下方为打款凭证,请截图留证。'
+                  : '确认后将从 TRON 热钱包向用户地址广播 USDT 转账。此操作不可撤销。'}
+              </DialogDescription>
+            </DialogHeader>
+            {payTarget && (
+              <div className='space-y-1 text-sm'>
+                <div>订单:{payTarget.orderNo}</div>
+                <div>金额:{payTarget.actualAmount ?? payTarget.amount} USDT</div>
+                <div className='break-all'>
+                  收款地址:{payTarget.accountNumber || '—'}
+                </div>
+              </div>
+            )}
+            {payResult && (
+              <div className='rounded-md border bg-muted/40 p-3 text-xs'>
+                <div className='break-all font-mono'>tx: {payResult.tx_hash}</div>
+                <a
+                  href={payResult.explorer_url}
+                  target='_blank'
+                  rel='noreferrer'
+                  className='text-blue-600 hover:underline'
+                >
+                  在 tronscan 查看交易 ↗
+                </a>
+                <div className='text-muted-foreground mt-1'>
+                  状态:{payResult.status}
+                  {payResult.note ? ` · ${payResult.note}` : ''}
+                </div>
+              </div>
+            )}
+            <DialogFooter>
+              <Button variant='outline' onClick={() => setPayTarget(null)}>
+                {payResult ? '关闭' : '取消'}
+              </Button>
+              {!payResult && (
+                <Button onClick={handleConfirmPay} disabled={paying}>
+                  {paying ? '广播中…' : '确认打款'}
+                </Button>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         <WithdrawOrderDetailDrawer
           open={drawerOpen}
           onOpenChange={setDrawerOpen}

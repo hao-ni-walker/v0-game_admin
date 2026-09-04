@@ -12,7 +12,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MoreHorizontal, Eye, Copy, CheckCircle, XCircle } from 'lucide-react';
+import { MoreHorizontal, Eye, Copy, CheckCircle, XCircle, Send} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,6 +43,7 @@ interface WithdrawOrderTableProps {
   };
   onView: (order: WithdrawOrder) => void;
   onAudit?: (order: WithdrawOrder) => void;
+  onPay?: (order: WithdrawOrder) => void;
   onSelectChange?: (selectedIds: number[]) => void;
   emptyState?: {
     icon: React.ReactNode;
@@ -67,6 +68,7 @@ export function WithdrawOrderTable({
   pagination,
   onView,
   onAudit,
+  onPay,
   onSelectChange,
   emptyState
 }: WithdrawOrderTableProps) {
@@ -386,6 +388,12 @@ export function WithdrawOrderTable({
                         <DropdownMenuItem onClick={() => onAudit(order)}>
                           <CheckCircle className='mr-2 h-4 w-4' />
                           审核
+                        </DropdownMenuItem>
+                      )}
+                      {order.status === 'audit_passed' && onPay && (
+                        <DropdownMenuItem onClick={() => onPay(order)}>
+                          <Send className='mr-2 h-4 w-4' />
+                          打款
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem
