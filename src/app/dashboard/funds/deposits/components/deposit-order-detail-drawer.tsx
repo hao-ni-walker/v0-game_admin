@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { X, Loader2, Save, ExternalLink, Copy } from 'lucide-react';
+import { X, ExternalLink, Copy } from 'lucide-react';
 import {
   Drawer,
   DrawerContent,
@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -49,9 +48,7 @@ export function DepositOrderDetailDrawer({
   const [userWallet, setUserWallet] = useState<UserWallet | null>(null);
   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [remark, setRemark] = useState('');
-  const [isEditingRemark, setIsEditingRemark] = useState(false);
 
   // 获取订单详情
   const fetchOrderDetail = useCallback(async () => {
@@ -84,34 +81,8 @@ export function DepositOrderDetailDrawer({
       setUserWallet(null);
       setTransactions([]);
       setRemark('');
-      setIsEditingRemark(false);
     }
   }, [open, orderId, fetchOrderDetail]);
-
-  // 保存备注
-  const handleSaveRemark = async () => {
-    if (!orderId) return;
-
-    setSaving(true);
-    try {
-      const response = await DepositOrderAPI.updateOrderRemark(orderId, remark);
-      if (response.success) {
-        setIsEditingRemark(false);
-        if (response.data) {
-          setOrder(response.data);
-        }
-        onOrderUpdate?.();
-        toast.success('备注更新成功');
-      } else {
-        toast.error(response.message || '更新备注失败');
-      }
-    } catch (error) {
-      console.error('更新备注失败:', error);
-      toast.error('更新备注失败');
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -355,62 +326,16 @@ export function DepositOrderDetailDrawer({
 
                   <div className='col-span-2 space-y-2'>
                     <Label className='text-muted-foreground'>备注</Label>
-                    {isEditingRemark ? (
-                      <div className='space-y-2'>
-                        <Textarea
-                          value={remark}
-                          onChange={(e) => setRemark(e.target.value)}
-                          rows={3}
-                          placeholder='输入备注信息'
-                        />
-                        <div className='flex gap-2'>
-                          <Button
-                            size='sm'
-                            onClick={handleSaveRemark}
-                            disabled={saving}
-                          >
-                            {saving ? (
-                              <>
-                                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                                保存中...
-                              </>
-                            ) : (
-                              <>
-                                <Save className='mr-2 h-4 w-4' />
-                                保存
-                              </>
-                            )}
-                          </Button>
-                          <Button
-                            size='sm'
-                            variant='outline'
-                            onClick={() => {
-                              setIsEditingRemark(false);
-                              setRemark(order.remark || '');
-                            }}
-                          >
-                            取消
-                          </Button>
-                        </div>
+                    {/* 只读：后端储值表无备注字段，此处展示链上凭证（交易哈希/事件ID） */}
+                    <div className='flex items-center justify-between'>
+                      <div className='flex-1'>
+                        {remark || (
+                          <span className='text-muted-foreground'>
+                            暂无备注
+                          </span>
+                        )}
                       </div>
-                    ) : (
-                      <div className='flex items-center justify-between'>
-                        <div className='flex-1'>
-                          {remark || (
-                            <span className='text-muted-foreground'>
-                              暂无备注
-                            </span>
-                          )}
-                        </div>
-                        <Button
-                          size='sm'
-                          variant='outline'
-                          onClick={() => setIsEditingRemark(true)}
-                        >
-                          编辑
-                        </Button>
-                      </div>
-                    )}
+                    </div>
                   </div>
                 </div>
               </TabsContent>
