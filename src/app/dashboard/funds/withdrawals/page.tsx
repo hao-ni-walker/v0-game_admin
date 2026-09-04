@@ -26,6 +26,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function WithdrawOrdersPage() {
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
@@ -55,7 +56,8 @@ export default function WithdrawOrdersPage() {
     refreshOrders,
     exportOrders,
     auditOrder,
-    batchAuditOrders
+    batchAuditOrders,
+    loadError
   } = useWithdrawOrderManagement();
 
   // 初始化和筛选条件变化时获取数据
@@ -206,6 +208,12 @@ export default function WithdrawOrdersPage() {
   return (
     <PageContainer scrollable={false}>
       <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
+        {loadError && (
+          <Alert variant='destructive'>
+            <AlertTitle>资金数据暂不可用</AlertTitle>
+            <AlertDescription>{loadError}</AlertDescription>
+          </Alert>
+        )}
         {/* 页面头部 */}
         <WithdrawOrderPageHeader
           onRefresh={handleRefresh}

@@ -28,8 +28,13 @@ function toIso(value: unknown): string {
 // mid-flight rows all map to 出款中.
 function mapOrderStatus(status: string | null | undefined): OrderStatus {
   switch ((status || '').toLowerCase()) {
+    case 'validating':
     case 'pending_review':
       return 'pending_audit';
+    case 'processing':
+      return 'audit_passed';
+    case 'broadcasting':
+      return 'payout_processing';
     case 'completed':
       return 'success';
     case 'rejected':
@@ -72,6 +77,7 @@ export interface BackendWithdrawDetail {
   amount_usd: number;
   fee?: number | null;
   arrival_amount?: number | null;
+  arrival_amount_asset?: number | null;
   to_address?: string | null;
   status?: string | null;
   tx_hash?: string | null;
@@ -114,8 +120,10 @@ export function normalizeWithdrawOrder(
     amount: Number(item.amount_usd || 0),
     fee: Number(item.fee || 0),
     actualAmount:
-      item.arrival_amount !== null && item.arrival_amount !== undefined
-        ? Number(item.arrival_amount)
+      item.arrival_amount_asset !== null && item.arrival_amount_asset !== undefined
+        ? Number(item.arrival_amount_asset)
+        : item.arrival_amount !== null && item.arrival_amount !== undefined
+          ? Number(item.arrival_amount)
         : null,
     status: mapOrderStatus(status),
     currency: item.asset || 'USDT',

@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 import { requestRemoteAdminApi } from '@/lib/admin-remote';
 import {
+  serviceUnavailableResponse,
   successResponse,
   unauthorizedResponse,
 } from '@/service/response';
@@ -21,6 +22,7 @@ const STATUS_TO_PAGE: Record<string, string> = {
   completed: 'success',
   refunded: 'rejected',
   failed: 'failed',
+  rejected: 'rejected',
 };
 
 // Inverse map for the page's status filter (comma-joined backend statuses).
@@ -29,7 +31,7 @@ const PAGE_STATUS_TO_BACKEND: Record<string, string> = {
   audit_passed: 'processing',
   payout_processing: 'broadcasting',
   success: 'completed',
-  rejected: 'refunded',
+  rejected: 'refunded,rejected',
   failed: 'failed',
 };
 
@@ -71,6 +73,7 @@ function normalizeList(payload: any, page: number, pageSize: number) {
   const total = Number(pagination.total || items.length || 0);
   const data = items.map((item: any) => {
     const amount = Number(item.amount_usd || item.amount || 0);
+    const rawStatus = String(item.status || 'pending_review').toLowerCase();
     return {
       id: Number(item.withdraw_id || item.id || 0),
       orderNo: `WD${item.withdraw_id || item.id || ''}`,
@@ -81,16 +84,25 @@ function normalizeList(payload: any, page: number, pageSize: number) {
       paymentChannelName: item.asset || 'USDT',
       paymentChannelCode: item.asset || 'USDT',
       amount,
-      fee: 0,
-      actualAmount: null,
-      status: 'pending_audit',
+      fee: Number(item.fee || 0),
+      actualAmount:
+        item.amount_asset !== undefined && item.amount_asset !== null
+          ? Number(item.amount_asset)
+          : null,
+      status: STATUS_TO_PAGE[rawStatus] || 'pending_audit',
       currency: item.asset || 'USDT',
       accountNumber: item.to_address || '',
-      auditStatus: 'pending',
-      payoutStatus: 'pending',
+      auditStatus: rawStatus === 'pending_review' || rawStatus === 'validating'
+        ? 'pending' : rawStatus === 'rejected' ? 'rejected' : 'approved',
+      payoutStatus: rawStatus === 'broadcasting' || rawStatus === 'processing'
+        ? 'processing'
+        : rawStatus === 'completed'
+          ? 'success'
+          : rawStatus === 'failed' || rawStatus === 'refunded' || rawStatus === 'rejected'
+            ? 'failed' : 'pending',
       createdAt: toIso(item.created_at),
-      completedAt: null,
-      updatedAt: toIso(item.created_at),
+      completedAt: rawStatus === 'completed' ? toIso(item.updated_at) : null,
+      updatedAt: toIso(item.updated_at || item.created_at),
     };
   });
 
@@ -101,10 +113,18 @@ function normalizeList(payload: any, page: number, pageSize: number) {
         (sum: number, row: { amount?: number }) => sum + Number(row.amount || 0),
         0
       ),
-      totalFee: 0,
-      totalActualAmount: 0,
-      successCount: 0,
-      failedCount: 0,
+      totalFee: data.reduce(
+        (sum: number, row: { fee?: number }) => sum + Number(row.fee || 0),
+        0
+      ),
+      totalActualAmount: data.reduce(
+        (sum: number, row: { actualAmount?: number | null }) => sum + Number(row.actualAmount || 0),
+        0
+      ),
+      successCount: data.filter((row: { status?: string }) => row.status === 'success').length,
+      failedCount: data.filter(
+        (row: { status?: string }) => row.status === 'failed' || row.status === 'rejected'
+      ).length,
     },
     pager: {
       page: currentPage,
@@ -128,7 +148,7 @@ function normalizeRecords(payload: any, page: number, pageSize: number) {
     paymentChannelName: item.asset || 'USDT',
     paymentChannelCode: item.chain || item.asset || 'USDT',
     amount: Number(item.amount || 0),
-    fee: 0,
+    fee: Number(item.fee || 0),
     actualAmount:
       item.amount_asset !== undefined && item.amount_asset !== null
         ? Number(item.amount_asset)
@@ -144,7 +164,7 @@ function normalizeRecords(payload: any, page: number, pageSize: number) {
         ? 'processing'
         : item.status === 'completed'
           ? 'success'
-          : item.status === 'failed' || item.status === 'refunded'
+          : item.status === 'failed' || item.status === 'refunded' || item.status === 'rejected'
             ? 'failed'
             : 'pending',
     remark: item.reason || null,
@@ -257,5 +277,5 @@ export async function GET(request: NextRequest) {
     status: remote.status,
     body: remote.text,
   });
-  return successResponse(buildEmpty(page, pageSize));
+  return serviceUnavailableResponse('提现订单服务暂不可用，列表未能刷新，请稍后重试');
 }

@@ -13,6 +13,7 @@ export function useWithdrawOrderManagement() {
   const [orders, setOrders] = useState<WithdrawOrder[]>([]);
   const [stats, setStats] = useState<WithdrawOrderStats | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
     page: 1,
     pageSize: 20,
@@ -23,6 +24,7 @@ export function useWithdrawOrderManagement() {
   // 获取订单列表
   const fetchOrders = useCallback(async (filters?: WithdrawOrderFilters) => {
     setLoading(true);
+    setLoadError(null);
     try {
       const response = await WithdrawOrderAPI.getWithdrawOrders(filters);
       if (response.success && response.data) {
@@ -35,6 +37,7 @@ export function useWithdrawOrderManagement() {
           totalPages: Math.max(response.data.pager.totalPages || 0, 1)
         });
       } else {
+        setLoadError(response.message || '提现订单服务暂不可用，列表未刷新');
         toast.error(response.message || '获取订单列表失败');
         setOrders([]);
         setStats(null);
@@ -42,6 +45,7 @@ export function useWithdrawOrderManagement() {
     } catch (error) {
       console.error('获取订单列表失败:', error);
       toast.error('获取订单列表失败');
+      setLoadError('提现订单服务暂不可用，列表未刷新');
       setOrders([]);
       setStats(null);
     } finally {
@@ -354,6 +358,7 @@ export function useWithdrawOrderManagement() {
     loading,
     pagination,
     fetchOrders,
+    loadError,
     refreshOrders,
     exportOrders,
     auditOrder,

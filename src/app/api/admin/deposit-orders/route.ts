@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server';
 import { requestRemoteAdminApi } from '@/lib/admin-remote';
 import {
   successResponse,
+  serviceUnavailableResponse,
   unauthorizedResponse,
 } from '@/service/response';
 
@@ -175,5 +176,5 @@ export async function GET(request: NextRequest) {
     status: remote.status,
     body: remote.text,
   });
-  return successResponse(buildEmpty(page, pageSize));
+  return serviceUnavailableResponse('充值订单服务暂不可用，列表未能刷新，请稍后重试');
 }

@@ -24,6 +24,7 @@ import {
   DialogTitle
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function DepositOrdersPage() {
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
@@ -45,7 +46,8 @@ export default function DepositOrdersPage() {
     pagination,
     fetchOrders,
     refreshOrders,
-    exportOrders
+    exportOrders,
+    loadError
   } = useDepositOrderManagement();
 
   // 初始化和筛选条件变化时获取数据
@@ -113,6 +115,12 @@ export default function DepositOrdersPage() {
   return (
     <PageContainer scrollable={false}>
       <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
+        {loadError && (
+          <Alert variant='destructive'>
+            <AlertTitle>资金数据暂不可用</AlertTitle>
+            <AlertDescription>{loadError}</AlertDescription>
+          </Alert>
+        )}
         {/* 页面头部 */}
         <DepositOrderPageHeader
           onRefresh={handleRefresh}

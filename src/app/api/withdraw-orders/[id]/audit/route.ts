@@ -7,6 +7,7 @@ import {
 } from '@/lib/withdraw-order-adapter';
 import {
   errorResponse,
+  serviceUnavailableResponse,
   successResponse,
   unauthorizedResponse,
 } from '@/service/response';
@@ -85,27 +86,10 @@ export async function POST(
       return successResponse(normalizeWithdrawOrder(detailData));
     }
 
-    // Review itself succeeded but the detail re-fetch failed — synthesize the
-    // post-review state so the drawer renders a complete order (a partial
-    // object would render $NaN amount / blank fields).
-    const approved = action === 'approve';
-    return successResponse({
-      id: Number(id),
-      orderNo: `WD${id}`,
-      userId: 0,
-      paymentChannelId: 0,
-      amount: 0,
-      fee: 0,
-      actualAmount: null,
-      status: approved ? 'success' : 'rejected',
-      currency: 'USDT',
-      auditStatus: approved ? 'approved' : 'rejected',
-      payoutStatus: approved ? 'success' : 'failed',
-      payoutMethod: 'manual',
-      payoutAt: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
+    // Review itself committed, but do not fabricate a completed/success row
+    // from missing upstream data.  The 503 tells the UI to show a degraded
+    // banner and forces an explicit refresh.
+    return serviceUnavailableResponse('审核已提交，但订单状态暂时无法刷新，请重新加载列表');
   } catch (error) {
     console.error('[withdraw-orders/audit] 审核失败:', error);
     return errorResponse('审核失败');
