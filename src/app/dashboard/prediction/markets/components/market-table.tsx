@@ -11,14 +11,16 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Settings2, ArrowUpCircle, ArrowDownCircle, TrendingUp } from 'lucide-react';
+import { Settings2, ArrowUpCircle, ArrowDownCircle, TrendingUp, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import type { PredictionMarket } from '@/service/request';
+import { compactUsd } from '../utils';
 
 interface MarketTableProps {
   markets: PredictionMarket[];
   loading: boolean;
   canWrite: boolean;
+  onView: (m: PredictionMarket) => void;
   onConfig: (m: PredictionMarket) => void;
   onToggle: (m: PredictionMarket) => void;
   emptyState: {
@@ -26,13 +28,6 @@ interface MarketTableProps {
     title: string;
     description: string;
   };
-}
-
-function compactUsd(v: number | null | undefined): string {
-  if (v === null || v === undefined) return '—';
-  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `$${(v / 1_000).toFixed(1)}k`;
-  return `$${v.toFixed(0)}`;
 }
 
 /** YES/NO 两档价格，如 "Y 0.62 / N 0.38"；异常结构降级为 —。 */
@@ -67,6 +62,7 @@ export function MarketTable({
   markets,
   loading,
   canWrite,
+  onView,
   onConfig,
   onToggle,
   emptyState,
@@ -106,7 +102,7 @@ export function MarketTable({
       </TableHeader>
       <TableBody>
         {markets.map((m) => (
-          <TableRow key={m.id}>
+          <TableRow key={m.id} className='cursor-pointer' onClick={() => onView(m)}>
             <TableCell>
               <div className='max-w-[360px] space-y-0.5'>
                 <p className='truncate font-medium' title={m.question}>
@@ -142,23 +138,50 @@ export function MarketTable({
             <TableCell className='text-xs'>{configSummary(m)}</TableCell>
             <TableCell className='text-right'>
               <div className='flex justify-end gap-1'>
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onView(m);
+                  }}
+                >
+                  <Eye className='mr-1 h-4 w-4' />
+                  详情
+                </Button>
                 {canWrite && (
                   <>
-                    <Button variant='ghost' size='sm' onClick={() => onConfig(m)}>
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onConfig(m);
+                      }}
+                    >
                       <Settings2 className='mr-1 h-4 w-4' />
                       配置
                     </Button>
-                    {m.is_listed ? (
-                      <Button variant='ghost' size='sm' onClick={() => onToggle(m)}>
-                        <ArrowDownCircle className='mr-1 h-4 w-4' />
-                        下架
-                      </Button>
-                    ) : (
-                      <Button variant='ghost' size='sm' onClick={() => onToggle(m)}>
-                        <ArrowUpCircle className='mr-1 h-4 w-4' />
-                        上架
-                      </Button>
-                    )}
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggle(m);
+                      }}
+                    >
+                      {m.is_listed ? (
+                        <>
+                          <ArrowDownCircle className='mr-1 h-4 w-4' />
+                          下架
+                        </>
+                      ) : (
+                        <>
+                          <ArrowUpCircle className='mr-1 h-4 w-4' />
+                          上架
+                        </>
+                      )}
+                    </Button>
                   </>
                 )}
               </div>

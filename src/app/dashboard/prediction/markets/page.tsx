@@ -20,9 +20,10 @@ import {
   MarketTable,
   MarketTableEmptyIcon,
   ConfigDialog,
+  DetailDrawer,
 } from './components';
 import { usePredictionMarkets } from './hooks';
-import type { PredictionMarket } from '@/service/request';
+import type { PredictionMarket, PredictionMarketDetail } from '@/service/request';
 
 export default function PredictionMarketsPage() {
   const {
@@ -47,6 +48,24 @@ export default function PredictionMarketsPage() {
   // 上架配置弹窗
   const [configOpen, setConfigOpen] = useState(false);
   const [configTarget, setConfigTarget] = useState<PredictionMarket | null>(null);
+
+  // 详情抽屉
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailId, setDetailId] = useState<number | null>(null);
+
+  const handleView = useCallback((m: PredictionMarket) => {
+    setDetailId(m.id);
+    setDetailOpen(true);
+  }, []);
+
+  // 抽屉内的「上架配置」按钮：复用配置弹窗（PredictionMarketDetail 兼容列表行类型）
+  const handleConfigFromDetail = useCallback(
+    (m: PredictionMarketDetail) => {
+      setConfigTarget(m);
+      setConfigOpen(true);
+    },
+    []
+  );
 
   // 上/下架确认弹窗
   const [toggleOpen, setToggleOpen] = useState(false);
@@ -97,6 +116,7 @@ export default function PredictionMarketsPage() {
                 markets={markets}
                 loading={loading}
                 canWrite={canWrite}
+                onView={handleView}
                 onConfig={handleConfig}
                 onToggle={handleToggleRequest}
                 emptyState={{
@@ -131,6 +151,14 @@ export default function PredictionMarketsPage() {
             market={configTarget}
             onOpenChange={setConfigOpen}
             onSubmit={updateConfig}
+          />
+
+          <DetailDrawer
+            open={detailOpen}
+            onOpenChange={setDetailOpen}
+            marketId={detailId}
+            canWrite={canWrite}
+            onConfig={handleConfigFromDetail}
           />
 
           <Dialog open={toggleOpen} onOpenChange={setToggleOpen}>
