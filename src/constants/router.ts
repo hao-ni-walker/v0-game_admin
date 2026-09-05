@@ -172,6 +172,20 @@ export const businessNavList: NavItem[] = [
     ]
   },
   {
+    title: '预测市场',
+    url: '/dashboard/prediction/markets',
+    icon: TrendingUp,
+    isActive: false,
+    description: 'Polymarket 目录同步与上架管理',
+    items: [],
+    searchConfig: {
+      keywords: 'prediction market 预测市场 polymarket 上架 目录 同步',
+      searchShortcut: ['pm'],
+      searchSection: '导航',
+      searchPriority: 8
+    }
+  },
+  {
     title: '结算中心',
     url: '#',
     icon: Scale,

@@ -63,5 +63,6 @@ export const ROUTE_PERMISSIONS = {
   '/dashboard/copy-trade/overview': ['copytrade:read'],
   '/dashboard/copy-trade/config': ['copytrade:read'],
   '/dashboard/funds/wallet-balances': ['fund:read'],
+  '/dashboard/prediction/markets': ['prediction:read'],
   '/dashboard/system/referral': ['risk:read']
 } as const;
