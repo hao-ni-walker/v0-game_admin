@@ -41,6 +41,16 @@ export const PERMISSIONS = {
     READ: 'message:read',
     APPROVE: 'message:approve'
   },
+  // 资金管理权限
+  FUND: {
+    READ: 'fund:read',
+    WRITE: 'fund:write'
+  },
+  // 风控配置权限(deposit_config 热更新走 risk:write)
+  RISK: {
+    READ: 'risk:read',
+    WRITE: 'risk:write'
+  },
   // 跟单管理权限
   COPYTRADE: {
     READ: 'copytrade:read',
