@@ -1,6 +1,6 @@
 import { Logger } from '@/lib/logger';
 import { getCurrentUser } from '@/lib/auth';
-import { errorResponse, successResponse } from '@/service/response';
+import { errorResponse, successResponse, unauthorizedResponse } from '@/service/response';
 import { getRepositories } from '@/repository';
 
 // 获取角色的权限列表
@@ -8,6 +8,11 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const currentUser = getCurrentUser(request);
+  if (!currentUser) {
+    return unauthorizedResponse('未授权');
+  }
+
   try {
     const { id } = await params;
     const roleId = parseInt(id);
@@ -43,6 +48,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const currentUser = getCurrentUser(request);
+  if (!currentUser) {
+    return unauthorizedResponse('未授权');
+  }
   const logger = new Logger('权限管理', currentUser?.id);
 
   try {

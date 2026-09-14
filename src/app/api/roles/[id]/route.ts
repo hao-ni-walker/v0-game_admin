@@ -4,13 +4,16 @@ import { preventSuperRoleModification } from '@/lib/super-admin';
 
 import { Logger } from '@/lib/logger';
 import { getCurrentUser } from '@/lib/auth';
-import { errorResponse, successResponse } from '@/service/response';
+import { errorResponse, successResponse, unauthorizedResponse } from '@/service/response';
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const currentUser = getCurrentUser(request);
+  if (!currentUser) {
+    return unauthorizedResponse('未授权');
+  }
   const logger = new Logger('角色管理', currentUser?.id);
 
   try {
@@ -73,6 +76,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const currentUser = getCurrentUser(request);
+  if (!currentUser) {
+    return unauthorizedResponse('未授权');
+  }
   const logger = new Logger('角色管理', currentUser?.id);
 
   try {

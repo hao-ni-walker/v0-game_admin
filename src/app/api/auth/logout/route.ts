@@ -1,5 +1,5 @@
 import { successResponse } from '@/service/response';
-import { verify } from 'jsonwebtoken';
+import { verifyToken } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 import { NextResponse } from 'next/server';
 
@@ -11,15 +11,10 @@ export async function POST(request: Request) {
     let username: string | undefined;
 
     if (token) {
-      try {
-        const decoded = verify(
-          token,
-          process.env.JWT_SECRET || 'secret'
-        ) as any;
-        userId = decoded.id;
-        username = decoded.username;
-      } catch (error) {
-        // Token无效，但仍然允许登出
+      const user = verifyToken(token);
+      if (user) {
+        userId = user.id;
+        username = user.username;
       }
     }
 

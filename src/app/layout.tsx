@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/sonner';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
-import { auth } from '@/lib/auth';
 import Providers from '@/contexts/providers';
 import { siteConfig } from '@/config/site';
 
@@ -69,19 +68,20 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest'
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function RootLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
   return (
     <html lang={siteConfig.locale.toLowerCase()} suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <NuqsAdapter>
-          <Providers session={session}>
+          <Providers>
             <Toaster />
             {children}
           </Providers>
