@@ -117,7 +117,7 @@ export async function GET(request: Request) {
       id: Number(item.user_id || 0),
       idname: item.display_name || '',
       username: item.tg_username || item.display_name || `user_${item.user_id}`,
-      email: '',
+      email: (item.email as string) || '',
       status: item.status === 'normal' ? 'active' : item.status,
       vip_level: Number(item.vip_level || 0),
       registration_method: 'other',

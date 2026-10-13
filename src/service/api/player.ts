@@ -131,7 +131,8 @@ export class PlayerAPI {
           status: toFrontendStatus(it.status),
           vip_level: it.vip_level || 0,
           tags: Array.isArray(it.tags) ? it.tags : [],
-          direct_superior_id: it.referred_by_user_id ?? undefined,
+          direct_superior_id:
+            it.direct_superior_id ?? it.referred_by_user_id ?? undefined,
           created_at: valueToIso(it.created_at ?? it.registered_at) || '',
           updated_at: valueToIso(it.updated_at),
           last_login: valueToIso(it.last_login ?? it.last_active_at),
