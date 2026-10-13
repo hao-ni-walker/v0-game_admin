@@ -149,14 +149,17 @@ export class PlayerAPI {
           }
         };
       });
+      // /api/admin/users 代理把分页拍平为 data.page/page_size/total，
+      // 直连后端时才是 data.pagination.{page,size,total}，两种形状都要认，
+      // 否则 page 恒为 1，翻页会被打回第一页。
       const pagination = response.data.pagination || {};
       return {
         ...response,
         data: {
           items,
           list: items,
-          page: pagination.page || 1,
-          page_size: pagination.size || 20,
+          page: pagination.page ?? response.data.page ?? 1,
+          page_size: pagination.size ?? response.data.page_size ?? 20,
           total: pagination.total ?? response.data.total ?? 0
         }
       };
