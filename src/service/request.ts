@@ -10,6 +10,12 @@ export { LogAPI, OperationLogAPI } from './api/log';
 export { SystemConfigAPI } from './api/system-config';
 export { ReferralConfigAPI } from './api/referral-config';
 export type { ReferralRewardConfig } from './api/referral-config';
+export { AlertConfigAPI } from './api/alert-config';
+export type {
+  AlertConfig,
+  AlertConfigUpdate,
+  AlertTestResult
+} from './api/alert-config';
 export { AutomationAPI } from './api/automation';
 export type {
   AutomationTask,

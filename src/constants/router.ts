@@ -32,6 +32,7 @@ import {
   Megaphone,
   Gift,
   Timer,
+  Bell,
 } from 'lucide-react';
 
 // 业务导航列表
@@ -456,6 +457,19 @@ export const systemNavList: NavItem[] = [
         searchConfig: {
           keywords: 'automation cron schedule task 定时 任务 备份 backup 报表 report',
           searchShortcut: ['sat'],
+          searchSection: '系统配置',
+          searchPriority: 20
+        }
+      },
+      {
+        title: '告警通知',
+        url: '/dashboard/system/alert',
+        icon: Bell,
+        description: '异常告警与任务通知的 Telegram 群',
+        items: [],
+        searchConfig: {
+          keywords: 'alert notify telegram chat 告警 通知 运维群',
+          searchShortcut: ['san'],
           searchSection: '系统配置',
           searchPriority: 20
         }
