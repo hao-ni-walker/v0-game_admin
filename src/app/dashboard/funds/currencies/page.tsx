@@ -20,6 +20,9 @@ export default function CurrenciesPage() {
     currencies,
     loading,
     fetchCurrencies,
+    syncStatus,
+    syncing,
+    triggerSync,
     createCurrency,
     updateCurrency,
     deleteCurrency,
@@ -87,7 +90,15 @@ export default function CurrenciesPage() {
     <PermissionGuard permissions='currency:read'>
       <PageContainer scrollable={false}>
         <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
-          <CurrencyPageHeader onRefresh={handleRefresh} onCreate={openCreate} loading={loading} canWrite={canWrite} />
+          <CurrencyPageHeader
+            onRefresh={handleRefresh}
+            onCreate={openCreate}
+            onSync={() => { void triggerSync(); }}
+            loading={loading}
+            syncing={syncing}
+            syncStatus={syncStatus}
+            canWrite={canWrite}
+          />
           <CurrencyFilters
             filters={filters}
             setSearch={setSearch}

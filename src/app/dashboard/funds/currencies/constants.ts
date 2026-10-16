@@ -22,7 +22,7 @@ export const MESSAGES = {
 export const TRADEABLE_OPTIONS = [
   { label: '全部', value: 'all' as const },
   { label: '可交易', value: 'true' as const },
-  { label: '已停用', value: 'false' as const },
+  { label: '未上架/候选', value: 'false' as const },
 ];
 
 export const TABLE_COLUMNS = [

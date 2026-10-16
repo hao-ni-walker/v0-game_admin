@@ -1,6 +1,6 @@
-import type { Currency, CurrencyFormData, CurrencyUpdateData } from '@/service/api/currency';
+import type { Currency, CurrencyFormData, CurrencySyncStatus, CurrencyUpdateData } from '@/service/api/currency';
 
-export type { Currency, CurrencyFormData, CurrencyUpdateData };
+export type { Currency, CurrencyFormData, CurrencySyncStatus, CurrencyUpdateData };
 
 export interface CurrencyFilters {
   search: string;

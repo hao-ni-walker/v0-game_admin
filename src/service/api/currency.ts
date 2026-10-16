@@ -18,6 +18,19 @@ export interface CurrencyListResult {
   items: Currency[];
 }
 
+export interface CurrencySyncStatus {
+  running: boolean;
+  enabled: boolean;
+  last_stats: {
+    created?: number;
+    selected?: number;
+    catalog_size?: number;
+    disabled?: boolean;
+  } | null;
+  last_error: string | null;
+  last_finished_at: string | null;
+}
+
 // Create/edit payload. NOTE: is_tradeable is intentionally excluded —
 // activation goes through toggle() (backend gates on all-4 base odds).
 export interface CurrencyFormData {
@@ -62,5 +75,11 @@ export const CurrencyAPI = {
       method: 'POST',
       body: JSON.stringify({ is_tradeable }),
     });
+  },
+  triggerSync() {
+    return apiRequest<{ triggered: boolean }>('/admin/currencies/sync', { method: 'POST' });
+  },
+  getSyncStatus() {
+    return apiRequest<CurrencySyncStatus>('/admin/currencies/sync-status');
   },
 };

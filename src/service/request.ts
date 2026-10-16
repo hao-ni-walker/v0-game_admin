@@ -30,7 +30,7 @@ export { MessageAPI } from './api/message';
 export { BroadcastAPI } from './api/broadcast';
 export type { BroadcastFormData, BroadcastCreateResult, BroadcastApproveResult } from './api/broadcast';
 export { CurrencyAPI } from './api/currency';
-export type { Currency, CurrencyListResult, CurrencyFormData, CurrencyUpdateData } from './api/currency';
+export type { Currency, CurrencyListResult, CurrencyFormData, CurrencyUpdateData, CurrencySyncStatus } from './api/currency';
 export { PredictionMarketAPI } from './api/prediction-market';
 export type {
   PredictionMarket,
