@@ -292,7 +292,9 @@ export function usePlayersEnhanced(): UsePlayersEnhancedResult {
             delete rest.status;
           }
         }
-        const hasOther = Object.keys(rest).length > 0;
+        // `lock` 始终是值为 undefined 的自有键，Object.keys 会把它数进去，
+        // 导致 tags-only 保存被误判为还有字段待更新而调用 updatePlayer 报错。
+        const hasOther = Object.values(rest).some((v) => v !== undefined);
         if (!hasOther) {
           toast.success('用户更新成功');
           return true;
