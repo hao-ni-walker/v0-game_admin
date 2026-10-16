@@ -325,26 +325,26 @@ export const businessNavList: NavItem[] = [
         }
       },
       {
-        title: '费率管理',
+        title: '费率管理（未生效）',
         url: '/dashboard/funds/fees',
         icon: Receipt,
-        description: '管理各类费率配置与预览',
+        description: '费率配置与试算，未接入实际扣费',
         items: [],
         searchConfig: {
-          keywords: 'fee 费率 管理 配置 预览',
+          keywords: 'fee 费率 管理 配置 预览 未生效',
           searchShortcut: ['ff'],
           searchSection: '资金管理',
           searchPriority: 25
         }
       },
       {
-        title: '充值审核',
+        title: '充值订单',
         url: '/dashboard/funds/deposits',
         icon: Wallet,
-        description: '充值记录与大额复核',
+        description: '充值记录查询与大额复核',
         items: [],
         searchConfig: {
-          keywords: 'deposit 充值 审核 复核',
+          keywords: 'deposit 充值 订单 复核',
           searchShortcut: ['fd'],
           searchSection: '资金管理',
           searchPriority: 13

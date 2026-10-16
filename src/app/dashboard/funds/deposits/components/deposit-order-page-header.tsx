@@ -17,9 +17,9 @@ export function DepositOrderPageHeader({
   return (
     <div className='flex items-center justify-between'>
       <div>
-        <h1 className='text-2xl font-bold tracking-tight'>储值订单</h1>
+        <h1 className='text-2xl font-bold tracking-tight'>充值订单</h1>
         <p className='text-muted-foreground mt-1 text-sm'>
-          管理所有储值订单，支持筛选、查询和导出
+          充值订单查询与对账（入账自动完成，无需人工审核），支持筛选、导出与大额复核标记
         </p>
       </div>
       <div className='flex items-center gap-2'>

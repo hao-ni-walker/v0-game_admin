@@ -154,7 +154,7 @@ export default function DepositOrdersPage() {
                 title: hasActiveFilters ? '未找到匹配的订单' : '还没有订单',
                 description: hasActiveFilters
                   ? '请尝试调整筛选条件以查看更多结果'
-                  : '暂无储值订单数据'
+                  : '暂无充值订单数据'
               }}
             />
           </div>
