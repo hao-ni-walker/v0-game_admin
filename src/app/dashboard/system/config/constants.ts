@@ -41,6 +41,7 @@ export const SORT_OPTIONS = [
  */
 export const DEFAULT_FILTERS: SystemConfigFilters = {
   keyword: '',
+  category: 'all',
   config_types: [],
   is_public: undefined,
   disabled: false,
@@ -49,7 +50,7 @@ export const DEFAULT_FILTERS: SystemConfigFilters = {
   sort_dir: 'desc',
   page: 1,
   page_size: 20
-} as const;
+};
 
 /**
  * 表格列配置
@@ -62,23 +63,18 @@ export const TABLE_COLUMNS = [
   },
   {
     key: 'config_key',
-    title: '配置键',
-    className: 'font-mono font-medium min-w-[180px]'
-  },
-  {
-    key: 'config_type',
-    title: '类型',
-    className: 'text-center w-[90px]'
+    title: '配置项',
+    className: 'min-w-[220px]'
   },
   {
     key: 'config_value',
-    title: '配置值',
-    className: 'font-mono text-xs min-w-[200px] max-w-[300px]'
+    title: '参数一览',
+    className: 'min-w-[280px] max-w-[420px]'
   },
   {
     key: 'description',
-    title: '描述',
-    className: 'min-w-[150px]'
+    title: '业务说明',
+    className: 'min-w-[180px] max-w-[280px]'
   },
   {
     key: 'is_public',
@@ -87,8 +83,8 @@ export const TABLE_COLUMNS = [
   },
   {
     key: 'status',
-    title: '状态',
-    className: 'text-center w-[100px]'
+    title: '启用',
+    className: 'text-center w-[80px]'
   },
   {
     key: 'version',
@@ -103,50 +99,25 @@ export const TABLE_COLUMNS = [
   {
     key: 'actions',
     title: '操作',
-    className: 'text-center w-[120px]'
+    className: 'text-center w-[100px]'
   }
 ] as const;
-
-/**
- * 对话框类型
- */
-export const DIALOG_TYPES = {
-  CREATE: 'create',
-  EDIT: 'edit',
-  VIEW: 'view'
-} as const;
 
 /**
  * 消息文案
  */
 export const MESSAGES = {
   SUCCESS: {
-    CREATE: '配置创建成功',
     UPDATE: '配置更新成功',
-    DELETE: '配置删除成功',
-    RESTORE: '配置恢复成功',
-    DISABLE: '配置禁用成功',
+    DISABLE: '配置禁用成功（运行时回落默认值）',
     ENABLE: '配置启用成功'
   },
   ERROR: {
-    CREATE: '创建配置失败',
     UPDATE: '更新配置失败',
-    DELETE: '删除配置失败',
-    RESTORE: '恢复配置失败',
-    DISABLE: '禁用配置失败',
-    ENABLE: '启用配置失败',
-    FETCH_CONFIGS: '获取配置列表失败',
-    VERSION_CONFLICT: '版本冲突，请刷新后重试',
-    INVALID_VALUE: '配置值格式错误',
-    DUPLICATE_KEY: '配置键已存在'
+    FETCH_CONFIGS: '获取配置列表失败'
   },
   EMPTY: {
     CONFIGS: '暂无配置数据'
-  },
-  CONFIRM: {
-    DELETE: (key: string) => `确定要删除配置 "${key}" 吗？此操作不可撤销。`,
-    DISABLE: (key: string) => `确定要禁用配置 "${key}" 吗？`,
-    ENABLE: (key: string) => `确定要启用配置 "${key}" 吗？`
   }
 } as const;
 

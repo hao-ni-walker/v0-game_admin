@@ -25,6 +25,7 @@ export function useSystemConfigFilters() {
     
     const urlFilters: SystemConfigFilters = {
       keyword: searchParams.get('keyword') || '',
+      category: searchParams.get('category') || 'all',
       config_types: config_types ? config_types.split(',') : [],
       is_public: searchParams.get('is_public') === 'true' ? true : searchParams.get('is_public') === 'false' ? false : undefined,
       disabled: searchParams.get('disabled') === 'true' ? true : false,
@@ -112,6 +113,7 @@ export function useSystemConfigFilters() {
   const clearFilters = useCallback(() => {
     searchFilters({
       keyword: '',
+      category: 'all',
       config_types: [],
       is_public: undefined,
       disabled: false,
@@ -125,6 +127,7 @@ export function useSystemConfigFilters() {
    */
   const hasActiveFilters = Boolean(
     filters.keyword ||
+      (filters.category && filters.category !== 'all') ||
       (filters.config_types && filters.config_types.length > 0) ||
       filters.is_public !== undefined ||
       filters.disabled ||

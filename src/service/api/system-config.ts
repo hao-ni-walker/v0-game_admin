@@ -1,7 +1,8 @@
 import { apiRequest, buildSearchParams } from './base';
 
 /**
- * 系统参数配置相关 API
+ * 系统参数配置相关 API — 透传 Next.js 代理 → 后端 /admin/system-configs。
+ * 配置键由代码定义：只有列表与更新（整值写入 + 版本乐观锁），无新建/删除。
  */
 export class SystemConfigAPI {
   /**
@@ -13,6 +14,8 @@ export class SystemConfigAPI {
     page_size?: number;
     keyword?: string;
     config_types?: string[];
+    /** 精确键集过滤（业务分类/业务词搜索在前端映射成键集） */
+    config_keys?: string[];
     is_public?: boolean;
     disabled?: boolean;
     show_removed?: boolean;
@@ -27,6 +30,9 @@ export class SystemConfigAPI {
     if (params?.keyword) queryParams.keyword = params.keyword;
     if (params?.config_types && params.config_types.length > 0) {
       queryParams.config_types = params.config_types.join(',');
+    }
+    if (params?.config_keys && params.config_keys.length > 0) {
+      queryParams.config_keys = params.config_keys.join(',');
     }
     if (params?.is_public !== undefined) {
       queryParams.is_public = params.is_public;
@@ -47,33 +53,7 @@ export class SystemConfigAPI {
   }
 
   /**
-   * 获取系统参数配置详情
-   * GET /api/admin/system-configs/:id
-   */
-  static async getDetail(id: number) {
-    return apiRequest(`/admin/system-configs/${id}`);
-  }
-
-  /**
-   * 创建系统参数配置
-   * POST /api/admin/system-configs
-   */
-  static async create(data: {
-    config_key: string;
-    config_value: string;
-    config_type: 'string' | 'number' | 'boolean' | 'json';
-    description?: string;
-    is_public?: boolean;
-    disabled?: boolean;
-  }) {
-    return apiRequest('/admin/system-configs', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    });
-  }
-
-  /**
-   * 更新系统参数配置
+   * 更新系统参数配置（整值写入 + 版本乐观锁）
    * PUT /api/admin/system-configs/:id
    */
   static async update(
@@ -81,24 +61,14 @@ export class SystemConfigAPI {
     data: {
       config_value?: string;
       description?: string;
-      is_public?: boolean;
       disabled?: boolean;
       version: number;
+      reason?: string;
     }
   ) {
     return apiRequest(`/admin/system-configs/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
-    });
-  }
-
-  /**
-   * 删除系统参数配置
-   * DELETE /api/admin/system-configs/:id
-   */
-  static async delete(id: number) {
-    return apiRequest(`/admin/system-configs/${id}`, {
-      method: 'DELETE'
     });
   }
 }

@@ -1,19 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Settings, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Pagination } from '@/components/table/pagination';
+import { Settings } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
 
 import {
   SystemConfigPageHeader,
   SystemConfigFilters,
-  SystemConfigTable
+  SystemConfigTable,
+  SystemConfigEditDialog
 } from './components';
 import { useSystemConfigFilters, useSystemConfigManagement } from './hooks';
 import { PAGE_SIZE_OPTIONS } from './constants';
-import { SystemConfig, SystemConfigDialogState } from './types';
+import { Pagination } from '@/components/table/pagination';
+import { SystemConfigDialogState } from './types';
 
 export default function SystemConfigPage() {
   // 使用自定义hooks
@@ -31,11 +31,11 @@ export default function SystemConfigPage() {
     pagination,
     fetchConfigs,
     refreshConfigs,
-    deleteConfig,
+    updateConfig,
     toggleDisabled
   } = useSystemConfigManagement();
 
-  // 对话框状态
+  // 编辑对话框状态
   const [dialogState, setDialogState] = useState<SystemConfigDialogState>({
     type: null,
     config: null,
@@ -48,20 +48,9 @@ export default function SystemConfigPage() {
   }, [filters, fetchConfigs]);
 
   /**
-   * 打开创建配置对话框
-   */
-  const handleOpenCreateDialog = () => {
-    setDialogState({
-      type: 'create',
-      config: null,
-      open: true
-    });
-  };
-
-  /**
    * 打开编辑配置对话框
    */
-  const handleOpenEditDialog = (config: SystemConfig) => {
+  const handleOpenEditDialog = (config: SystemConfigDialogState['config']) => {
     setDialogState({
       type: 'edit',
       config,
@@ -81,19 +70,24 @@ export default function SystemConfigPage() {
   };
 
   /**
-   * 删除配置
+   * 保存编辑
    */
-  const handleDeleteConfig = async (config: SystemConfig) => {
-    const success = await deleteConfig(config.id);
+  const handleUpdateConfig = async (
+    id: number,
+    payload: Parameters<typeof updateConfig>[1]
+  ) => {
+    const success = await updateConfig(id, payload);
     if (success) {
       fetchConfigs(filters);
     }
+    return success;
   };
 
   /**
    * 切换禁用状态
    */
-  const handleToggleDisabled = async (config: SystemConfig) => {
+  const handleToggleDisabled = async (config: SystemConfigDialogState['config']) => {
+    if (!config) return;
     const success = await toggleDisabled(config);
     if (success) {
       fetchConfigs(filters);
@@ -140,7 +134,6 @@ export default function SystemConfigPage() {
       <div className='flex h-[calc(100vh-8rem)] w-full flex-col space-y-4'>
         {/* 页面头部 */}
         <SystemConfigPageHeader
-          onCreateConfig={handleOpenCreateDialog}
           onRefresh={handleRefresh}
           loading={loading}
         />
@@ -161,24 +154,13 @@ export default function SystemConfigPage() {
               loading={loading}
               pagination={pagination}
               onEdit={handleOpenEditDialog}
-              onDelete={handleDeleteConfig}
               onToggleDisabled={handleToggleDisabled}
               emptyState={{
                 icon: <Settings className='text-muted-foreground h-8 w-8' />,
                 title: hasActiveFilters ? '未找到匹配的配置' : '还没有配置项',
                 description: hasActiveFilters
                   ? '请尝试调整筛选条件以查看更多结果'
-                  : '开始添加系统配置来管理应用',
-                action: !hasActiveFilters ? (
-                  <Button
-                    onClick={handleOpenCreateDialog}
-                    size='sm'
-                    className='mt-2'
-                  >
-                    <Plus className='mr-2 h-4 w-4' />
-                    新增配置
-                  </Button>
-                ) : undefined
+                  : '系统运行参数会在首次保存后出现在这里'
               }}
             />
           </div>
@@ -197,8 +179,15 @@ export default function SystemConfigPage() {
           </div>
         </div>
 
-        {/* TODO: 系统配置对话框（创建/编辑/查看） */}
-        {/* 可以后续添加 SystemConfigDialogs 组件 */}
+        {/* 逐字段编辑对话框（业务语言） */}
+        <SystemConfigEditDialog
+          open={dialogState.open}
+          config={dialogState.config}
+          onOpenChange={(open) => {
+            if (!open) handleCloseDialog();
+          }}
+          onUpdate={handleUpdateConfig}
+        />
       </div>
     </PageContainer>
   );

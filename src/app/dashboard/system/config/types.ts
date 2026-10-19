@@ -20,6 +20,8 @@ export interface SystemConfig {
  */
 export interface SystemConfigFilters {
   keyword?: string;
+  /** 业务分类（映射为 config_keys 精确键集下发） */
+  category?: string;
   config_types?: string[];
   is_public?: boolean;
   disabled?: boolean;
@@ -35,6 +37,17 @@ export interface SystemConfigFilters {
 }
 
 /**
+ * 更新配置请求体（整值写入 + 版本乐观锁）
+ */
+export interface SystemConfigUpdatePayload {
+  config_value?: string;
+  description?: string;
+  disabled?: boolean;
+  version: number;
+  reason?: string;
+}
+
+/**
  * 分页信息
  */
 export interface PaginationInfo {
@@ -45,21 +58,9 @@ export interface PaginationInfo {
 }
 
 /**
- * 系统配置表单数据
- */
-export interface SystemConfigFormData {
-  config_key: string;
-  config_value: string;
-  config_type: 'string' | 'number' | 'boolean' | 'json';
-  description: string;
-  is_public: boolean;
-  disabled: boolean;
-}
-
-/**
  * 对话框状态
  */
-export type SystemConfigDialogType = 'create' | 'edit' | 'view' | null;
+export type SystemConfigDialogType = 'edit' | null;
 
 export interface SystemConfigDialogState {
   type: SystemConfigDialogType;

@@ -18,6 +18,7 @@ import {
   SORT_OPTIONS,
   DEFAULT_FILTERS
 } from '../constants';
+import { CATEGORY_OPTIONS } from '../field-catalog';
 
 interface SystemConfigFiltersProps {
   filters: SystemConfigFiltersType;
@@ -69,6 +70,7 @@ export function SystemConfigFilters({
   // 检查是否有激活的筛选条件
   const hasActiveFilters = Boolean(
     filters.keyword ||
+      (filters.category && filters.category !== 'all') ||
       (filters.config_types && filters.config_types.length > 0) ||
       filters.is_public !== undefined ||
       filters.disabled ||
@@ -82,17 +84,34 @@ export function SystemConfigFilters({
    */
   const renderQuickSearch = () => (
     <div className='flex items-center gap-3'>
-      {/* 关键词搜索 */}
+      {/* 关键词搜索（业务名/参数名/配置键均可命中） */}
       <div className='relative max-w-sm flex-1'>
         <Search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
         <Input
-          placeholder='搜索配置键或描述...'
+          placeholder='搜索业务名称、参数名或配置键...'
           value={localFilters.keyword || ''}
           onChange={(e) => updateLocalFilter('keyword', e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           className='pl-10'
         />
       </div>
+
+      {/* 业务分类 */}
+      <Select
+        value={localFilters.category || 'all'}
+        onValueChange={(value) => updateLocalFilter('category', value)}
+      >
+        <SelectTrigger className='w-[140px]'>
+          <SelectValue placeholder='业务分类' />
+        </SelectTrigger>
+        <SelectContent>
+          {CATEGORY_OPTIONS.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
       {/* 查询按钮 */}
       <Button
@@ -141,12 +160,32 @@ export function SystemConfigFilters({
         <div className='space-y-2'>
           <Label>关键词</Label>
           <Input
-            placeholder='搜索配置键或描述...'
+            placeholder='搜索业务名称、参数名或配置键...'
             value={localFilters.keyword || ''}
             onChange={(e) => updateLocalFilter('keyword', e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           />
         </div>
+        <div className='space-y-2'>
+          <Label>业务分类</Label>
+          <Select
+            value={localFilters.category || 'all'}
+            onValueChange={(value) => updateLocalFilter('category', value)}
+          >
+            <SelectTrigger className='w-full'>
+              <SelectValue placeholder='选择业务分类' />
+            </SelectTrigger>
+            <SelectContent>
+              {CATEGORY_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
         <div className='space-y-2'>
           <Label>类型</Label>
           <Select

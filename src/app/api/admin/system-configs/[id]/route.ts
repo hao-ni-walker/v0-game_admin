@@ -1,75 +1,54 @@
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
-import {
-  notFoundResponse,
-  successResponse,
-  unauthorizedResponse,
-} from '@/service/response';
+import { requestRemoteAdminApi } from '@/lib/admin-remote';
+import { errorResponse, successResponse, unauthorizedResponse } from '@/service/response';
 
-const FALLBACK_ROWS = [
-  {
-    id: 1,
-    config_key: 'system.risk_thresholds',
-    config_value:
-      '{"exposure_warning":3000,"exposure_high":6000,"exposure_extreme":10000}',
-    config_type: 'json',
-    description: 'System config: risk_thresholds',
-    is_public: false,
-    version: 1,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    removed: false,
-    disabled: false,
-  },
-];
-
-async function requireAuth() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token');
-  return token?.value || null;
-}
-
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  if (!(await requireAuth())) {
-    return unauthorizedResponse('未授权访问');
-  }
-
-  const { id } = await params;
-  const row = FALLBACK_ROWS.find((item) => item.id === Number(id));
-  return row ? successResponse(row) : notFoundResponse('系统配置不存在');
-}
-
+/**
+ * 更新一条系统参数配置（整值写入 + 版本乐观锁），透传后端
+ * PUT /api/v1/admin/system-configs/{id}。
+ */
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
-  if (!(await requireAuth())) {
-    return unauthorizedResponse('未授权访问');
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token');
+    if (!token?.value) return unauthorizedResponse('未授权访问');
+
+    const { id } = await context.params;
+    const body = await req.text();
+    const remoteResponse = await requestRemoteAdminApi<{
+      code?: number;
+      message?: string;
+      detail?: string;
+      data?: unknown;
+    }>({
+      path: `/api/v1/admin/system-configs/${id}`,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token.value}`,
+      },
+      body,
+    });
+
+    if (!remoteResponse.ok) {
+      if (remoteResponse.status === 401) {
+        return unauthorizedResponse('认证失败，请重新登录');
+      }
+      // FastAPI HTTPException 的 message 在 detail 字段
+      const message = remoteResponse.data?.detail || remoteResponse.data?.message;
+      return errorResponse(message || `远程API错误: ${remoteResponse.status}`);
+    }
+
+    const result = remoteResponse.data;
+    if (!result || (result.code !== 0 && result.code !== 200)) {
+      return errorResponse(result?.message || '更新系统配置失败');
+    }
+    return successResponse(result.data);
+  } catch (error) {
+    console.error('更新系统配置失败:', error);
+    return errorResponse('更新系统配置失败');
   }
-
-  const { id } = await params;
-  const body = await request.json();
-  return successResponse({
-    id: Number(id),
-    ...body,
-    updated_at: new Date().toISOString(),
-  });
-}
-
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  if (!(await requireAuth())) {
-    return unauthorizedResponse('未授权访问');
-  }
-
-  const { id } = await params;
-  return successResponse({
-    id: Number(id),
-    deleted: true,
-  });
 }

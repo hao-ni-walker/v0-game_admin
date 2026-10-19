@@ -5,18 +5,18 @@ import { Switch } from '@/components/ui/switch';
 import { DataTable } from '@/components/table/data-table';
 import {
   ActionDropdown,
-  type ActionItem,
-  type DeleteAction
+  type ActionItem
 } from '@/components/table/action-dropdown';
 import { formatDateTime } from '@/components/table/utils';
 import { toast } from 'sonner';
 import { SystemConfig, PaginationInfo } from '../types';
+import { TABLE_COLUMNS, MESSAGES } from '../constants';
 import {
-  TABLE_COLUMNS,
-  MESSAGES,
-  CONFIG_TYPE_LABELS,
-  CONFIG_TYPE_VARIANTS
-} from '../constants';
+  getCatalogEntry,
+  catalogFields,
+  getPathValue,
+  formatFieldValue
+} from '../field-catalog';
 
 interface EmptyStateProps {
   icon?: React.ReactNode;
@@ -30,24 +30,25 @@ interface SystemConfigTableProps {
   loading: boolean;
   pagination: PaginationInfo;
   onEdit: (config: SystemConfig) => void;
-  onDelete: (config: SystemConfig) => void;
   onToggleDisabled: (config: SystemConfig) => void;
   emptyState?: EmptyStateProps;
 }
 
+/** 表格「参数一览」最多直接展示的 chips 数，超出折叠为 +N */
+const MAX_CHIPS = 6;
+
 /**
- * 系统配置表格组件
+ * 系统配置表格组件 — 按业务语言目录展示
  */
 export function SystemConfigTable({
   configs,
   loading,
   pagination,
   onEdit,
-  onDelete,
   onToggleDisabled,
   emptyState
 }: SystemConfigTableProps) {
-  // 复制配置值
+  // 复制配置值（原始 JSON/字符串）
   const handleCopyValue = (value: string) => {
     navigator.clipboard.writeText(value);
     toast.success('配置值已复制');
@@ -84,20 +85,36 @@ export function SystemConfigTable({
       return {
         ...col,
         render: (value: string) => {
-          return <div className='font-mono font-medium break-all'>{value}</div>;
-        }
-      };
-    }
-
-    if (col.key === 'config_type') {
-      return {
-        ...col,
-        render: (value: string) => {
+          const entry = getCatalogEntry(value);
           return (
-            <div className='text-center'>
-              <Badge variant={CONFIG_TYPE_VARIANTS[value] as any}>
-                {CONFIG_TYPE_LABELS[value]}
-              </Badge>
+            <div className='space-y-1'>
+              {entry ? (
+                <>
+                  <div className='flex flex-wrap items-center gap-1.5'>
+                    <span className='text-sm leading-tight font-medium'>
+                      {entry.name}
+                    </span>
+                    <Badge variant='outline' className='h-4 px-1.5 text-[10px]'>
+                      {entry.category}
+                    </Badge>
+                    {!entry.live && (
+                      <Badge
+                        variant='destructive'
+                        className='h-4 px-1.5 text-[10px]'
+                      >
+                        不生效
+                      </Badge>
+                    )}
+                  </div>
+                  <div className='text-muted-foreground font-mono text-[11px] break-all'>
+                    {value}
+                  </div>
+                </>
+              ) : (
+                <div className='font-mono text-sm font-medium break-all'>
+                  {value}
+                </div>
+              )}
             </div>
           );
         }
@@ -108,14 +125,57 @@ export function SystemConfigTable({
       return {
         ...col,
         render: (value: string, record: SystemConfig) => {
-          const displayValue = parseValue(value, record.config_type);
+          const entry = getCatalogEntry(record.config_key);
+          let chips: { name: string; text: string }[] = [];
+          let parseFailed = false;
+          if (entry) {
+            try {
+              const parsed = JSON.parse(value);
+              if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                chips = catalogFields(entry).flatMap((f) => {
+                  const v = getPathValue(parsed, f.path);
+                  return v === undefined ? [] : [{ name: f.name, text: formatFieldValue(v) }];
+                });
+              } else {
+                parseFailed = true;
+              }
+            } catch {
+              parseFailed = true;
+            }
+          }
+          const shown = chips.slice(0, MAX_CHIPS);
+          const rest = chips.length - shown.length;
           return (
-            <div className='flex items-center gap-1'>
-              <span className='max-w-[200px] truncate font-mono text-xs'>
-                {displayValue}
-              </span>
+            <div className='flex items-start gap-1'>
+              <div className='flex flex-wrap gap-1'>
+                {shown.map((c) => (
+                  <span
+                    key={c.name}
+                    className='bg-muted inline-flex max-w-full items-center gap-1 rounded px-1.5 py-0.5 text-xs'
+                    title={`${c.name} = ${c.text}`}
+                  >
+                    <span className='text-muted-foreground shrink-0'>{c.name}</span>
+                    <span className='truncate font-mono'>{c.text}</span>
+                  </span>
+                ))}
+                {rest > 0 && (
+                  <button
+                    type='button'
+                    className='text-muted-foreground hover:text-foreground px-1 text-xs underline-offset-2 hover:underline'
+                    onClick={() => onEdit(record)}
+                    title='点击进入编辑查看全部参数'
+                  >
+                    +{rest} 项
+                  </button>
+                )}
+                {!entry || parseFailed ? (
+                  <span className='font-mono text-xs break-all'>
+                    {parseValue(value, record.config_type)}
+                  </span>
+                ) : null}
+              </div>
               <Copy
-                className='text-muted-foreground hover:text-foreground h-3 w-3 flex-shrink-0 cursor-pointer'
+                className='text-muted-foreground hover:text-foreground mt-0.5 h-3 w-3 flex-shrink-0 cursor-pointer'
                 onClick={() => handleCopyValue(value)}
               />
             </div>
@@ -127,11 +187,24 @@ export function SystemConfigTable({
     if (col.key === 'description') {
       return {
         ...col,
-        render: (value: string) => {
+        render: (value: string, record: SystemConfig) => {
+          const entry = getCatalogEntry(record.config_key);
           return (
-            <span className='line-clamp-2 text-sm'>
-              {value || <span className='text-muted-foreground'>无描述</span>}
-            </span>
+            <div className='space-y-1'>
+              <span className='line-clamp-2 text-sm'>
+                {entry?.description || value || (
+                  <span className='text-muted-foreground'>无描述</span>
+                )}
+              </span>
+              {entry?.note && (
+                <span
+                  className='line-clamp-2 text-xs text-amber-600 dark:text-amber-400'
+                  title={entry.note}
+                >
+                  {entry.note}
+                </span>
+              )}
+            </div>
           );
         }
       };
@@ -207,13 +280,8 @@ export function SystemConfigTable({
             }
           ];
 
-          const deleteAction: DeleteAction = {
-            description: MESSAGES.CONFIRM.DELETE(record.config_key),
-            onConfirm: () => onDelete(record)
-          };
-
           return (
-            <ActionDropdown actions={actions} deleteAction={deleteAction} />
+            <ActionDropdown actions={actions} />
           );
         }
       };
