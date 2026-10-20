@@ -2,27 +2,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { CurrencyAPI } from '@/service/request';
+import { summarizeFailures, type BatchFailure } from '@/lib/batch';
 import { MESSAGES } from '../constants';
 import type { Currency, CurrencyFormData, CurrencySyncStatus, CurrencyUpdateData } from '../types';
 
 export interface BatchOutcome {
   succeeded: number;
-  failures: Array<{ code: string; message: string }>;
-}
-
-/** 把逐条失败按原因归组，避免批量操作弹出一长串重复 toast。 */
-function summarizeFailures(failures: BatchOutcome['failures']): string {
-  const groups = new Map<string, string[]>();
-  for (const f of failures) {
-    groups.set(f.message, [...(groups.get(f.message) ?? []), f.code]);
-  }
-  return Array.from(groups.entries())
-    .map(([message, codes]) =>
-      codes.length > 3
-        ? `${codes.slice(0, 3).join('、')} 等 ${codes.length} 个：${message}`
-        : `${codes.join('、')}：${message}`
-    )
-    .join('；');
+  failures: BatchFailure[];
 }
 
 export function useCurrencyManagement() {

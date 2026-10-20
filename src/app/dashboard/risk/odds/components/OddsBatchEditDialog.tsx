@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -51,14 +51,25 @@ export function OddsBatchEditDialog({ open, currencies, onOpenChange, onSubmit }
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [search, setSearch] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const defaultsApplied = useRef(false);
 
+  // Reset the form only on the open transition. Coupling this to `currencies`
+  // wiped the user's selection whenever the parent list refreshed mid-edit.
   useEffect(() => {
-    if (open) {
-      setForm(EMPTY);
-      setSearch('');
-      // 默认只选中在架币种——避免误把 400+ 候选一把改掉
-      setSelectedIds(currencies.filter((c) => c.is_tradeable).map((c) => c.id));
+    if (!open) {
+      defaultsApplied.current = false;
+      setSelectedIds([]);
+      return;
     }
+    setForm(EMPTY);
+    setSearch('');
+  }, [open]);
+
+  // Apply the tradeable default once per open, as soon as currencies exist.
+  useEffect(() => {
+    if (!open || defaultsApplied.current || currencies.length === 0) return;
+    setSelectedIds(currencies.filter((c) => c.is_tradeable).map((c) => c.id));
+    defaultsApplied.current = true;
   }, [open, currencies]);
 
   const filtered = useMemo(() => {
@@ -96,9 +107,15 @@ export function OddsBatchEditDialog({ open, currencies, onOpenChange, onSubmit }
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setSubmitting(true);
-    const res = await onSubmit(form.period, payoutNum, form.reason.trim(), selectedIds);
-    setSubmitting(false);
-    if (res) onOpenChange(false);
+    try {
+      const res = await onSubmit(form.period, payoutNum, form.reason.trim(), selectedIds);
+      if (res) onOpenChange(false);
+    } catch {
+      // The hook reports per-item failures; a throw here means the batch
+      // could not run at all. Keep the dialog open so the user can retry.
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

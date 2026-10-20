@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { CurrencyAPI, OddsAPI } from '@/service/request';
+import { mapWithConcurrency } from '@/lib/batch';
 import { MESSAGES } from '../constants';
 import type { Currency, OddsConfig, ResolvedPeriod, OddsUpsertData } from '../types';
 
@@ -133,29 +134,37 @@ export function useOddsManagement() {
       let success = 0;
       let firstError = '';
       const CONCURRENCY = 5;
-      for (let i = 0; i < targets.length; i += CONCURRENCY) {
-        const chunk = targets.slice(i, i + CONCURRENCY);
-        const results = await Promise.all(
-          chunk.map((c) =>
-            OddsAPI.upsert({
-              currency_id: c.id,
-              period,
-              payout_percent,
-              is_base: true,
-              reason: reason || null,
-            }),
-          ),
-        );
-        results.forEach((res) => {
-          if (res.success) {
-            success += 1;
-          } else if (!firstError) {
-            firstError = res.message || MESSAGES.ERROR.BATCH_UPDATE;
-          }
-        });
+      // allSettled semantics: one network failure must not abort the remaining
+      // currencies (the 441-item serial loop used to be the slow path; losing
+      // half the batch to one timeout is worse).
+      const results = await mapWithConcurrency(targets, CONCURRENCY, (c) =>
+        OddsAPI.upsert({
+          currency_id: c.id,
+          period,
+          payout_percent,
+          is_base: true,
+          reason: reason || null,
+        }),
+      );
+      results.forEach((result) => {
+        if (result.ok && result.value.success) {
+          success += 1;
+        } else if (!firstError) {
+          firstError = result.ok
+            ? result.value.message || MESSAGES.ERROR.BATCH_UPDATE
+            : result.error instanceof Error && result.error.message
+              ? result.error.message
+              : MESSAGES.ERROR.BATCH_UPDATE;
+        }
+      });
+      // refresh the currently active currency so the table reflects changes.
+      // The writes already applied — a refresh failure must not hide the
+      // per-item outcome or turn into an unhandled rejection in the dialog.
+      try {
+        await refresh();
+      } catch {
+        // ignore refresh failure; the batch summary below still reports.
       }
-      // refresh the currently active currency so the table reflects changes
-      await refresh();
       if (success === targets.length) {
         toast.success(MESSAGES.SUCCESS.BATCH_UPDATE(success, targets.length, period));
       } else if (success > 0) {
