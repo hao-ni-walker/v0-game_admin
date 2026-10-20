@@ -24,6 +24,11 @@ export interface CatalogField {
   unit?: string;
   /** 只读展示（运行时读常量等，改了无效） */
   readOnly?: boolean;
+  /**
+   * 死字段：运行时不读取此子键（2026-10 逐键核实）。
+   * 展示红色「不读取」标，编辑弹窗中禁用输入防止误改。
+   */
+  dead?: boolean;
 }
 
 export interface CatalogEntry {
@@ -49,11 +54,11 @@ export const FIELD_CATALOG: CatalogEntry[] = [
     name: '充值与归集',
     category: '充值提现',
     description:
-      '充值网关运行参数：各链入账确认数、待支付超时、展示/入账兜底汇率、扫链频率、平台钱包等。热生效（每次读取即时合并）。',
+      '充值运行参数（热生效）。⚠️ 仅前两组 5 个参数被运行时读取；确认数/扫链频率/平台钱包等已迁至托管服务与链注册表，此处不再读取（详见各组标注）。',
     live: true,
     groups: [
       {
-        name: '入账确认与超时',
+        name: '入账与超时（生效）',
         fields: [
           {
             path: 'deposit_timeout_minutes',
@@ -63,45 +68,12 @@ export const FIELD_CATALOG: CatalogEntry[] = [
             unit: '分钟'
           },
           {
-            path: 'ton_deposit_confirmations',
-            name: 'TON 入账确认数',
-            hint: 'TON 链充值入账所需确认（块）',
-            type: 'number',
-            unit: '块'
-          },
-          {
-            path: 'evm_deposit_confirmations',
-            name: 'EVM 链入账确认数',
-            hint: 'ETH / BSC 充值入账所需确认（块）',
-            type: 'number',
-            unit: '块'
-          },
-          {
-            path: 'tron_deposit_confirmations',
-            name: 'TRON 入账确认数',
-            hint: 'TRON 充值入账所需确认（块）',
-            type: 'number',
-            unit: '块'
-          },
-          {
-            path: 'deposit_confirmations_required',
-            name: '通用入账确认数（兜底）',
-            hint: '历史兜底键；各链已有独立确认数，一般无需调整',
-            type: 'number',
-            unit: '块'
-          },
-          {
             path: 'ton_deposit_min_ton',
             name: 'TON 最小充值额',
             hint: '低于该金额的 TON 充值不入账',
             type: 'number',
             unit: 'TON'
-          }
-        ]
-      },
-      {
-        name: '汇率兜底',
-        fields: [
+          },
           {
             path: 'deposit_ton_usd_rate',
             name: 'TON 展示兜底汇率',
@@ -115,23 +87,6 @@ export const FIELD_CATALOG: CatalogEntry[] = [
             hint: '实时价取不到时的入账折算率；刻意保守（默认 1.0）防止多入账；提现报价永不兜底',
             type: 'number',
             unit: 'USD/TON'
-          }
-        ]
-      },
-      {
-        name: '平台钱包',
-        fields: [
-          {
-            path: 'platform_ton_wallet',
-            name: '平台 TON 热钱包',
-            hint: '生产托管模式下留空（充值地址由托管服务派生）',
-            type: 'string'
-          },
-          {
-            path: 'platform_evm_wallet',
-            name: '平台 EVM 热钱包',
-            hint: '生产托管模式下留空（充值地址由托管服务派生）',
-            type: 'string'
           },
           {
             path: 'max_wallets_per_user',
@@ -142,106 +97,166 @@ export const FIELD_CATALOG: CatalogEntry[] = [
         ]
       },
       {
-        name: '扫链频率',
+        name: '入账确认数（不读取）',
         fields: [
           {
-            path: 'ton_poll_interval_seconds',
-            name: 'TON 扫链间隔',
-            hint: 'TON 监控轮询间隔；调大可省 RPC 配额',
+            path: 'ton_deposit_confirmations',
+            name: 'TON 入账确认数',
+            hint: '实际确认数由托管扫链服务与「链注册」表（chain_registry）判定，此处不读取',
             type: 'number',
-            unit: '秒'
+            unit: '块',
+            dead: true
           },
           {
-            path: 'evm_poll_interval_seconds',
-            name: 'EVM 扫链间隔',
-            hint: 'ETH / BSC 监控轮询间隔',
+            path: 'evm_deposit_confirmations',
+            name: 'EVM 链入账确认数',
+            hint: '实际确认数由托管扫链服务与「链注册」表判定，此处不读取',
             type: 'number',
-            unit: '秒'
+            unit: '块',
+            dead: true
           },
           {
-            path: 'tron_poll_interval_seconds',
-            name: 'TRON 扫链间隔',
-            hint: 'TRON 监控轮询间隔',
+            path: 'tron_deposit_confirmations',
+            name: 'TRON 入账确认数',
+            hint: '实际确认数由托管扫链服务与「链注册」表判定，此处不读取',
             type: 'number',
-            unit: '秒'
+            unit: '块',
+            dead: true
+          },
+          {
+            path: 'deposit_confirmations_required',
+            name: '通用入账确认数（兜底）',
+            hint: '历史兜底键，运行时无读者',
+            type: 'number',
+            unit: '块',
+            dead: true
           }
         ]
       },
       {
-        name: '归集（历史兼容）',
+        name: '扫链频率与平台钱包（不读取）',
+        fields: [
+          {
+            path: 'ton_poll_interval_seconds',
+            name: 'TON 扫链间隔',
+            hint: '扫链轮询在托管服务侧，此处不读取',
+            type: 'number',
+            unit: '秒',
+            dead: true
+          },
+          {
+            path: 'evm_poll_interval_seconds',
+            name: 'EVM 扫链间隔',
+            hint: '扫链轮询在托管服务侧，此处不读取',
+            type: 'number',
+            unit: '秒',
+            dead: true
+          },
+          {
+            path: 'tron_poll_interval_seconds',
+            name: 'TRON 扫链间隔',
+            hint: '扫链轮询在托管服务侧，此处不读取',
+            type: 'number',
+            unit: '秒',
+            dead: true
+          },
+          {
+            path: 'platform_ton_wallet',
+            name: '平台 TON 热钱包',
+            hint: '托管模式下充值地址由托管服务派生，此处不读取',
+            type: 'string',
+            dead: true
+          },
+          {
+            path: 'platform_evm_wallet',
+            name: '平台 EVM 热钱包',
+            hint: '托管模式下充值地址由托管服务派生，此处不读取',
+            type: 'string',
+            dead: true
+          },
+          {
+            path: 'deposit_simulated_transfer_delay_seconds',
+            name: '模拟转账延迟',
+            hint: '历史测试用键，运行时无读者',
+            type: 'number',
+            unit: '秒',
+            dead: true
+          }
+        ]
+      },
+      {
+        name: '归集（不读取）',
         fields: [
           {
             path: 'sweep_enabled.TON',
             name: 'TON 归集开关',
-            type: 'boolean'
+            type: 'boolean',
+            dead: true
           },
           {
             path: 'sweep_enabled.ETH',
             name: 'ETH 归集开关',
-            type: 'boolean'
+            type: 'boolean',
+            dead: true
           },
           {
             path: 'sweep_enabled.BSC',
             name: 'BSC 归集开关',
-            type: 'boolean'
+            type: 'boolean',
+            dead: true
           },
           {
             path: 'sweep_enabled.TRON',
             name: 'TRON 归集开关',
-            type: 'boolean'
+            type: 'boolean',
+            dead: true
           },
           {
             path: 'sweep_min_gain_usd.TON',
             name: 'TON 归集最小收益',
             type: 'number',
-            unit: 'USD'
+            unit: 'USD',
+            dead: true
           },
           {
             path: 'sweep_min_gain_usd.ETH',
             name: 'ETH 归集最小收益',
             type: 'number',
-            unit: 'USD'
+            unit: 'USD',
+            dead: true
           },
           {
             path: 'sweep_min_gain_usd.BSC',
             name: 'BSC 归集最小收益',
             type: 'number',
-            unit: 'USD'
+            unit: 'USD',
+            dead: true
           },
           {
             path: 'sweep_min_gain_usd.TRON',
             name: 'TRON 归集最小收益',
             type: 'number',
-            unit: 'USD'
+            unit: 'USD',
+            dead: true
           },
           {
             path: 'sweep_interval_seconds',
             name: '归集轮询间隔',
             type: 'number',
-            unit: '秒'
+            unit: '秒',
+            dead: true
           },
           {
             path: 'sweep_gas_reserve_ton',
             name: '归集 Gas 预留（TON）',
             type: 'number',
-            unit: 'TON'
-          }
-        ]
-      },
-      {
-        name: '测试',
-        fields: [
-          {
-            path: 'deposit_simulated_transfer_delay_seconds',
-            name: '模拟转账延迟',
-            hint: '仅测试环境模拟到账用',
-            type: 'number',
-            unit: '秒'
+            unit: 'TON',
+            dead: true
           }
         ]
       }
     ],
-    note: '归集组（sweep_*）为历史兼容键：归集已迁至托管服务，实际开关与门槛在托管侧租户配置，此处修改不生效。'
+    note: '归集与扫链已整体迁至托管服务（CoinChest），入账确认数以「链注册」表与托管侧为准；本键仅「入账与超时」组的 5 个参数被读取。'
   },
   {
     key: 'content_config',
@@ -317,7 +332,7 @@ export const FIELD_CATALOG: CatalogEntry[] = [
     name: '跟单全局配置',
     category: '跟单',
     description:
-      '带单申请门槛、跟单限制、佣金结构与跟单风控。热生效（每次读取即时合并）。',
+      '带单申请门槛、跟单限制、佣金结构与跟单份数上限。热生效（每次读取即时合并）；个别历史字段无读者，见组内标注。',
     live: true,
     groups: [
       {
@@ -362,8 +377,10 @@ export const FIELD_CATALOG: CatalogEntry[] = [
           {
             path: 'follow_limits.default_daily_copy_limit',
             name: '默认日跟单金额上限',
+            hint: '运行时无读者（历史字段）',
             type: 'number',
-            unit: 'USD'
+            unit: 'USD',
+            dead: true
           }
         ]
       },
@@ -407,13 +424,16 @@ export const FIELD_CATALOG: CatalogEntry[] = [
           {
             path: 'risk.copy_order_counts_toward_user_limits',
             name: '跟单占用用户限额',
-            hint: '跟单单是否计入用户下注限额',
-            type: 'boolean'
+            hint: '运行时无读者（历史字段）',
+            type: 'boolean',
+            dead: true
           },
           {
             path: 'risk.copy_order_respects_odds_zero',
             name: '赔率为零时禁止跟单',
-            type: 'boolean'
+            hint: '运行时无读者（历史字段）',
+            type: 'boolean',
+            dead: true
           },
           {
             path: 'risk.max_copy_orders_per_leader_order',

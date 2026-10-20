@@ -114,33 +114,12 @@ export function useSystemConfigManagement() {
     []
   );
 
-  /**
-   * 切换禁用状态（禁用后运行时回落环境变量/代码默认值）
-   */
-  const toggleDisabled = useCallback(
-    async (config: SystemConfig): Promise<boolean> => {
-      const newDisabled = !config.disabled;
-      const success = await updateConfig(config.id, {
-        disabled: newDisabled,
-        version: config.version
-      });
-      if (success) {
-        toast.success(
-          newDisabled ? MESSAGES.SUCCESS.DISABLE : MESSAGES.SUCCESS.ENABLE
-        );
-      }
-      return success;
-    },
-    [updateConfig]
-  );
-
   return {
     configs,
     loading,
     pagination,
     fetchConfigs,
     refreshConfigs,
-    updateConfig,
-    toggleDisabled
+    updateConfig
   };
 }

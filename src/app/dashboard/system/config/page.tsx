@@ -31,8 +31,7 @@ export default function SystemConfigPage() {
     pagination,
     fetchConfigs,
     refreshConfigs,
-    updateConfig,
-    toggleDisabled
+    updateConfig
   } = useSystemConfigManagement();
 
   // 编辑对话框状态
@@ -81,17 +80,6 @@ export default function SystemConfigPage() {
       fetchConfigs(filters);
     }
     return success;
-  };
-
-  /**
-   * 切换禁用状态
-   */
-  const handleToggleDisabled = async (config: SystemConfigDialogState['config']) => {
-    if (!config) return;
-    const success = await toggleDisabled(config);
-    if (success) {
-      fetchConfigs(filters);
-    }
   };
 
   /**
@@ -154,7 +142,6 @@ export default function SystemConfigPage() {
               loading={loading}
               pagination={pagination}
               onEdit={handleOpenEditDialog}
-              onToggleDisabled={handleToggleDisabled}
               emptyState={{
                 icon: <Settings className='text-muted-foreground h-8 w-8' />,
                 title: hasActiveFilters ? '未找到匹配的配置' : '还没有配置项',

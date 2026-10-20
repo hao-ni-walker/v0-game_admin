@@ -1,7 +1,6 @@
 import React from 'react';
 import { Edit, Copy, Globe, EyeOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import { DataTable } from '@/components/table/data-table';
 import {
   ActionDropdown,
@@ -30,7 +29,6 @@ interface SystemConfigTableProps {
   loading: boolean;
   pagination: PaginationInfo;
   onEdit: (config: SystemConfig) => void;
-  onToggleDisabled: (config: SystemConfig) => void;
   emptyState?: EmptyStateProps;
 }
 
@@ -45,7 +43,6 @@ export function SystemConfigTable({
   loading,
   pagination,
   onEdit,
-  onToggleDisabled,
   emptyState
 }: SystemConfigTableProps) {
   // 复制配置值（原始 JSON/字符串）
@@ -239,10 +236,14 @@ export function SystemConfigTable({
         render: (value: any, record: SystemConfig) => {
           return (
             <div className='flex justify-center'>
-              <Switch
-                checked={!record.disabled}
-                onCheckedChange={() => onToggleDisabled(record)}
-              />
+              {record.disabled ? (
+                <Badge variant='secondary'>已禁用</Badge>
+              ) : (
+                <Badge variant='outline' className='gap-1'>
+                  <span className='inline-block h-1.5 w-1.5 rounded-full bg-emerald-500' />
+                  启用
+                </Badge>
+              )}
             </div>
           );
         }

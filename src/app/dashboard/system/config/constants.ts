@@ -83,7 +83,7 @@ export const TABLE_COLUMNS = [
   },
   {
     key: 'status',
-    title: '启用',
+    title: '状态',
     className: 'text-center w-[80px]'
   },
   {
@@ -108,9 +108,7 @@ export const TABLE_COLUMNS = [
  */
 export const MESSAGES = {
   SUCCESS: {
-    UPDATE: '配置更新成功',
-    DISABLE: '配置禁用成功（运行时回落默认值）',
-    ENABLE: '配置启用成功'
+    UPDATE: '配置更新成功'
   },
   ERROR: {
     UPDATE: '更新配置失败',

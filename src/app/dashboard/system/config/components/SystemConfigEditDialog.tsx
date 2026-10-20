@@ -123,9 +123,14 @@ export function SystemConfigEditDialog({
         const existed = getPathValue(original, f.path) !== undefined;
         const edited = touched.has(f.path);
         if (!existed && !edited) continue;
-        if (f.readOnly && edited) {
-          toast.error(`「${f.name}」为固定值，不可修改`);
+        if ((f.readOnly || f.dead) && edited) {
+          toast.error(`「${f.name}」运行时不读取，不可在此修改`);
           return;
+        }
+        if (f.dead) {
+          // 死字段：保留原值原样写回，不接受编辑
+          setPathValue(next, f.path, getPathValue(original, f.path));
+          continue;
         }
         if (f.type === 'boolean') {
           setPathValue(next, f.path, boolDrafts[f.path] ?? Boolean(getPathValue(original, f.path)));
@@ -198,17 +203,24 @@ export function SystemConfigEditDialog({
               return (
                 <div key={field.path} className='space-y-1.5'>
                   <Label className='flex items-center gap-1.5 text-xs'>
-                    <span>{field.name}</span>
-                    {field.unit && (
+                    <span className={field.dead ? 'text-muted-foreground line-through decoration-muted-foreground/50' : ''}>
+                      {field.name}
+                    </span>
+                    {field.unit && !field.dead && (
                       <span className='text-muted-foreground'>({field.unit})</span>
                     )}
                     {field.readOnly && <Lock className='h-3 w-3' />}
-                    {!existed && !edited && (
+                    {field.dead && (
+                      <Badge variant='destructive' className='h-4 px-1 text-[10px]'>
+                        不读取
+                      </Badge>
+                    )}
+                    {!field.dead && !existed && !edited && (
                       <Badge variant='outline' className='h-4 px-1 text-[10px]'>
                         未配置
                       </Badge>
                     )}
-                    {edited && (
+                    {!field.dead && edited && (
                       <Badge className='h-4 px-1 text-[10px]'>已修改</Badge>
                     )}
                   </Label>
@@ -216,7 +228,7 @@ export function SystemConfigEditDialog({
                     <div className='flex h-9 items-center gap-2'>
                       <Switch
                         checked={boolDrafts[field.path] ?? false}
-                        disabled={field.readOnly}
+                        disabled={field.readOnly || field.dead}
                         onCheckedChange={(v) => {
                           setBoolDrafts((prev) => ({ ...prev, [field.path]: v }));
                           markTouched(field.path);
@@ -229,9 +241,13 @@ export function SystemConfigEditDialog({
                   ) : (
                     <Input
                       value={drafts[field.path] ?? ''}
-                      disabled={field.readOnly}
+                      disabled={field.readOnly || field.dead}
                       placeholder={
-                        existed ? '' : '留空 = 使用系统默认值'
+                        field.dead
+                          ? '运行时不读取此参数'
+                          : existed
+                            ? ''
+                            : '留空 = 使用系统默认值'
                       }
                       onChange={(e) => {
                         setDrafts((prev) => ({ ...prev, [field.path]: e.target.value }));
