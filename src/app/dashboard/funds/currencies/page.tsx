@@ -1,12 +1,23 @@
 'use client';
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback, useState } from 'react';
 import { Coins } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
 import { PermissionGuard } from '@/components/auth/permission-guard';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { usePermissions } from '@/hooks/use-permissions';
 import {
   CurrencyPageHeader,
   CurrencyFilters,
+  CurrencyBatchBar,
   CurrencyTable,
   CurrencyComposeDialog,
 } from './components';
@@ -27,6 +38,8 @@ export default function CurrenciesPage() {
     updateCurrency,
     deleteCurrency,
     toggleCurrency,
+    batchToggle,
+    batchDelete,
     compose,
     openCreate,
     openEdit,
@@ -52,9 +65,73 @@ export default function CurrenciesPage() {
     });
   }, [currencies, filters]);
 
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [batchBusy, setBatchBusy] = useState(false);
+  const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
+
+  const selectedItems = useMemo(
+    () => currencies.filter((c) => selectedIds.includes(c.id)),
+    [currencies, selectedIds]
+  );
+
+  // 列表中已消失的币种（被删除/同步移除）不留在选择集里
+  useEffect(() => {
+    setSelectedIds((prev) => {
+      const next = prev.filter((id) => currencies.some((c) => c.id === id));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [currencies]);
+
   const handleRefresh = () => fetchCurrencies();
 
   const handleEdit = useCallback((c: Currency) => openEdit(c), [openEdit]);
+
+  const handleSelect = useCallback((c: Currency, checked: boolean) => {
+    setSelectedIds((prev) => {
+      if (checked) return prev.includes(c.id) ? prev : [...prev, c.id];
+      return prev.filter((id) => id !== c.id);
+    });
+  }, []);
+
+  const handleSelectAll = useCallback(
+    (checked: boolean) => {
+      const visibleIds = visible.map((c) => c.id);
+      setSelectedIds((prev) =>
+        checked
+          ? Array.from(new Set([...prev, ...visibleIds]))
+          : prev.filter((id) => !visibleIds.includes(id))
+      );
+    },
+    [visible]
+  );
+
+  const handleBatchToggle = useCallback(
+    async (isTradeable: boolean) => {
+      if (selectedItems.length === 0 || batchBusy) return;
+      setBatchBusy(true);
+      try {
+        await batchToggle(selectedItems, isTradeable);
+        setSelectedIds([]);
+        await fetchCurrencies();
+      } finally {
+        setBatchBusy(false);
+      }
+    },
+    [selectedItems, batchBusy, batchToggle, fetchCurrencies]
+  );
+
+  const handleConfirmBatchDelete = useCallback(async () => {
+    if (selectedItems.length === 0) return;
+    setBatchBusy(true);
+    try {
+      await batchDelete(selectedItems);
+      setSelectedIds([]);
+      await fetchCurrencies();
+    } finally {
+      setBatchBusy(false);
+      setBatchDeleteOpen(false);
+    }
+  }, [selectedItems, batchDelete, fetchCurrencies]);
 
   const handleToggle = useCallback(
     async (c: Currency) => {
@@ -67,7 +144,10 @@ export default function CurrenciesPage() {
   const handleDelete = useCallback(
     async (c: Currency) => {
       const ok = await deleteCurrency(c.id);
-      if (ok) fetchCurrencies();
+      if (ok) {
+        setSelectedIds((prev) => prev.filter((id) => id !== c.id));
+        fetchCurrencies();
+      }
     },
     [deleteCurrency, fetchCurrencies]
   );
@@ -106,6 +186,16 @@ export default function CurrenciesPage() {
             onReset={clearFilters}
             loading={loading}
           />
+          {canWrite && selectedItems.length > 0 && (
+            <CurrencyBatchBar
+              count={selectedItems.length}
+              busy={batchBusy}
+              onActivate={() => { void handleBatchToggle(true); }}
+              onDeactivate={() => { void handleBatchToggle(false); }}
+              onDelete={() => setBatchDeleteOpen(true)}
+              onClear={() => setSelectedIds([])}
+            />
+          )}
           <div className='flex min-h-0 flex-1 flex-col'>
             <div className='min-h-0 flex-1'>
               {visible.length === 0 && !loading ? (
@@ -120,6 +210,9 @@ export default function CurrenciesPage() {
                   data={visible}
                   loading={loading}
                   canWrite={canWrite}
+                  selectedIds={selectedIds}
+                  onSelect={handleSelect}
+                  onSelectAll={handleSelectAll}
                   onEdit={handleEdit}
                   onToggle={handleToggle}
                   onDelete={handleDelete}
@@ -134,6 +227,28 @@ export default function CurrenciesPage() {
             onOpenChange={(open) => { if (!open) closeCompose(); }}
             onSubmit={handleSubmit}
           />
+          <AlertDialog open={batchDeleteOpen} onOpenChange={setBatchDeleteOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>确认批量删除</AlertDialogTitle>
+                <AlertDialogDescription>
+                  将删除选中的 {selectedItems.length} 个币种，删除后不可恢复；已有交易记录的币种会被后端拒绝并保留。
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={batchBusy}>取消</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={(e) => {
+                    e.preventDefault();
+                    void handleConfirmBatchDelete();
+                  }}
+                  disabled={batchBusy}
+                >
+                  {batchBusy ? '删除中…' : '确认删除'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </PageContainer>
     </PermissionGuard>

@@ -5,6 +5,26 @@ import { CurrencyAPI } from '@/service/request';
 import { MESSAGES } from '../constants';
 import type { Currency, CurrencyFormData, CurrencySyncStatus, CurrencyUpdateData } from '../types';
 
+export interface BatchOutcome {
+  succeeded: number;
+  failures: Array<{ code: string; message: string }>;
+}
+
+/** 把逐条失败按原因归组，避免批量操作弹出一长串重复 toast。 */
+function summarizeFailures(failures: BatchOutcome['failures']): string {
+  const groups = new Map<string, string[]>();
+  for (const f of failures) {
+    groups.set(f.message, [...(groups.get(f.message) ?? []), f.code]);
+  }
+  return Array.from(groups.entries())
+    .map(([message, codes]) =>
+      codes.length > 3
+        ? `${codes.slice(0, 3).join('、')} 等 ${codes.length} 个：${message}`
+        : `${codes.join('、')}：${message}`
+    )
+    .join('；');
+}
+
 export function useCurrencyManagement() {
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [loading, setLoading] = useState(false);
@@ -119,6 +139,63 @@ export function useCurrencyManagement() {
     return false;
   }, []);
 
+  // 批量操作复用单条接口逐条执行：每条都会写审计日志，个别失败（如激活缺赔率、
+  // 删除有交易记录）不影响其余条目，最后按原因汇总提示。
+  const batchToggle = useCallback(async (items: Currency[], isTradeable: boolean): Promise<BatchOutcome> => {
+    let succeeded = 0;
+    const failures: BatchOutcome['failures'] = [];
+    for (const c of items) {
+      try {
+        const res = await CurrencyAPI.toggle(c.id, isTradeable);
+        if (res.success) {
+          succeeded += 1;
+        } else {
+          failures.push({ code: c.code, message: res.message || MESSAGES.ERROR.TOGGLE });
+        }
+      } catch {
+        failures.push({ code: c.code, message: MESSAGES.ERROR.TOGGLE });
+      }
+    }
+    const action = isTradeable ? '激活' : '停用';
+    if (failures.length === 0) {
+      toast.success(`已${action} ${succeeded} 个币种`);
+    } else if (succeeded === 0) {
+      toast.error(`批量${action}失败`, { description: summarizeFailures(failures) });
+    } else {
+      toast.warning(`已${action} ${succeeded} 个，${failures.length} 个失败`, {
+        description: summarizeFailures(failures),
+      });
+    }
+    return { succeeded, failures };
+  }, []);
+
+  const batchDelete = useCallback(async (items: Currency[]): Promise<BatchOutcome> => {
+    let succeeded = 0;
+    const failures: BatchOutcome['failures'] = [];
+    for (const c of items) {
+      try {
+        const res = await CurrencyAPI.remove(c.id);
+        if (res.success) {
+          succeeded += 1;
+        } else {
+          failures.push({ code: c.code, message: res.message || MESSAGES.ERROR.DELETE });
+        }
+      } catch {
+        failures.push({ code: c.code, message: MESSAGES.ERROR.DELETE });
+      }
+    }
+    if (failures.length === 0) {
+      toast.success(`已删除 ${succeeded} 个币种`);
+    } else if (succeeded === 0) {
+      toast.error('批量删除失败', { description: summarizeFailures(failures) });
+    } else {
+      toast.warning(`已删除 ${succeeded} 个，${failures.length} 个未删除`, {
+        description: summarizeFailures(failures),
+      });
+    }
+    return { succeeded, failures };
+  }, []);
+
   const openCreate = useCallback(() => setCompose({ open: true, mode: 'create', editing: null }), []);
   const openEdit = useCallback((c: Currency) => setCompose({ open: true, mode: 'edit', editing: c }), []);
   const closeCompose = useCallback(() => setCompose({ open: false, mode: 'create', editing: null }), []);
@@ -135,6 +212,8 @@ export function useCurrencyManagement() {
     updateCurrency,
     deleteCurrency,
     toggleCurrency,
+    batchToggle,
+    batchDelete,
     compose,
     openCreate,
     openEdit,

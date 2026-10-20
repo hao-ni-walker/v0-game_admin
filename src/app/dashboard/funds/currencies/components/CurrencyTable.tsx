@@ -1,5 +1,6 @@
 'use client';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { DataTable } from '@/components/table/data-table';
 import { ActionDropdown } from '@/components/table/action-dropdown';
 import { TABLE_COLUMNS } from '../constants';
@@ -9,12 +10,25 @@ interface Props {
   data: Currency[];
   loading: boolean;
   canWrite: boolean;
+  selectedIds: number[];
+  onSelect: (c: Currency, checked: boolean) => void;
+  onSelectAll: (checked: boolean) => void;
   onEdit: (c: Currency) => void;
   onToggle: (c: Currency) => void;
   onDelete: (c: Currency) => void;
 }
 
-export function CurrencyTable({ data, loading, canWrite, onEdit, onToggle, onDelete }: Props) {
+export function CurrencyTable({
+  data,
+  loading,
+  canWrite,
+  selectedIds,
+  onSelect,
+  onSelectAll,
+  onEdit,
+  onToggle,
+  onDelete,
+}: Props) {
   const columns = TABLE_COLUMNS.map((col) => {
     if (col.key === 'is_tradeable') {
       return {
@@ -56,9 +70,37 @@ export function CurrencyTable({ data, loading, canWrite, onEdit, onToggle, onDel
     return col;
   });
 
+  const selectedVisible = data.filter((c) => selectedIds.includes(c.id)).length;
+  const allSelected = data.length > 0 && selectedVisible === data.length;
+  const someSelected = selectedVisible > 0 && !allSelected;
+
+  const columnsWithSelection = canWrite
+    ? [
+        {
+          key: 'selection',
+          title: (
+            <Checkbox
+              aria-label='全选'
+              checked={allSelected ? true : someSelected ? 'indeterminate' : false}
+              onCheckedChange={(checked) => onSelectAll(checked === true)}
+            />
+          ),
+          className: 'w-10',
+          render: (_v: unknown, row: Currency) => (
+            <Checkbox
+              aria-label={`选择 ${row.code}`}
+              checked={selectedIds.includes(row.id)}
+              onCheckedChange={(checked) => onSelect(row, checked === true)}
+            />
+          ),
+        },
+        ...columns,
+      ]
+    : columns;
+
   return (
     <DataTable
-      columns={columns}
+      columns={columnsWithSelection}
       data={data}
       loading={loading}
       rowKey='id'
