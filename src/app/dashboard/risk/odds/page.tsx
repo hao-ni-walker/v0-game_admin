@@ -62,8 +62,8 @@ export default function OddsPage() {
   );
 
   const handleBatchUpdate = useCallback(
-    async (period: string, payout_percent: number, reason: string) =>
-      batchUpdateBase(period, payout_percent, reason),
+    async (period: string, payout_percent: number, reason: string, currencyIds: number[]) =>
+      batchUpdateBase(period, payout_percent, reason, currencyIds),
     [batchUpdateBase]
   );
 
@@ -134,7 +134,7 @@ export default function OddsPage() {
 
           <OddsBatchEditDialog
             open={batchCompose.open}
-            currencyCount={currencies.length}
+            currencies={currencies}
             onOpenChange={(open) => { if (!open) closeBatchCompose(); }}
             onSubmit={handleBatchUpdate}
           />

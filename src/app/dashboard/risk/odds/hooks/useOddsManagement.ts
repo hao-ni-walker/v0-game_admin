@@ -117,31 +117,42 @@ export function useOddsManagement() {
   const openBatchCompose = useCallback(() => setBatchCompose({ open: true }), []);
   const closeBatchCompose = useCallback(() => setBatchCompose({ open: false }), []);
 
-  // Batch-update the base odds of a single period across ALL currencies.
-  // Reuses the existing per-currency upsert path (audit + OddsEngine reload).
+  // Batch-update the base odds of a single period across the SELECTED currencies
+  // (the dialog defaults to tradeable ones). Reuses the per-currency upsert path
+  // (audit + OddsEngine reload); runs with limited concurrency so large
+  // selections don't fire hundreds of simultaneous proxy requests.
   const batchUpdateBase = useCallback(
     async (
       period: string,
       payout_percent: number,
       reason: string,
+      currencyIds: number[],
     ): Promise<{ ok: boolean; success: number; total: number } | null> => {
-      const targets = currencies;
+      const targets = currencies.filter((c) => currencyIds.includes(c.id));
       if (targets.length === 0) return null;
       let success = 0;
       let firstError = '';
-      for (const c of targets) {
-        const res = await OddsAPI.upsert({
-          currency_id: c.id,
-          period,
-          payout_percent,
-          is_base: true,
-          reason: reason || null,
+      const CONCURRENCY = 5;
+      for (let i = 0; i < targets.length; i += CONCURRENCY) {
+        const chunk = targets.slice(i, i + CONCURRENCY);
+        const results = await Promise.all(
+          chunk.map((c) =>
+            OddsAPI.upsert({
+              currency_id: c.id,
+              period,
+              payout_percent,
+              is_base: true,
+              reason: reason || null,
+            }),
+          ),
+        );
+        results.forEach((res) => {
+          if (res.success) {
+            success += 1;
+          } else if (!firstError) {
+            firstError = res.message || MESSAGES.ERROR.BATCH_UPDATE;
+          }
         });
-        if (res.success) {
-          success += 1;
-        } else if (!firstError) {
-          firstError = res.message || MESSAGES.ERROR.BATCH_UPDATE;
-        }
       }
       // refresh the currently active currency so the table reflects changes
       await refresh();
