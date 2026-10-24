@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { RiskParamAPI } from '@/service/request';
 
-const TIER_NAMES = ['L0', 'L1', 'L2', 'L3', 'L4', 'L5'] as const;
+export const TIER_NAMES = ['L0', 'L1', 'L2', 'L3', 'L4', 'L5'] as const;
 const PERIODS = ['30s', '1m', '3m', '5m', '10m'] as const;
 
 export interface TierLimit {
@@ -27,7 +27,7 @@ const EMPTY_FORM: LimitsForm = {
   cutoff: Object.fromEntries(PERIODS.map((p) => [p, 0])),
 };
 
-function parseForm(items: { key: string; value: unknown }[]): LimitsForm {
+export function parseForm(items: { key: string; value: unknown }[]): LimitsForm {
   const form: LimitsForm = JSON.parse(JSON.stringify(EMPTY_FORM));
   for (const it of items) {
     if (it.key.startsWith('limits.user_tier.')) {
@@ -52,9 +52,11 @@ function parseForm(items: { key: string; value: unknown }[]): LimitsForm {
   return form;
 }
 
-function formToJson(form: LimitsForm) {
+export function formToJson(form: LimitsForm) {
   return {
-    tiers: Object.fromEntries(
+    // 每个等级单独一个 `limits.user_tier.{tier}` 键 —— 与后端 order_guard 的
+    // 读取键一致。此前打包成单键 `tiers` 提交，后端从不读该键，保存不生效。
+    ...Object.fromEntries(
       TIER_NAMES.map((t) => [`limits.user_tier.${t}`, form.tiers[t]] as const),
     ),
     'limits.platform.per_period': form.platform.per_period,
