@@ -17,13 +17,11 @@ export function FeePageHeader({ onRefresh, onCreate, onPreview, loading, canWrit
       <div>
         <div className='flex items-center gap-2'>
           <h1 className='text-3xl font-bold tracking-tight'>费率管理</h1>
-          <Badge variant='destructive'>未生效</Badge>
+          <Badge>提现已接入</Badge>
         </div>
         <p className='text-muted-foreground mt-2'>
-          按类型/作用域/时间窗口管理费率，支持预览解析。
-          <span className='text-destructive'>
-            此处配置未接入实际扣费，仅存储与试算；实际提现费率在「币种管理」的链资产费率中配置。
-          </span>
+          按类型/作用域/时间窗口管理费率，支持预览解析。作用域优先级：用户 &gt; 币种 &gt; 链 &gt; 平台；
+          提现扣费实时按此解析（费用 = max(金额×费率, 最低费)，封顶本金，矿工费仅展示）。
         </p>
       </div>
       <div className='flex items-center gap-2'>

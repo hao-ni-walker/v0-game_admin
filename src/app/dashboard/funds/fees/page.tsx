@@ -5,7 +5,7 @@ import PageContainer from '@/components/layout/page-container';
 import { PermissionGuard } from '@/components/auth/permission-guard';
 import { usePermissions } from '@/hooks/use-permissions';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CurrencyAPI } from '@/service/request';
+import { ChainAPI, CurrencyAPI } from '@/service/request';
 import {
   FeePageHeader,
   FeeTable,
@@ -14,11 +14,12 @@ import {
 } from './components';
 import { useFeeManagement } from './hooks';
 import { SCOPE_OPTIONS, MESSAGES } from './constants';
-import type { Currency, FeeConfig, FeeCreateData, FeeUpdateData, FeeScope } from './types';
+import type { ChainInfo, Currency, FeeConfig, FeeCreateData, FeeUpdateData, FeeScope } from './types';
 
 export default function FeesPage() {
   const [scope, setScope] = useState<FeeScope | 'all'>('all');
   const [currencies, setCurrencies] = useState<Currency[]>([]);
+  const [chains, setChains] = useState<ChainInfo[]>([]);
 
   const {
     fees, loading, fetchFees,
@@ -34,6 +35,8 @@ export default function FeesPage() {
     (async () => {
       const res = await CurrencyAPI.getList();
       if (res.success && res.data) setCurrencies(res.data.items);
+      const chainRes = await ChainAPI.list();
+      if (chainRes.success && chainRes.data) setChains(chainRes.data.items);
     })();
   }, []);
 
@@ -100,6 +103,7 @@ export default function FeesPage() {
             mode={compose.mode}
             editing={compose.editing}
             currencies={currencies}
+            chains={chains}
             onOpenChange={(open) => { if (!open) closeCompose(); }}
             onSubmit={handleSubmit}
           />
@@ -107,6 +111,7 @@ export default function FeesPage() {
           <FeePreviewDialog
             open={previewOpen}
             currencies={currencies}
+            chains={chains}
             onOpenChange={(open) => { if (!open) closePreview(); }}
             onPreview={preview}
           />

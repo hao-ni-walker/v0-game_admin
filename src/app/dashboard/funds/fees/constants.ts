@@ -8,12 +8,13 @@ export const FEE_TYPE_OPTIONS: { label: string; value: FeeType }[] = [
 
 export const SCOPE_OPTIONS: { label: string; value: FeeScope }[] = [
   { label: '平台', value: 'platform' },
+  { label: '链', value: 'chain' },
   { label: '币种', value: 'currency' },
   { label: '用户', value: 'user' },
 ];
 
 export const FEE_TYPE_LABELS: Record<FeeType, string> = { withdraw: '提现', deposit: '充值', trade: '交易' };
-export const SCOPE_LABELS: Record<FeeScope, string> = { platform: '平台', currency: '币种', user: '用户' };
+export const SCOPE_LABELS: Record<FeeScope, string> = { platform: '平台', chain: '链', currency: '币种', user: '用户' };
 
 export const MESSAGES = {
   SUCCESS: {

@@ -1,7 +1,8 @@
+import type { ChainInfo } from '@/service/api/chains';
 import type { Currency } from '@/service/api/currency';
 import type { FeeConfig, FeeCreateData, FeeUpdateData, FeePreviewResult, FeeType, FeeScope } from '@/service/api/fee';
 
-export type { Currency, FeeConfig, FeeCreateData, FeeUpdateData, FeePreviewResult, FeeType, FeeScope };
+export type { ChainInfo, Currency, FeeConfig, FeeCreateData, FeeUpdateData, FeePreviewResult, FeeType, FeeScope };
 
 export interface FeeComposeState {
   open: boolean;

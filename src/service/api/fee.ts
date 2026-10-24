@@ -1,12 +1,13 @@
 import { apiRequest } from './base';
 
 export type FeeType = 'withdraw' | 'deposit' | 'trade';
-export type FeeScope = 'platform' | 'currency' | 'user';
+export type FeeScope = 'platform' | 'chain' | 'currency' | 'user';
 
 export interface FeeConfig {
   id: number;
   fee_type: FeeType;
   scope_type: FeeScope;
+  chain_code: string | null;
   currency_id: number | null;
   user_id: number | null;
   fee_rate: number;
@@ -26,6 +27,7 @@ export interface FeeConfigListResult {
 export interface FeeCreateData {
   fee_type: FeeType;
   scope_type: FeeScope;
+  chain_code?: string | null;
   currency_id?: number | null;
   user_id?: number | null;
   fee_rate: number;
@@ -52,6 +54,7 @@ export interface FeeUpdateData {
 export interface FeePreviewResult {
   fee_type: string;
   matched_scope: FeeScope | null;
+  matched_chain_code: string | null;
   fee_rate: number | null;
   min_fee: number | null;
   gas: number | null;
@@ -77,10 +80,11 @@ export const FeeAPI = {
   remove(id: number) {
     return apiRequest<{ id: number; deleted: boolean }>(`/admin/fees/${id}`, { method: 'DELETE' });
   },
-  preview(params: { fee_type: FeeType; currency_id?: number; user_id?: number; amount: number }) {
+  preview(params: { fee_type: FeeType; chain_code?: string; currency_id?: number; user_id?: number; amount: number }) {
     const sp = new URLSearchParams();
     sp.set('fee_type', params.fee_type);
     sp.set('amount', String(params.amount));
+    if (params.chain_code) sp.set('chain_code', params.chain_code);
     if (params.currency_id !== undefined) sp.set('currency_id', String(params.currency_id));
     if (params.user_id !== undefined) sp.set('user_id', String(params.user_id));
     return apiRequest<FeePreviewResult>(`/admin/fees/preview?${sp.toString()}`);

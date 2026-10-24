@@ -7,13 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { FEE_TYPE_OPTIONS, SCOPE_OPTIONS } from '../constants';
-import type { Currency, FeeConfig, FeeCreateData, FeeUpdateData, FeeType, FeeScope } from '../types';
+import type { ChainInfo, Currency, FeeConfig, FeeCreateData, FeeUpdateData, FeeType, FeeScope } from '../types';
 
 interface Props {
   open: boolean;
   mode: 'create' | 'edit';
   editing: FeeConfig | null;
   currencies: Currency[];
+  chains: ChainInfo[];
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: FeeCreateData | FeeUpdateData) => Promise<boolean>;
 }
@@ -21,6 +22,7 @@ interface Props {
 interface FormState {
   fee_type: FeeType;
   scope_type: FeeScope;
+  chain_code: string;
   currency_id: string;
   user_id: string;
   fee_rate: string;
@@ -34,12 +36,12 @@ interface FormState {
 }
 
 const EMPTY: FormState = {
-  fee_type: 'withdraw', scope_type: 'platform', currency_id: '', user_id: '',
+  fee_type: 'withdraw', scope_type: 'platform', chain_code: '', currency_id: '', user_id: '',
   fee_rate: '', min_fee: '', gas: '', effective_from: '', effective_to: '',
   priority: '0', is_active: true, reason: '',
 };
 
-export function FeeComposeDialog({ open, mode, editing, currencies, onOpenChange, onSubmit }: Props) {
+export function FeeComposeDialog({ open, mode, editing, currencies, chains, onOpenChange, onSubmit }: Props) {
   const [form, setForm] = useState<FormState>(EMPTY);
   const [submitting, setSubmitting] = useState(false);
 
@@ -49,6 +51,7 @@ export function FeeComposeDialog({ open, mode, editing, currencies, onOpenChange
       setForm({
         fee_type: editing.fee_type,
         scope_type: editing.scope_type,
+        chain_code: editing.chain_code ?? '',
         currency_id: editing.currency_id !== null ? String(editing.currency_id) : '',
         user_id: editing.user_id !== null ? String(editing.user_id) : '',
         fee_rate: String(editing.fee_rate),
@@ -89,6 +92,7 @@ export function FeeComposeDialog({ open, mode, editing, currencies, onOpenChange
         fee_type: form.fee_type,
         scope_type: form.scope_type,
         ...common,
+        ...(form.scope_type === 'chain' ? { chain_code: form.chain_code } : {}),
         ...(form.scope_type === 'currency' ? { currency_id: Number(form.currency_id) || null } : {}),
         ...(form.scope_type === 'user' ? { user_id: Number(form.user_id) || null } : {}),
       };
@@ -129,6 +133,19 @@ export function FeeComposeDialog({ open, mode, editing, currencies, onOpenChange
             </Select>
           </div>
 
+          {form.scope_type === 'chain' && (
+            <div className='col-span-2 space-y-1'>
+              <Label>链</Label>
+              <Select value={form.chain_code || undefined} onValueChange={(v) => update('chain_code', v)} disabled={mode === 'edit'}>
+                <SelectTrigger className='w-full'><SelectValue placeholder='选择链' /></SelectTrigger>
+                <SelectContent>
+                  {chains.filter((c) => c.is_active).map((c) => (
+                    <SelectItem key={c.chain_code} value={c.chain_code}>{c.chain_code}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           {form.scope_type === 'currency' && (
             <div className='col-span-2 space-y-1'>
               <Label>币种</Label>

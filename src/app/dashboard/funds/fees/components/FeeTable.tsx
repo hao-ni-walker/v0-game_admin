@@ -20,6 +20,7 @@ function fmt(ts: string | null): string {
 }
 
 function targetLabel(f: FeeConfig, currencies: Currency[]): string {
+  if (f.scope_type === 'chain') return `链 ${f.chain_code}`;
   if (f.scope_type === 'currency') {
     const c = currencies.find((x) => x.id === f.currency_id);
     return c ? `${c.code}` : `#${f.currency_id}`;

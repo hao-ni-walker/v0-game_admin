@@ -44,7 +44,7 @@ export function useFeeManagement() {
     toast.error(res.message || MESSAGES.ERROR.DELETE); return false;
   }, []);
 
-  const preview = useCallback(async (params: { fee_type: FeeType; currency_id?: number; user_id?: number; amount: number }): Promise<FeePreviewResult | null> => {
+  const preview = useCallback(async (params: { fee_type: FeeType; chain_code?: string; currency_id?: number; user_id?: number; amount: number }): Promise<FeePreviewResult | null> => {
     const res = await FeeAPI.preview(params);
     if (res.success && res.data) return res.data;
     toast.error(res.message || MESSAGES.ERROR.PREVIEW);

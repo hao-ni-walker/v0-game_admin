@@ -6,17 +6,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { FEE_TYPE_OPTIONS, SCOPE_LABELS } from '../constants';
-import type { Currency, FeeType, FeePreviewResult } from '../types';
+import type { ChainInfo, Currency, FeeType, FeePreviewResult } from '../types';
 
 interface Props {
   open: boolean;
   currencies: Currency[];
+  chains: ChainInfo[];
   onOpenChange: (open: boolean) => void;
-  onPreview: (params: { fee_type: FeeType; currency_id?: number; user_id?: number; amount: number }) => Promise<FeePreviewResult | null>;
+  onPreview: (params: { fee_type: FeeType; chain_code?: string; currency_id?: number; user_id?: number; amount: number }) => Promise<FeePreviewResult | null>;
 }
 
-export function FeePreviewDialog({ open, currencies, onOpenChange, onPreview }: Props) {
+export function FeePreviewDialog({ open, currencies, chains, onOpenChange, onPreview }: Props) {
   const [feeType, setFeeType] = useState<FeeType>('withdraw');
+  const [chainCode, setChainCode] = useState<string>('');
   const [currencyId, setCurrencyId] = useState<string>('');
   const [userId, setUserId] = useState<string>('');
   const [amount, setAmount] = useState<string>('100');
@@ -29,6 +31,7 @@ export function FeePreviewDialog({ open, currencies, onOpenChange, onPreview }: 
     setLoading(true);
     const res = await onPreview({
       fee_type: feeType,
+      chain_code: chainCode || undefined,
       currency_id: currencyId ? Number(currencyId) : undefined,
       user_id: userId ? Number(userId) : undefined,
       amount: amt,
@@ -58,6 +61,17 @@ export function FeePreviewDialog({ open, currencies, onOpenChange, onPreview }: 
             <Input type='number' min={0} step='0.01' value={amount} onChange={(e) => setAmount(e.target.value)} />
           </div>
           <div className='space-y-1'>
+            <Label>链（可选）</Label>
+            <Select value={chainCode || undefined} onValueChange={setChainCode}>
+              <SelectTrigger className='w-full'><SelectValue placeholder='不限' /></SelectTrigger>
+              <SelectContent>
+                {chains.filter((c) => c.is_active).map((c) => (
+                  <SelectItem key={c.chain_code} value={c.chain_code}>{c.chain_code}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className='space-y-1'>
             <Label>币种（可选）</Label>
             <Select value={currencyId || undefined} onValueChange={setCurrencyId}>
               <SelectTrigger className='w-full'><SelectValue placeholder='不限' /></SelectTrigger>
@@ -76,12 +90,15 @@ export function FeePreviewDialog({ open, currencies, onOpenChange, onPreview }: 
           <div className='border-muted rounded-md border p-3 text-sm'>
             {result.matched_scope ? (
               <>
-                <div>命中作用域：<b>{SCOPE_LABELS[result.matched_scope] ?? result.matched_scope}</b></div>
-                <div>费率：{(result.fee_rate ?? 0) * 100}% · 最低 {result.min_fee} · 矿工费 {result.gas}</div>
+                <div>
+                  命中作用域：<b>{SCOPE_LABELS[result.matched_scope] ?? result.matched_scope}</b>
+                  {result.matched_chain_code ? ` · ${result.matched_chain_code}` : ''}
+                </div>
+                <div>费率：{(result.fee_rate ?? 0) * 100}% · 最低 {result.min_fee} · 矿工费 {result.gas}（展示用，不计入费用）</div>
                 <div className='text-base font-semibold'>计算费用：{result.fee}</div>
               </>
             ) : (
-              <div className='text-muted-foreground'>未命中任何费率配置</div>
+              <div className='text-muted-foreground'>未命中任何费率配置（提现将按兜底 1% / 最低 $1 计费）</div>
             )}
           </div>
         )}
