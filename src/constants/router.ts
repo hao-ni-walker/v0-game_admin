@@ -325,13 +325,13 @@ export const businessNavList: NavItem[] = [
         }
       },
       {
-        title: '费率管理（未生效）',
+        title: '费率管理',
         url: '/dashboard/funds/fees',
         icon: Receipt,
-        description: '费率配置与试算，未接入实际扣费',
+        description: '费率配置与试算，提现扣费实时生效',
         items: [],
         searchConfig: {
-          keywords: 'fee 费率 管理 配置 预览 未生效',
+          keywords: 'fee 费率 管理 配置 预览',
           searchShortcut: ['ff'],
           searchSection: '资金管理',
           searchPriority: 25

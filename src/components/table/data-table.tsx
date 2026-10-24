@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { cn } from '@/lib/utils';
 import {
   Table,
   TableBody,
@@ -34,6 +35,8 @@ interface DataTableProps<T> {
   emptyState?: EmptyStateProps;
   rowKey?: string | ((record: T) => string);
   stickyHeader?: boolean;
+  /** Compact rows for wide/dense tables (fees, etc.). Default padding stays as-is. */
+  dense?: boolean;
 }
 
 export function DataTable<T extends Record<string, any>>({
@@ -43,7 +46,8 @@ export function DataTable<T extends Record<string, any>>({
   emptyText = '暂无数据',
   emptyState,
   rowKey = 'id',
-  stickyHeader = true
+  stickyHeader = true,
+  dense = false
 }: DataTableProps<T>) {
   const getRowKey = (record: T, index: number): string => {
     if (typeof rowKey === 'function') {
@@ -65,7 +69,7 @@ export function DataTable<T extends Record<string, any>>({
   return (
     <div className='bg-background relative h-full overflow-hidden rounded-md border'>
       <div className='h-full overflow-auto'>
-        <Table className='h-full'>
+        <Table className={cn('h-full', dense && '[&_th]:h-7 [&_th]:py-1 [&_td]:py-1')}>
           <TableHeader className='bg-background sticky top-0'>
             <TableRow className='bg-muted/50 hover:bg-muted/50'>
               {columns.map((column) => (

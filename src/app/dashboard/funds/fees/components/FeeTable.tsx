@@ -53,5 +53,5 @@ export function FeeTable({ data, loading, canWrite, currencies, onEdit, onDelete
     return col;
   });
 
-  return <DataTable columns={columns} data={data} loading={loading} rowKey='id' emptyText='暂无费率配置' />;
+  return <DataTable columns={columns} data={data} loading={loading} rowKey='id' emptyText='暂无费率配置' dense />;
 }
