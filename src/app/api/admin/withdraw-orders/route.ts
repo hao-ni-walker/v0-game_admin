@@ -180,8 +180,15 @@ function normalizeRecords(payload: any, page: number, pageSize: number) {
         (sum: number, row: { amount?: number }) => sum + Number(row.amount || 0),
         0
       ),
-      totalFee: 0,
-      totalActualAmount: 0,
+      totalFee: data.reduce(
+        (sum: number, row: { fee?: number }) => sum + Number(row.fee || 0),
+        0
+      ),
+      totalActualAmount: data.reduce(
+        (sum: number, row: { actualAmount?: number | null }) =>
+          sum + (row.actualAmount == null ? 0 : Number(row.actualAmount)),
+        0
+      ),
       successCount: data.filter((row: { status?: string }) => row.status === 'success').length,
       failedCount: data.filter(
         (row: { status?: string }) => row.status === 'failed' || row.status === 'rejected'
