@@ -339,9 +339,30 @@ export function WithdrawOrderTable({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge className={ORDER_STATUS_COLORS[order.status] || ''}>
-                    {ORDER_STATUS_LABELS[order.status] || order.status}
-                  </Badge>
+                  {order.status === 'payout_error' ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge className={ORDER_STATUS_COLORS[order.status] || ''}>
+                            {ORDER_STATUS_LABELS[order.status] || order.status}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent className='max-w-xs whitespace-normal'>
+                          <p className='font-medium'>出款异常原因</p>
+                          <p>{order.payoutErrorText || order.payoutError || '未知'}</p>
+                          {order.payoutError && (
+                            <p className='text-muted-foreground mt-1 font-mono text-xs'>
+                              {order.payoutError}
+                            </p>
+                          )}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : (
+                    <Badge className={ORDER_STATUS_COLORS[order.status] || ''}>
+                      {ORDER_STATUS_LABELS[order.status] || order.status}
+                    </Badge>
+                  )}
                 </TableCell>
                 <TableCell>
                   {order.auditorName && order.auditAt ? (

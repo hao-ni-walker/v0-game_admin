@@ -10,6 +10,7 @@ export const ORDER_STATUS_OPTIONS: Array<{
   { value: 'pending_audit', label: '待审核' },
   { value: 'audit_passed', label: '审核通过待出款' },
   { value: 'payout_processing', label: '出款中' },
+  { value: 'payout_error', label: '出款异常' },
   { value: 'success', label: '成功' },
   { value: 'rejected', label: '拒绝' },
   { value: 'failed', label: '失败' }
@@ -22,6 +23,8 @@ export const ORDER_STATUS_COLORS: Record<WithdrawOrderStatus, string> = {
   audit_passed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
   payout_processing:
     'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+  payout_error:
+    'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
   success: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
   rejected: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
   failed: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
@@ -32,6 +35,7 @@ export const ORDER_STATUS_LABELS: Record<WithdrawOrderStatus, string> = {
   pending_audit: '待审核',
   audit_passed: '审核通过待出款',
   payout_processing: '出款中',
+  payout_error: '出款异常',
   success: '成功',
   rejected: '拒绝',
   failed: '失败'
@@ -56,6 +60,7 @@ export const PAYOUT_STATUS_OPTIONS: Array<{
   { value: 'all', label: '全部' },
   { value: 'pending', label: '未出款' },
   { value: 'processing', label: '出款中' },
+  { value: 'error', label: '出款异常' },
   { value: 'success', label: '出款成功' },
   { value: 'failed', label: '出款失败' }
 ];
@@ -69,6 +74,7 @@ export const STATUS_TAB_OPTIONS: Array<{
   { value: 'all', label: '全部' },
   { value: 'pending_audit', label: '待审核' },
   { value: 'payout_processing', label: '出款中' },
+  { value: 'payout_error', label: '出款异常' },
   { value: 'success', label: '成功' },
   { value: 'failed', label: '失败' }
 ];

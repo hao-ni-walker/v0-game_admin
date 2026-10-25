@@ -4,12 +4,13 @@ export type WithdrawOrderStatus =
   | 'pending_audit' // 待审核
   | 'audit_passed' // 审核通过待出款
   | 'payout_processing' // 出款中
+  | 'payout_error' // 出款异常(托管侧失败,本地仍在途)
   | 'success' // 成功
   | 'rejected' // 拒绝
   | 'failed'; // 失败
 
 export type AuditStatus = 'pending' | 'approved' | 'rejected';
-export type PayoutStatus = 'pending' | 'processing' | 'success' | 'failed';
+export type PayoutStatus = 'pending' | 'processing' | 'success' | 'failed' | 'error';
 export type PayoutMethod = 'auto' | 'manual'; // 自动代付 / 手工打款
 
 export interface WithdrawOrder {
@@ -42,6 +43,8 @@ export interface WithdrawOrder {
   auditRemark?: string | null; // 审核备注/拒绝原因
   // 出款信息
   payoutStatus?: PayoutStatus; // 出款状态
+  payoutError?: string | null; // 托管侧原始错误码(如 broadcast_ambiguous:RuntimeError)
+  payoutErrorText?: string | null; // 出款异常原因(人话)
   payoutMethod?: PayoutMethod; // 出款方式
   payoutAt?: string | null; // 出款完成时间
   payoutFailureReason?: string | null; // 出款失败原因

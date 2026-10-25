@@ -26,10 +26,13 @@ const STATUS_TO_PAGE: Record<string, string> = {
 };
 
 // Inverse map for the page's status filter (comma-joined backend statuses).
+// payout_error is a virtual backend status: in-flight rows whose custody-side
+// payout has failed — the backend resolves it, the proxy re-badges those rows.
 const PAGE_STATUS_TO_BACKEND: Record<string, string> = {
   pending_audit: 'validating,pending_review',
   audit_passed: 'processing',
   payout_processing: 'broadcasting',
+  payout_error: 'payout_error',
   success: 'completed',
   rejected: 'refunded,rejected',
   failed: 'failed',
@@ -44,6 +47,16 @@ function toIso(value: unknown): string {
     return Number.isNaN(ts) ? new Date().toISOString() : new Date(ts).toISOString();
   }
   return new Date().toISOString();
+}
+
+// The custody service parks broadcast failures as broadcasting+error_code and
+// never webhooks a terminal status — locally the row still says processing.
+// Humanize the raw custody error_code for the ops badge tooltip.
+function humanizePayoutError(code: string): string {
+  if (code.startsWith('broadcast_ambiguous')) {
+    return '链上广播失败且结果未知——请先核实链上无交易,再人工重试或退款';
+  }
+  return `托管出款异常:${code}`;
 }
 
 function buildEmpty(page: number, pageSize: number) {
@@ -153,20 +166,26 @@ function normalizeRecords(payload: any, page: number, pageSize: number) {
       item.amount_asset !== undefined && item.amount_asset !== null
         ? Number(item.amount_asset)
         : null,
-    status: STATUS_TO_PAGE[item.status] || 'pending_audit',
+    status: item.payout_error ? 'payout_error' : (STATUS_TO_PAGE[item.status] || 'pending_audit'),
     statusText: item.status || '',
     currency: item.asset || 'USDT',
     accountNumber: item.to_address || '',
     auditStatus:
       item.status === 'pending_review' || item.status === 'validating' ? 'pending' : 'approved',
+    // A custody-side error overrides the local in-flight status → the page
+    // badges the row as 出款异常 with the reason, instead of "出款中".
+    payoutError: item.payout_error || null,
+    payoutErrorText: item.payout_error ? humanizePayoutError(String(item.payout_error)) : null,
     payoutStatus:
-      item.status === 'broadcasting' || item.status === 'processing'
-        ? 'processing'
-        : item.status === 'completed'
-          ? 'success'
-          : item.status === 'failed' || item.status === 'refunded' || item.status === 'rejected'
-            ? 'failed'
-            : 'pending',
+      item.payout_error
+        ? 'error'
+        : item.status === 'broadcasting' || item.status === 'processing'
+          ? 'processing'
+          : item.status === 'completed'
+            ? 'success'
+            : item.status === 'failed' || item.status === 'refunded' || item.status === 'rejected'
+              ? 'failed'
+              : 'pending',
     remark: item.reason || null,
     createdAt: toIso(item.created_at),
     completedAt: item.status === 'completed' ? toIso(item.updated_at) : null,

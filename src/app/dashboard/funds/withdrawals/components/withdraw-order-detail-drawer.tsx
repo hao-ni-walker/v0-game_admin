@@ -350,6 +350,16 @@ export function WithdrawOrderDetailDrawer({
                       >
                         {ORDER_STATUS_LABELS[order.status] || order.status}
                       </Badge>
+                      {order.payoutError && (
+                        <div className='text-destructive mt-2 max-w-md text-sm'>
+                          <div className='font-medium'>
+                            ⚠ 出款异常:{order.payoutErrorText || '链上广播失败'}
+                          </div>
+                          <div className='text-muted-foreground mt-0.5 font-mono text-xs'>
+                            {order.payoutError}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div className='text-right'>
                       <div className='text-muted-foreground text-sm'>

@@ -81,6 +81,7 @@ export interface BackendWithdrawDetail {
   to_address?: string | null;
   status?: string | null;
   tx_hash?: string | null;
+  payout_error?: string | null;
   reviewed_by?: string | null;
   reviewed_at?: number | string | null;
   review_reason?: string | null;
@@ -95,12 +96,22 @@ export interface BackendWithdrawDetail {
   } | null;
 }
 
+// Custody-side broadcast failures surface as 出款异常 with the raw code
+// attached (local status would otherwise read as an in-flight payout).
+function humanizePayoutError(code: string): string {
+  if (code.startsWith('broadcast_ambiguous')) {
+    return '链上广播失败且结果未知——请先核实链上无交易,再人工重试或退款';
+  }
+  return `托管出款异常:${code}`;
+}
+
 export function normalizeWithdrawOrder(
   item: BackendWithdrawDetail
 ): WithdrawOrder {
   const id = Number(item.withdraw_id || 0);
   const status = item.status || '';
   const isCompleted = status.toLowerCase() === 'completed';
+  const payoutError = item.payout_error || null;
   const channelName = [item.asset || 'USDT', item.chain]
     .filter(Boolean)
     .join(' · ');
@@ -125,14 +136,16 @@ export function normalizeWithdrawOrder(
         : item.arrival_amount !== null && item.arrival_amount !== undefined
           ? Number(item.arrival_amount)
         : null,
-    status: mapOrderStatus(status),
+    status: payoutError ? 'payout_error' : mapOrderStatus(status),
     currency: item.asset || 'USDT',
     accountNumber: item.to_address || '',
     auditStatus: mapAuditStatus(status, item.reviewed_by),
     auditorName: item.reviewed_by || null,
     auditAt: item.reviewed_at ? toIso(item.reviewed_at) : null,
     auditRemark: item.review_reason || null,
-    payoutStatus: mapPayoutStatus(status),
+    payoutStatus: payoutError ? 'error' : mapPayoutStatus(status),
+    payoutError,
+    payoutErrorText: payoutError ? humanizePayoutError(payoutError) : null,
     // Manual-first payout policy: everything passing the review console is
     // paid by hand, auto rows never reach it.
     payoutMethod: 'manual',
