@@ -135,6 +135,7 @@ export const PREDICTION_MANUAL: ManualSection[] = [
         ['市场暂不接受新注单 / 未激活 / 已关闭或归档', 'Polymarket 侧状态不允许', '等同步刷新；长期不可用则下架'],
         ['非二元市场 / 缺少 CLOB token ids / 缺少 condition id', '数据结构不支持站内份额交易', '无法上架'],
         ['Market price is outside the tradeable range (0.03-0.97)', '用户侧同一价带拦截（英文）', 'App 会预先显示不可交易，用户无需再试'],
+        ['Prediction pricing is temporarily unavailable', 'Polymarket 行情/盘口接口不可用，全站预测交易自动暂停', '等上游恢复自动解除；连续失败 3 次触发，恢复后首个成功探测即解除'],
         ['Market has reached its closing time', '已过截止时间，等待官方结果', '等待结算'],
         ["Amount is outside this market's limits", '超出单笔上下限，或超出用户等级限额', '核对 §4 单注限额与风控额度'],
         ['Prediction exposure limit reached', '该市场或全站敞口已达上限', '属风控保护；可调低单笔或等待结算释放'],
@@ -152,6 +153,7 @@ export const PREDICTION_MANUAL: ManualSection[] = [
       '押中按持有份额向下取整兑付；押错兑付 0；官方 50/50 结果按规则退还原本金。',
       '两源结果不一致、市场被移除、缺少终值等情形保持待结果，后台不会自动赔付。',
       '当前版本没有手工强制结算入口；异常时先核对官方源与日志，数据恢复后工作器自动重试。',
+      'Polymarket 行情接口连续失败 3 次（120 秒内）会触发自动熔断：全站预测市场显示「不可交易」，恢复后首次成功探测自动解除——用户不会在断线期间下出无法定价的单。',
     ],
   },
 ];
