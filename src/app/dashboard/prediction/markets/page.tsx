@@ -90,10 +90,10 @@ export default function PredictionMarketsPage() {
     if (ok) setToggleOpen(false);
   }, [toggleTarget, toggleListed]);
 
-  const hasActiveFilters =
-    Boolean(applied.q) || applied.is_listed !== 'all' || applied.closed !== 'all';
+  const hasActiveFilters = Boolean(applied.q) || applied.is_listed !== 'all';
 
   const totalPages = Math.max(1, Math.ceil(total / Math.max(applied.pageSize, 1)));
+  const isSettled = applied.tab === 'settled';
 
   return (
     <PermissionGuard permissions='prediction:read'>
@@ -121,15 +121,21 @@ export default function PredictionMarketsPage() {
                 onToggle={handleToggleRequest}
                 emptyState={{
                   icon: <MarketTableEmptyIcon />,
-                  title: hasActiveFilters ? '未找到匹配的市场' : '目录为空',
-                  description: hasActiveFilters
-                    ? '请尝试调整筛选条件'
-                    : '等待 Gamma 同步（每 5 分钟一轮）或点击右上角手动同步',
+                  title: isSettled
+                    ? '暂无已结算市场'
+                    : hasActiveFilters
+                      ? '未找到匹配的市场'
+                      : '目录为空',
+                  description: isSettled
+                    ? '已上架的市场结束后会归入这里'
+                    : hasActiveFilters
+                      ? '请尝试调整筛选条件'
+                      : '等待 Gamma 同步（每小时一轮）或点击右上角手动同步',
                 }}
               />
             </div>
 
-            {total > 0 && (
+            {total > 0 && !isSettled && (
               <div className='bg-card mt-auto shrink-0 border-t pt-4'>
                 <Pagination
                   pagination={{

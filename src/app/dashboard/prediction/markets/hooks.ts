@@ -3,23 +3,34 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { PredictionMarketAPI } from '@/service/request';
 import type { PredictionMarket, PredictionSyncStatus, PredictionMarketUpdateData } from '@/service/request';
+import { isMarketEnded } from './utils';
+
+/** live=进行中（隐藏已结束未上架的行）；settled=已结算（已上架且已结束）。 */
+export type MarketTab = 'live' | 'settled';
 
 export interface PredictionFilters {
   q: string;
+  tab: MarketTab;
   is_listed: 'all' | 'true' | 'false';
-  closed: 'all' | 'true' | 'false';
   page: number;
   pageSize: number;
 }
 
 const DEFAULT_FILTERS: PredictionFilters = {
   q: '',
+  tab: 'live',
   is_listed: 'all',
-  closed: 'all',
   page: 1,
   pageSize: 20,
 };
 
+/**
+ * 后端只支持 is_listed/closed 查询参数，且 closed 在线上恒为 false（Gamma
+ * 同步不回写），「已结束」只能由 end_date 在客户端判定：
+ * - live：服务端分页后滤掉已结束行（页内行数可能少于 pageSize，总量含隐藏行，可接受）；
+ * - settled：已上架集合是运营人工挑选的（量级几十），一次拉满 100 条后
+ *   过滤出已结束行，不走服务端分页。
+ */
 export function usePredictionMarkets() {
   const [filters, setFilters] = useState<PredictionFilters>(DEFAULT_FILTERS);
   // 已提交的筛选（搜索框回车/点查询才生效，避免每个字符打一次后端）
@@ -34,16 +45,22 @@ export function usePredictionMarkets() {
   const fetchMarkets = useCallback(async (f: PredictionFilters) => {
     setLoading(true);
     try {
+      const settled = f.tab === 'settled';
       const res = await PredictionMarketAPI.getList({
         q: f.q || undefined,
-        is_listed: f.is_listed === 'all' ? undefined : f.is_listed === 'true',
-        closed: f.closed === 'all' ? undefined : f.closed === 'true',
-        page: f.page,
-        page_size: f.pageSize,
+        is_listed: settled
+          ? true
+          : f.is_listed === 'all'
+            ? undefined
+            : f.is_listed === 'true',
+        page: settled ? 1 : f.page,
+        page_size: settled ? 100 : f.pageSize,
       });
       if (res.success && res.data) {
-        setMarkets(res.data.items || []);
-        setTotal(Number(res.data.total || 0));
+        const items = res.data.items || [];
+        const visible = settled ? items.filter(isMarketEnded) : items.filter((m) => !isMarketEnded(m));
+        setMarkets(visible);
+        setTotal(settled ? visible.length : Number(res.data.total || 0));
       } else {
         toast.error(res.message || '获取预测市场列表失败');
       }

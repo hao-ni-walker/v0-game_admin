@@ -22,3 +22,14 @@ export function fmtDateTime(v: string | null | undefined): string {
 export function polymarketUrl(slug: string): string {
   return `https://polymarket.com/market/${slug}`;
 }
+
+/**
+ * 市场是否已结束。Gamma 同步从不把 closed 置 true（全库 0 行），线上
+ * 「结束」事实上由 end_date 判定，closed 仅作兜底；两者任一命中即视为已结算。
+ */
+export function isMarketEnded(m: { closed: boolean; end_date: string | null }): boolean {
+  if (m.closed) return true;
+  if (!m.end_date) return false;
+  const t = new Date(m.end_date).getTime();
+  return Number.isFinite(t) && t <= Date.now();
+}

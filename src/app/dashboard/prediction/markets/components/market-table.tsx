@@ -14,7 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Settings2, ArrowUpCircle, ArrowDownCircle, TrendingUp, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import type { PredictionMarket } from '@/service/request';
-import { compactUsd } from '../utils';
+import { compactUsd, isMarketEnded } from '../utils';
 
 interface MarketTableProps {
   markets: PredictionMarket[];
@@ -131,6 +131,7 @@ export function MarketTable({
                   <Badge variant='secondary'>未上架</Badge>
                 )}
                 {m.closed && <Badge variant='destructive'>已关闭</Badge>}
+                {isMarketEnded(m) && !m.closed && <Badge variant='destructive'>已结束</Badge>}
                 {m.archived && <Badge variant='outline'>已归档</Badge>}
                 {!m.active && !m.closed && <Badge variant='outline'>未激活</Badge>}
               </div>
