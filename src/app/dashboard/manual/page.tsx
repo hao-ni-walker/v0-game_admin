@@ -113,7 +113,8 @@ export default function OperationsManualPage() {
 
   const jump = (id: string) => {
     setActiveId(id);
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // 章节间可能相隔上千行，平滑滚动会拖很久；目录跳转按惯例直接定位。
+    document.getElementById(id)?.scrollIntoView({ block: 'start' });
   };
 
   return (
