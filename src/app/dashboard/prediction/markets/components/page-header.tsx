@@ -1,6 +1,6 @@
 'use client';
 
-import { RefreshCw, Sparkles, TrendingUp } from 'lucide-react';
+import { BookOpen, RefreshCw, Sparkles, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
@@ -14,6 +14,7 @@ interface MarketPageHeaderProps {
   canWrite: boolean;
   onRefresh: () => void;
   onSync: () => void;
+  onManual: () => void;
 }
 
 /** 同步状态一行摘要：开关 / 最近完成时间 / 最近一轮统计 / 最近错误。 */
@@ -56,6 +57,7 @@ export function MarketPageHeader({
   canWrite,
   onRefresh,
   onSync,
+  onManual,
 }: MarketPageHeaderProps) {
   return (
     <div className='flex flex-wrap items-center justify-between gap-3'>
@@ -70,6 +72,10 @@ export function MarketPageHeader({
         <SyncStatusLine status={syncStatus} />
       </div>
       <div className='flex items-center gap-2'>
+        <Button variant='ghost' size='sm' onClick={onManual}>
+          <BookOpen className='mr-1 h-4 w-4' />
+          使用说明
+        </Button>
         <TradingControls canWrite={canWrite} />
         <Button variant='outline' size='sm' onClick={onRefresh} disabled={loading}>
           <RefreshCw className={`mr-1 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />

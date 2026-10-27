@@ -21,6 +21,7 @@ import {
   MarketTableEmptyIcon,
   ConfigDialog,
   DetailDrawer,
+  ManualDrawer,
 } from './components';
 import { usePredictionMarkets } from './hooks';
 import type { PredictionMarket, PredictionMarketDetail } from '@/service/request';
@@ -52,6 +53,9 @@ export default function PredictionMarketsPage() {
   // 详情抽屉
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailId, setDetailId] = useState<number | null>(null);
+
+  // 运营说明抽屉
+  const [manualOpen, setManualOpen] = useState(false);
 
   const handleView = useCallback((m: PredictionMarket) => {
     setDetailId(m.id);
@@ -106,6 +110,7 @@ export default function PredictionMarketsPage() {
             canWrite={canWrite}
             onRefresh={refresh}
             onSync={triggerSync}
+            onManual={() => setManualOpen(true)}
           />
 
           <MarketFilters filters={filters} onSearch={search} onReset={clearFilters} loading={loading} />
@@ -166,6 +171,8 @@ export default function PredictionMarketsPage() {
             canWrite={canWrite}
             onConfig={handleConfigFromDetail}
           />
+
+          <ManualDrawer open={manualOpen} onOpenChange={setManualOpen} />
 
           <Dialog open={toggleOpen} onOpenChange={setToggleOpen}>
             <DialogContent>
