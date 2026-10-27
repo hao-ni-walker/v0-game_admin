@@ -1,8 +1,10 @@
 'use client';
 
 import { AlertTriangle, Info, BookOpen } from 'lucide-react';
+import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Drawer,
   DrawerContent,
@@ -118,6 +120,9 @@ export function ManualDrawer({ open, onOpenChange }: ManualDrawerProps) {
           <div className='text-muted-foreground flex flex-wrap items-center gap-2 border-t pt-4 text-xs'>
             <Badge variant='outline'>手册章节</Badge>
             <span>§16.1 同步 · §16.2 上架 · §16.3 与秒合约区别 · §16.5 交易设置 · §16.6 结算</span>
+            <Button variant='link' size='sm' className='ml-auto h-auto p-0 text-xs' asChild>
+              <Link href='/dashboard/manual'>查看完整运营手册 →</Link>
+            </Button>
           </div>
         </div>
       </DrawerContent>

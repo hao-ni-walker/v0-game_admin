@@ -21,6 +21,7 @@ import {
   ArrowDownCircle,
   Landmark,
   TrendingUp,
+  BookOpen,
   Receipt,
   ClipboardList,
   Cog,
@@ -623,6 +624,20 @@ export const systemNavList: NavItem[] = [
         }
       }
     ]
+  },
+  {
+    title: '运营手册',
+    url: '/dashboard/manual',
+    icon: BookOpen,
+    isActive: false,
+    description: '产品与运营操作手册全文（预测市场、风控、提现、参数配置）',
+    items: [],
+    searchConfig: {
+      keywords: 'manual handbook docs 运营手册 手册 说明书 帮助 文档',
+      searchShortcut: ['mh'],
+      searchSection: '导航',
+      searchPriority: 32
+    }
   }
 ];
 
