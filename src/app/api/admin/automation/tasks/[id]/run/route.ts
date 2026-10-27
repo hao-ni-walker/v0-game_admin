@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
-import { requestRemoteAdminApi } from '@/lib/admin-remote';
+import { remoteApiErrorMessage, requestRemoteAdminApi } from '@/lib/admin-remote';
 import {
   errorResponse,
   successResponse,
@@ -41,7 +41,7 @@ export async function POST(
       if (remoteResponse.status === 400 || remoteResponse.status === 503) {
         return errorResponse(remoteResponse.data?.message || '触发失败');
       }
-      return errorResponse(`远程API错误: ${remoteResponse.status}`);
+      return errorResponse(remoteApiErrorMessage(remoteResponse));
     }
 
     const result = remoteResponse.data;

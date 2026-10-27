@@ -5,7 +5,7 @@ import {
   errorResponse,
   unauthorizedResponse
 } from '@/service/response';
-import { buildRemoteAdminUrl } from '@/lib/admin-remote';
+import { buildRemoteAdminUrl, remoteApiErrorMessage } from '@/lib/admin-remote';
 
 /**
  * 获取角色列表 API - 代理到远程 API
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       }
 
       return errorResponse(
-        `远程API错误: ${remoteResponse.status} ${remoteResponse.statusText}`
+        remoteApiErrorMessage({ status: remoteResponse.status, text: errorText })
       );
     }
 

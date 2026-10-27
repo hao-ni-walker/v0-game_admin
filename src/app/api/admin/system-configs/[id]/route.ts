@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
-import { requestRemoteAdminApi } from '@/lib/admin-remote';
+import { remoteApiErrorMessage, requestRemoteAdminApi } from '@/lib/admin-remote';
 import { errorResponse, successResponse, unauthorizedResponse } from '@/service/response';
 
 /**
@@ -37,9 +37,7 @@ export async function PUT(
       if (remoteResponse.status === 401) {
         return unauthorizedResponse('认证失败，请重新登录');
       }
-      // FastAPI HTTPException 的 message 在 detail 字段
-      const message = remoteResponse.data?.detail || remoteResponse.data?.message;
-      return errorResponse(message || `远程API错误: ${remoteResponse.status}`);
+      return errorResponse(remoteApiErrorMessage(remoteResponse));
     }
 
     const result = remoteResponse.data;

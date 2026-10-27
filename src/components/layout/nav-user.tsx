@@ -58,28 +58,22 @@ export function NavUser() {
 
   const handleLogout = async () => {
     try {
-      // 先清理本地状态，提升用户体验
-      logout();
-      
-      // 调用退出登录接口清除服务端 cookie
+      // Wait for server-side revocation before clearing the local session.
       const res = await AuthAPI.logout();
 
-      if (res.code === 0) {
-        toast.success(res.message || '退出登录成功');
-      } else {
-        // 即使接口返回错误，本地状态已清理，仍然跳转
-        toast.warning(res.message || '退出登录完成');
+      if (res.code !== 0) {
+        toast.error(res.message || '退出失败，请重试');
+        return;
       }
+      logout();
+      toast.success(res.message || '退出登录成功');
 
       // 跳转到登录页
       router.push('/login');
       router.refresh();
     } catch (error) {
       console.error('退出登录失败:', error);
-      // 即使API调用失败，本地状态已清理，仍然跳转
-      toast.warning('退出登录完成');
-      router.push('/login');
-      router.refresh();
+      toast.error('退出失败，请重试');
     }
   };
 

@@ -1,4 +1,5 @@
-import { successResponse } from '@/service/response';
+import { serviceUnavailableResponse } from '@/service/response';
+import { requestRemoteAdminApi } from '@/lib/admin-remote';
 import { verifyToken } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 import { NextResponse } from 'next/server';
@@ -11,6 +12,16 @@ export async function POST(request: Request) {
     let username: string | undefined;
 
     if (token) {
+      const remote = await requestRemoteAdminApi<{ code?: number }>({
+        path: '/api/v1/admin/auth/logout',
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // An already-invalid token needs no further revocation. Other failures
+      // must remain retryable; clearing only the browser cookie is not logout.
+      if (remote.status !== 401 && (!remote.ok || ![0, 200].includes(remote.data?.code ?? -1))) {
+        return serviceUnavailableResponse('退出服务暂不可用，请重试');
+      }
       const user = verifyToken(token);
       if (user) {
         userId = user.id;
@@ -49,20 +60,6 @@ export async function POST(request: Request) {
       timestamp: new Date().toISOString()
     });
 
-    // 即使出错也清除 cookie
-    const response = NextResponse.json({
-      code: 0,
-      message: '退出成功'
-    });
-
-    response.cookies.set('token', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 0,
-      expires: new Date(0)
-    });
-
-    return response;
+    return serviceUnavailableResponse('退出服务暂不可用，请重试');
   }
 }

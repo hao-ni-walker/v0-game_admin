@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
-import { requestRemoteAdminApi } from '@/lib/admin-remote';
+import { remoteApiErrorMessage, requestRemoteAdminApi } from '@/lib/admin-remote';
 import { errorResponse, successResponse, unauthorizedResponse } from '@/service/response';
 
 interface RemotePayload {
@@ -33,7 +33,7 @@ export async function forwardRisk(
   if (!remote.ok) {
     if (remote.status === 401) return unauthorizedResponse('认证失败，请重新登录');
     if (remote.status === 400) return errorResponse(remote.data?.message || '操作失败');
-    return errorResponse(`远程API错误: ${remote.status}`);
+    return errorResponse(remoteApiErrorMessage(remote));
   }
   const result = remote.data;
   if (!result || (result.code !== 0 && result.code !== 200)) {
