@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import type { PredictionSyncStatus } from '@/service/request';
+import { TradingControls } from './trading-controls';
 
 interface MarketPageHeaderProps {
   syncStatus: PredictionSyncStatus | null;
@@ -69,6 +70,7 @@ export function MarketPageHeader({
         <SyncStatusLine status={syncStatus} />
       </div>
       <div className='flex items-center gap-2'>
+        <TradingControls canWrite={canWrite} />
         <Button variant='outline' size='sm' onClick={onRefresh} disabled={loading}>
           <RefreshCw className={`mr-1 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           刷新

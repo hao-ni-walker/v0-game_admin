@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
-import { requestRemoteAdminApi } from '@/lib/admin-remote';
+import { remoteApiErrorMessage, requestRemoteAdminApi } from '@/lib/admin-remote';
 import {
   errorResponse,
   successResponse,
@@ -39,7 +39,7 @@ export async function GET(
       if (remoteResponse.status === 401) {
         return unauthorizedResponse('认证失败，请重新登录');
       }
-      return errorResponse(`远程API错误: ${remoteResponse.status}`);
+      return errorResponse(remoteApiErrorMessage(remoteResponse));
     }
 
     const result = remoteResponse.data;
@@ -86,7 +86,7 @@ export async function PUT(
       if (remoteResponse.status === 401) {
         return unauthorizedResponse('认证失败，请重新登录');
       }
-      return errorResponse(`远程API错误: ${remoteResponse.status}`);
+      return errorResponse(remoteApiErrorMessage(remoteResponse));
     }
 
     const result = remoteResponse.data;
