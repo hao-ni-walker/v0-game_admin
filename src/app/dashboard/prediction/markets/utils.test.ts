@@ -23,3 +23,67 @@ describe('isMarketEnded', () => {
     assert.equal(isMarketEnded({ closed: false, end_date: 'not-a-date' }), false);
   });
 });
+
+import { parseBatchConfigForm } from './utils';
+
+describe('parseBatchConfigForm', () => {
+  it('all-empty form means nothing to change', () => {
+    assert.deepEqual(
+      parseBatchConfigForm({
+        spread_bps: '',
+        max_exposure_usdt: '',
+        min_bet_usdt: '',
+        max_bet_usdt: '',
+        sort_order: '',
+      }),
+      { status: 'empty' }
+    );
+  });
+
+  it('only filled fields land in the body (blank = leave each market untouched)', () => {
+    const parsed = parseBatchConfigForm({
+      spread_bps: ' 250 ',
+      max_exposure_usdt: '',
+      min_bet_usdt: '',
+      max_bet_usdt: '',
+      sort_order: '10',
+    });
+    assert.equal(parsed.status, 'ok');
+    if (parsed.status === 'ok') {
+      assert.deepEqual(parsed.body, { spread_bps: 250, sort_order: 10 });
+    }
+  });
+
+  it('rejects min > max when both filled', () => {
+    const parsed = parseBatchConfigForm({
+      spread_bps: '',
+      max_exposure_usdt: '',
+      min_bet_usdt: '50',
+      max_bet_usdt: '10',
+      sort_order: '',
+    });
+    assert.equal(parsed.status, 'invalid');
+  });
+
+  it('rejects non-numeric input', () => {
+    const parsed = parseBatchConfigForm({
+      spread_bps: 'abc',
+      max_exposure_usdt: '',
+      min_bet_usdt: '',
+      max_bet_usdt: '',
+      sort_order: '',
+    });
+    assert.equal(parsed.status, 'invalid');
+  });
+
+  it('single-sided bet limits are allowed (compared server-side against existing values)', () => {
+    const parsed = parseBatchConfigForm({
+      spread_bps: '',
+      max_exposure_usdt: '',
+      min_bet_usdt: '2',
+      max_bet_usdt: '',
+      sort_order: '',
+    });
+    assert.equal(parsed.status, 'ok');
+  });
+});

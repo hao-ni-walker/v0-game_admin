@@ -11,6 +11,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Settings2, ArrowUpCircle, ArrowDownCircle, TrendingUp, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import type { PredictionMarket } from '@/service/request';
@@ -23,6 +24,11 @@ interface MarketTableProps {
   onView: (m: PredictionMarket) => void;
   onConfig: (m: PredictionMarket) => void;
   onToggle: (m: PredictionMarket) => void;
+  /** 批量模式（进行中 tab）：显示勾选列。 */
+  selectable?: boolean;
+  selectedIds?: ReadonlySet<number>;
+  onToggleSelect?: (id: number) => void;
+  onToggleSelectAll?: () => void;
   emptyState: {
     icon: React.ReactNode;
     title: string;
@@ -65,8 +71,18 @@ export function MarketTable({
   onView,
   onConfig,
   onToggle,
+  selectable = false,
+  selectedIds,
+  onToggleSelect,
+  onToggleSelectAll,
   emptyState,
 }: MarketTableProps) {
+  const visibleSelected =
+    selectable && selectedIds
+      ? markets.filter((m) => selectedIds.has(m.id)).length
+      : 0;
+  const allVisibleSelected = selectable && markets.length > 0 && visibleSelected === markets.length;
+
   if (loading) {
     return (
       <div className='space-y-2 p-4'>
@@ -91,6 +107,16 @@ export function MarketTable({
     <Table>
       <TableHeader>
         <TableRow>
+          {selectable && (
+            <TableHead className='w-10'>
+              <Checkbox
+                aria-label='全选本页'
+                checked={allVisibleSelected ? true : visibleSelected > 0 ? 'indeterminate' : false}
+                onCheckedChange={() => onToggleSelectAll?.()}
+                disabled={!onToggleSelectAll}
+              />
+            </TableHead>
+          )}
           <TableHead className='min-w-[280px]'>市场</TableHead>
           <TableHead>价格 (YES/NO)</TableHead>
           <TableHead className='text-right'>24h 交易量</TableHead>
@@ -103,6 +129,16 @@ export function MarketTable({
       <TableBody>
         {markets.map((m) => (
           <TableRow key={m.id} className='cursor-pointer' onClick={() => onView(m)}>
+            {selectable && (
+              <TableCell onClick={(e) => e.stopPropagation()}>
+                <Checkbox
+                  aria-label={`选择 ${m.question}`}
+                  checked={Boolean(selectedIds?.has(m.id))}
+                  onCheckedChange={() => onToggleSelect?.(m.id)}
+                  disabled={!onToggleSelect}
+                />
+              </TableCell>
+            )}
             <TableCell>
               <div className='max-w-[360px] space-y-0.5'>
                 <p className='truncate font-medium' title={m.question}>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import PageContainer from '@/components/layout/page-container';
 import { PermissionGuard } from '@/components/auth/permission-guard';
 import { usePermissions } from '@/hooks/use-permissions';
@@ -22,9 +22,17 @@ import {
   ConfigDialog,
   DetailDrawer,
   ManualDrawer,
+  BatchActionBar,
+  BatchConfigDialog,
+  BatchToggleConfirmDialog,
+  BatchResultDialog,
 } from './components';
-import { usePredictionMarkets } from './hooks';
-import type { PredictionMarket, PredictionMarketDetail } from '@/service/request';
+import { usePredictionMarkets, type BatchItemFailure } from './hooks';
+import type {
+  PredictionMarket,
+  PredictionMarketDetail,
+  PredictionMarketUpdateData,
+} from '@/service/request';
 
 export default function PredictionMarketsPage() {
   const {
@@ -41,6 +49,8 @@ export default function PredictionMarketsPage() {
     triggerSync,
     updateConfig,
     toggleListed,
+    batchToggle,
+    batchUpdate,
   } = usePredictionMarkets();
 
   const { hasPermission } = usePermissions();
@@ -94,6 +104,89 @@ export default function PredictionMarketsPage() {
     if (ok) setToggleOpen(false);
   }, [toggleTarget, toggleListed]);
 
+  // ── 批量操作（仅进行中 tab；跨页累积，切 tab/筛选清除）──
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [batchToggleOpen, setBatchToggleOpen] = useState(false);
+  const [batchListed, setBatchListed] = useState(true);
+  const [batchConfigOpen, setBatchConfigOpen] = useState(false);
+  const [batchBusy, setBatchBusy] = useState(false);
+  const [batchResult, setBatchResult] = useState<{
+    action: string;
+    ok: number;
+    failures: Array<{ question: string; message: string }>;
+  } | null>(null);
+
+  // tab/筛选变化时清空选择（已结算行不可上架，跨筛选集合作批量易误伤）
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [applied.tab, applied.q, applied.is_listed]);
+
+  const handleToggleSelect = useCallback((id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const handleToggleSelectAll = useCallback(() => {
+    setSelectedIds((prev) => {
+      const visibleIds = markets.map((m) => m.id);
+      const allSelected = visibleIds.every((id) => prev.has(id));
+      const next = new Set(prev);
+      if (allSelected) visibleIds.forEach((id) => next.delete(id));
+      else visibleIds.forEach((id) => next.add(id));
+      return next;
+    });
+  }, [markets]);
+
+  // 选择可跨页累积；缓存见过的行标题，批量结果里翻页前的失败项也能显示市场名
+  const questionCache = useRef(new Map<number, string>());
+  markets.forEach((m) => questionCache.current.set(m.id, m.question));
+
+  const questionOf = useCallback((id: number) => {
+    const q = questionCache.current.get(id);
+    return q ?? `市场 #${id}`;
+  }, []);
+
+  const runBatchAction = useCallback(
+    async (action: string, run: () => Promise<{ ok: number; failures: BatchItemFailure[] }>) => {
+      setBatchBusy(true);
+      const outcome = await run();
+      setBatchBusy(false);
+      setBatchToggleOpen(false);
+      setBatchResult({
+        action,
+        ok: outcome.ok,
+        failures: outcome.failures.map((f) => ({
+          question: questionOf(f.id),
+          message: f.message,
+        })),
+      });
+      setSelectedIds(new Set());
+    },
+    [questionOf]
+  );
+
+  const handleBatchToggleConfirm = useCallback(() => {
+    const ids = Array.from(selectedIds);
+    if (!ids.length) return;
+    void runBatchAction(batchListed ? '批量上架' : '批量下架', () =>
+      batchToggle(ids, batchListed)
+    );
+  }, [selectedIds, batchListed, batchToggle, runBatchAction]);
+
+  const handleBatchConfigSubmit = useCallback(
+    async (body: PredictionMarketUpdateData) => {
+      const ids = Array.from(selectedIds);
+      if (!ids.length) return false;
+      await runBatchAction('批量配置', () => batchUpdate(ids, body));
+      return true;
+    },
+    [selectedIds, batchUpdate, runBatchAction]
+  );
+
   const hasActiveFilters = Boolean(applied.q) || applied.is_listed !== 'all';
 
   const totalPages = Math.max(1, Math.ceil(total / Math.max(applied.pageSize, 1)));
@@ -115,6 +208,23 @@ export default function PredictionMarketsPage() {
 
           <MarketFilters filters={filters} onSearch={search} onReset={clearFilters} loading={loading} />
 
+          {canWrite && !isSettled && selectedIds.size > 0 && (
+            <BatchActionBar
+              count={selectedIds.size}
+              busy={batchBusy}
+              onBatchList={() => {
+                setBatchListed(true);
+                setBatchToggleOpen(true);
+              }}
+              onBatchDelist={() => {
+                setBatchListed(false);
+                setBatchToggleOpen(true);
+              }}
+              onBatchConfig={() => setBatchConfigOpen(true)}
+              onClear={() => setSelectedIds(new Set())}
+            />
+          )}
+
           <div className='flex min-h-0 flex-1 flex-col'>
             <div className='min-h-0 flex-1 overflow-y-auto'>
               <MarketTable
@@ -124,6 +234,10 @@ export default function PredictionMarketsPage() {
                 onView={handleView}
                 onConfig={handleConfig}
                 onToggle={handleToggleRequest}
+                selectable={canWrite && !isSettled}
+                selectedIds={selectedIds}
+                onToggleSelect={handleToggleSelect}
+                onToggleSelectAll={handleToggleSelectAll}
                 emptyState={{
                   icon: <MarketTableEmptyIcon />,
                   title: isSettled
@@ -173,6 +287,32 @@ export default function PredictionMarketsPage() {
           />
 
           <ManualDrawer open={manualOpen} onOpenChange={setManualOpen} />
+
+          <BatchToggleConfirmDialog
+            open={batchToggleOpen}
+            listed={batchListed}
+            count={selectedIds.size}
+            busy={batchBusy}
+            onConfirm={handleBatchToggleConfirm}
+            onOpenChange={setBatchToggleOpen}
+          />
+
+          <BatchConfigDialog
+            open={batchConfigOpen}
+            count={selectedIds.size}
+            onOpenChange={setBatchConfigOpen}
+            onSubmit={handleBatchConfigSubmit}
+          />
+
+          {batchResult && (
+            <BatchResultDialog
+              open
+              action={batchResult.action}
+              ok={batchResult.ok}
+              failures={batchResult.failures}
+              onOpenChange={(o) => !o && setBatchResult(null)}
+            />
+          )}
 
           <Dialog open={toggleOpen} onOpenChange={setToggleOpen}>
             <DialogContent>

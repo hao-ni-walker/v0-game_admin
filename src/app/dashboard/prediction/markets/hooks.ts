@@ -3,10 +3,26 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { PredictionMarketAPI } from '@/service/request';
 import type { PredictionMarket, PredictionSyncStatus, PredictionMarketUpdateData } from '@/service/request';
+import { mapWithConcurrency } from '@/lib/batch';
 import { isMarketEnded } from './utils';
 
 /** live=进行中（隐藏已结束未上架的行）；settled=已结算（已上架且已结束）。 */
 export type MarketTab = 'live' | 'settled';
+
+export interface BatchItemFailure {
+  id: number;
+  message: string;
+}
+
+export interface BatchOutcome {
+  ok: number;
+  failures: BatchItemFailure[];
+}
+
+/** 单条请求 → 统一失败描述（后端拒绝原因在 message，透传给操作者）。 */
+function failureOf(id: number, res: { success: boolean; message?: string } | null): BatchItemFailure {
+  return { id, message: res?.message || '请求失败，请重试' };
+}
 
 export interface PredictionFilters {
   q: string;
@@ -166,6 +182,41 @@ export function usePredictionMarkets() {
     [applied, fetchMarkets]
   );
 
+  /**
+   * 批量动作基座：对选中市场逐条调既有单条端点，5 并发（对齐赔率页批量
+   * 的既有实践），逐条捕获失败不中断整批；结束后统一刷新列表。
+   */
+  const runBatch = useCallback(
+    async (
+      ids: number[],
+      worker: (id: number) => Promise<{ success: boolean; message?: string }>
+    ): Promise<BatchOutcome> => {
+      const results = await mapWithConcurrency(ids, 5, worker);
+      let ok = 0;
+      const failures: BatchItemFailure[] = [];
+      results.forEach((r, i) => {
+        if (r.ok && r.value.success) ok += 1;
+        else if (r.ok) failures.push(failureOf(ids[i], r.value));
+        else failures.push(failureOf(ids[i], null));
+      });
+      fetchMarkets(applied);
+      return { ok, failures };
+    },
+    [applied, fetchMarkets]
+  );
+
+  const batchToggle = useCallback(
+    (ids: number[], is_listed: boolean) =>
+      runBatch(ids, (id) => PredictionMarketAPI.toggle(id, is_listed)),
+    [runBatch]
+  );
+
+  const batchUpdate = useCallback(
+    (ids: number[], body: PredictionMarketUpdateData) =>
+      runBatch(ids, (id) => PredictionMarketAPI.update(id, body)),
+    [runBatch]
+  );
+
   return {
     filters,
     applied,
@@ -180,5 +231,7 @@ export function usePredictionMarkets() {
     triggerSync,
     updateConfig,
     toggleListed,
+    batchToggle,
+    batchUpdate,
   };
 }
