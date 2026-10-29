@@ -11,7 +11,10 @@ export interface RemoteApiResponse<T = unknown> {
   data: T | null;
 }
 
-const DEFAULT_REMOTE_ORIGIN = 'https://api.predictxgo.com';
+// Server-side upstream for backend admin calls. NEVER expose this origin to
+// the browser (no NEXT_PUBLIC_* fallback on purpose): the admin UI talks to
+// its own /api routes, which forward server-side.
+const DEFAULT_REMOTE_ORIGIN = 'https://api.work4workonlywork.com';
 
 function firstNonEmptyString(...values: unknown[]): string {
   for (const value of values) {
@@ -53,11 +56,7 @@ export function remoteApiErrorMessage(
 }
 
 function getRemoteOrigin() {
-  return (
-    process.env.ADMIN_API_URL ||
-    process.env.NEXT_PUBLIC_ADMIN_API_URL ||
-    DEFAULT_REMOTE_ORIGIN
-  ).replace(/\/+$/, '');
+  return (process.env.ADMIN_API_URL || DEFAULT_REMOTE_ORIGIN).replace(/\/+$/, '');
 }
 
 export function buildRemoteAdminUrl(
