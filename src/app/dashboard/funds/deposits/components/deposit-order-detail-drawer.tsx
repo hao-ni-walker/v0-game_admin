@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -49,6 +50,8 @@ export function DepositOrderDetailDrawer({
   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [remark, setRemark] = useState('');
+  const [invalidReason, setInvalidReason] = useState('');
+  const [rewardBusy, setRewardBusy] = useState(false);
 
   // 获取订单详情
   const fetchOrderDetail = useCallback(async () => {
@@ -81,6 +84,7 @@ export function DepositOrderDetailDrawer({
       setUserWallet(null);
       setTransactions([]);
       setRemark('');
+      setInvalidReason('');
     }
   }, [open, orderId, fetchOrderDetail]);
 
@@ -109,6 +113,26 @@ export function DepositOrderDetailDrawer({
       router.push(`/dashboard/players?id=${order.userId}`);
       onOpenChange(false);
     }
+  };
+
+  const handleInvalidReward = async () => {
+    if (!orderId || !invalidReason.trim() || rewardBusy) return;
+    if (!window.confirm('请确认该充值已被判定无效。未使用的首充奖励将撤销，已使用的奖励将转人工复核。')) return;
+    setRewardBusy(true);
+    try {
+      const response = await fetch(`/api/deposit-orders/${orderId}/invalidate-reward`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: invalidReason.trim() }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || '处理失败');
+      toast.success(result.data?.reward_status === 'manual_review' ? '已记录，需人工复核' : '首充奖励已撤销');
+      setInvalidReason('');
+      await fetchOrderDetail();
+      onOrderUpdate?.();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : '处理失败');
+    } finally { setRewardBusy(false); }
   };
 
   const handleViewUserTransactions = () => {
@@ -150,6 +174,18 @@ export function DepositOrderDetailDrawer({
 
               {/* 订单信息 */}
               <TabsContent value='order' className='mt-6 space-y-6'>
+                {order.firstDepositRewardStatus && (
+                  <section className='space-y-3 rounded-md border p-4'>
+                    <div className='font-medium'>首充奖励：{order.firstDepositRewardStatus === 'granted' ? '已发放 $3' : order.firstDepositRewardStatus === 'revoked' ? '已撤销' : '待人工复核'}</div>
+                    {order.firstDepositRewardStatus === 'granted' && <>
+                      <p className='text-muted-foreground text-sm'>仅在确认充值无效后处理；已使用的奖励会生成风控事件，不会自动扣成负数。充值本金需另行财务复核。</p>
+                      <Textarea value={invalidReason} onChange={(event) => setInvalidReason(event.target.value)} maxLength={500} placeholder='填写充值无效的判定依据' />
+                      <Button variant='outline' disabled={rewardBusy || !invalidReason.trim()} onClick={() => void handleInvalidReward()}>
+                        {rewardBusy ? '处理中…' : '处理无效充值的首充奖励'}
+                      </Button>
+                    </>}
+                  </section>
+                )}
                 <div className='grid grid-cols-2 gap-4'>
                   <div className='space-y-2'>
                     <Label className='text-muted-foreground'>平台订单号</Label>

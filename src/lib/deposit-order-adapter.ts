@@ -70,6 +70,7 @@ export interface BackendDepositDetail {
   memo?: string | null;
   sender_address?: string | null;
   credited?: boolean;
+  first_deposit_reward_status?: 'granted' | 'revoked' | 'manual_review' | null;
   credited_rate?: number | null;
   confirmations?: number;
   created_at: number | string;
@@ -106,7 +107,8 @@ export function normalizeDepositOrder(
     paymentChannelCode: item.method || undefined,
     amount,
     fee: 0,
-    bonusAmount: 0,
+    bonusAmount: item.first_deposit_reward_status === 'granted' ? 3 : 0,
+    firstDepositRewardStatus: item.first_deposit_reward_status ?? null,
     actualAmount: isCompleted ? amount : null,
     status,
     currency: 'USD',

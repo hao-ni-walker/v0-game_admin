@@ -22,6 +22,7 @@ export interface DepositOrder {
   amount: number; // 充值金额
   fee: number; // 手续费
   bonusAmount: number; // 赠送金额
+  firstDepositRewardStatus?: 'granted' | 'revoked' | 'manual_review' | null;
   actualAmount: number | null; // 实收金额（待支付时为 null）
   status: DepositOrderStatus;
   currency: string; // 币种
