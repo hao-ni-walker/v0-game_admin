@@ -7,6 +7,7 @@ import type {
   WalletTransaction,
   PaymentChannel
 } from '@/app/dashboard/funds/deposits/types';
+import { computeDepositStats } from '@/app/dashboard/funds/deposits/utils/stats';
 
 export interface DepositOrderListResponse {
   data: DepositOrder[];
@@ -50,6 +51,9 @@ interface RawDepositOrderListResponse {
   page: number;
   page_size: number;
   total_pages: number;
+  // BFF 附带：同筛选条件下剔除终态失败（failed/expired）后的全量笔数，
+  // 供豆腐块「订单数」使用与列表 total 区分口径；第二请求失败时缺省
+  count_total?: number;
 }
 
 // 状态映射：数字 -> 字符串
@@ -264,8 +268,7 @@ export class DepositOrderAPI {
     const transformedData: DepositOrderListResponse = {
       data: transformedOrders,
       stats: {
-        // 接口未返回统计信息，使用默认值或从订单列表计算
-        orderCount: rawData.total || 0,
+        orderCount: 0,
         totalAmount: 0,
         totalActualAmount: 0,
         totalBonusAmount: 0
@@ -278,20 +281,17 @@ export class DepositOrderAPI {
       }
     };
 
-    // 计算统计数据（从订单列表）
+    // 计算统计数据（豆腐块口径：剔除 failed/timeout 终态失败单。
+    // 生产近 7 天 73/75 笔为 failed 且含 $6.7e15 级坏数据，无差别求和
+    // 曾把「充值总额」炸成天文数字。笔数优先用 BFF 的 count_total）
     try {
-      transformedData.stats.totalAmount = transformedData.data.reduce(
-        (sum, order) => sum + (order.amount || 0),
-        0
-      );
-      transformedData.stats.totalActualAmount = transformedData.data.reduce(
-        (sum, order) => sum + (order.actualAmount || 0),
-        0
-      );
-      transformedData.stats.totalBonusAmount = transformedData.data.reduce(
-        (sum, order) => sum + (order.bonusAmount || 0),
-        0
-      );
+      if (rawData.count_total === undefined) {
+        console.warn('[充值订单] BFF 未返回 count_total，「订单数」回落含失败的全量口径');
+      }
+      transformedData.stats = computeDepositStats(transformedData.data, {
+        countTotal: rawData.count_total,
+        fallbackTotal: rawData.total || 0
+      });
     } catch (error) {
       console.error('[充值订单] 计算统计数据失败:', error);
       // 统计数据计算失败不影响返回，使用默认值 0

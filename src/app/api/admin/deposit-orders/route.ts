@@ -88,6 +88,75 @@ function buildEmpty(page: number, pageSize: number) {
   };
 }
 
+// 非终态失败的后端状态（豆腐块统计口径：failed/expired 不计入）。
+// 数字码与 toStatusCode/toBackendStatus 对齐：1=支付中 2=待支付 3=成功。
+const COUNTED_BACKEND_STATUSES = [
+  'awaiting_transfer',
+  'broadcasting',
+  'confirming',
+  'completed',
+];
+const COUNTED_CODES = new Set(['1', '2', '3']);
+
+// 构建第二查询参数：同筛选条件，但 status 收敛为「剔除终态失败」的正面
+// 枚举，page=1&size=1 最小负载——只为拿 pagination.total。
+// 返回 null 表示无需发请求（用户纯筛失败态，剔除后必然为 0）。
+function buildCountParams(
+  sp: URLSearchParams,
+  rawStatusCodes: string[]
+): URLSearchParams | null {
+  const countSp = new URLSearchParams(sp);
+  countSp.delete('page');
+  countSp.delete('size');
+  countSp.set('page', '1');
+  countSp.set('size', '1');
+
+  if (rawStatusCodes.length === 0) {
+    countSp.set('status', COUNTED_BACKEND_STATUSES.join(','));
+    return countSp;
+  }
+  const positive = rawStatusCodes
+    .filter((c) => COUNTED_CODES.has(c))
+    .map((c) => toBackendStatus(c))
+    .filter((s): s is string => Boolean(s));
+  if (positive.length === 0) return null;
+  countSp.set('status', Array.from(new Set(positive)).join(','));
+  return countSp;
+}
+
+async function fetchCountTotal(
+  sp: URLSearchParams,
+  rawStatusCodes: string[],
+  token: string
+): Promise<number | undefined> {
+  try {
+    const countParams = buildCountParams(sp, rawStatusCodes);
+    if (!countParams) return 0;
+    const remote = await requestRemoteAdminApi<{
+      code?: number;
+      data?: { pagination?: { total?: number } };
+    }>({
+      path: `${LIST_PATH}?${countParams.toString()}`,
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (remote.ok && remote.data && (remote.data.code === 0 || remote.data.code === 200)) {
+      const total = Number(remote.data.data?.pagination?.total);
+      return Number.isFinite(total) ? total : undefined;
+    }
+    console.warn('[admin/deposit-orders] count_total upstream unavailable', {
+      status: remote.status,
+    });
+    return undefined;
+  } catch (error) {
+    console.warn('[admin/deposit-orders] count_total request failed', error);
+    return undefined;
+  }
+}
+
 function normalizeList(payload: any, page: number, pageSize: number) {
   const items = Array.isArray(payload?.items) ? payload.items : [];
   const pagination = payload?.pagination || {};
@@ -96,6 +165,9 @@ function normalizeList(payload: any, page: number, pageSize: number) {
   const total = Number(pagination.total || items.length || 0);
 
   return {
+    // 剔除终态失败后的全量笔数（豆腐块「订单数」口径）；由 GET 主流程
+    // 按第二请求结果填充，上游不可用时保持 undefined 供前端回落
+    count_total: undefined as number | undefined,
     items: items.map((item: any) => ({
       id: Number(item.deposit_id || item.id || 0),
       order_no: String(item.deposit_id || item.id || ''),
@@ -143,6 +215,7 @@ export async function GET(request: NextRequest) {
   // The admin filters send numeric status codes (status=3&status=4), but the
   // backend Deposit.status is a string ("completed"). Map each code back and
   // send a single comma-joined `status` value the backend understands.
+  const rawStatusCodes = sp.has('status') ? sp.getAll('status') : [];
   if (sp.has('status')) {
     const codes = sp.getAll('status');
     const mapped = codes
@@ -154,22 +227,31 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const remote = await requestRemoteAdminApi<{
-    code?: number;
-    message?: string;
-    msg?: string;
-    data?: unknown;
-  }>({
-    path: `${LIST_PATH}${sp.size ? `?${sp.toString()}` : ''}`,
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token.value}`,
-    },
-  });
+  // 主列表与「剔除失败后全量笔数」并行请求：后者是统计豆腐块的
+  // 「订单数」口径（count_total），失败时缺省、前端回落全量 total
+  const [remote, countTotal] = await Promise.all([
+    requestRemoteAdminApi<{
+      code?: number;
+      message?: string;
+      msg?: string;
+      data?: unknown;
+    }>({
+      path: `${LIST_PATH}${sp.size ? `?${sp.toString()}` : ''}`,
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token.value}`,
+      },
+    }),
+    fetchCountTotal(sp, rawStatusCodes, token.value),
+  ]);
 
   if (remote.ok && remote.data && (remote.data.code === 0 || remote.data.code === 200)) {
-    return successResponse(normalizeList(remote.data.data, page, pageSize));
+    const payload = normalizeList(remote.data.data, page, pageSize);
+    if (countTotal !== undefined) {
+      payload.count_total = countTotal;
+    }
+    return successResponse(payload);
   }
 
   console.warn('[admin/deposit-orders] upstream unavailable, returning empty list', {

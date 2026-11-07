@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Wallet, DollarSign, Gift, TrendingUp } from 'lucide-react';
+import { Wallet, DollarSign, Gift, TrendingUp, type LucideIcon } from 'lucide-react';
 import type { DepositOrderStats } from '../types';
 
 interface DepositOrderStatsCardsProps {
@@ -27,9 +27,16 @@ export function DepositOrderStatsCards({
     return new Intl.NumberFormat('zh-CN').format(value);
   };
 
-  const cards = [
+  const cards: Array<{
+    title: string;
+    subtitle?: string;
+    value: string;
+    icon: LucideIcon;
+    color: string;
+  }> = [
     {
       title: '订单数',
+      subtitle: '已剔除失败/超时单',
       value: stats ? formatNumber(stats.orderCount) : '-',
       icon: Wallet,
       color: 'text-blue-600'
@@ -67,6 +74,11 @@ export function DepositOrderStatsCards({
               <Skeleton className='h-8 w-32' />
             ) : (
               <div className='text-2xl font-bold'>{card.value}</div>
+            )}
+            {card.subtitle && (
+              <p className='text-muted-foreground mt-1 text-xs'>
+                {card.subtitle}
+              </p>
             )}
           </CardContent>
         </Card>
